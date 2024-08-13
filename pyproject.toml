@@ -1,0 +1,142 @@
+[build-system]
+requires = ["setuptools >= 68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.dynamic]
+version = { attr = "orbiter.__version__" }
+
+[tool.setuptools.packages.find]
+exclude = [
+    "*venv", "*venv.*",
+    "*tests.*", "*tests",
+    "*build", "*build.*",
+    "*dist", "*dist.*"
+]
+
+[project]
+dynamic = ["version"]
+name = "astronomer-orbiter"
+description = "Astronomer Orbiter can take your legacy workloads and land them safely down in a new home on Apache Airflow!"
+readme = "README.md"
+authors = [
+    { name = "Fritz Davenport", email = "fritz@astronomer.io" },
+    { name = "CETA Team", email = "ceta@astronomer.io" },
+    { name = "Astronomer", email = "humans@astronomer.io" },
+]
+license = { file = "LICENSE" }
+requires-python = ">= 3.10"
+dependencies = [
+    # CLI
+    "click",
+
+    # For validation of objects
+    "pydantic >= 2.6",
+
+     # for converting to snake_case
+    "inflection",
+
+    # for templating within @rules
+    "jinja2",
+
+     # for parsing XML
+    "xmltodict",
+
+    # for parsing YAML
+    "pyyaml",
+    # alternative
+    # "ruamel.yaml"
+
+    # to render timezone-aware DAGs
+    "pendulum",
+
+    # logging
+    # "click-loglevel",
+    "loguru",
+
+    # for code formatting
+    "ruff",
+
+    # backport
+    "eval_type_backport; python_version < '3.10'",
+]
+
+[project.optional-dependencies]
+dev = [
+    # package
+    "build",
+    "twine>=4.0.2",
+    "pyinstaller",
+
+    # for generating docs
+    "mkdocs",
+    "mkdocs-click",
+    "mkdocs-material",
+    "mkdocstrings-python",
+    "pygments",
+
+    # test
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "pytest-sugar>=0.9.7",
+
+    "apache-airflow",
+    "apache-airflow-providers-ssh",
+    "apache-airflow-providers-sftp",
+
+    # lint
+    "black>=23.12.0",
+    "ruff>=0.1.0",
+    "pylint>=3.0.0",
+    "isort>=5.13.0",
+
+    # pre-commit
+    "pre-commit>=3.6.0; python_version >= '3.9'",
+    "detect-secrets>=1.4.0",
+]
+
+
+[project.urls]
+Homepage = "https://astronomer.io"
+Source = "https://github.com/astronomer/orbiter/"
+
+[project.scripts]
+orbiter = "orbiter.__main__:orbiter"
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = [
+    "B307",  # eval() - using intentionally
+    "B101",  # assert - using intentionally
+    "B404",  # subprocess - using intentionally
+    "B602",  # subprocess shell=True - using intentionally
+]
+
+[tool.black]
+# https://github.com/psf/black
+color = true
+
+[tool.ruff]
+line-length = 120
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+norecursedirs = [
+    "*output*", "*dags/", "*dags/*", "*override*", '*artifacts*',
+    "venv", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__"
+]
+testpaths = ["orbiter", "tests"]
+
+doctest_optionflags = ["ELLIPSIS", "NUMBER", "NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
+addopts = [
+    "-s",
+    "--continue-on-collection-errors",
+    "--strict-markers",
+    "--tb=short",
+    "--disable-warnings",
+    "--no-header",
+    "--doctest-modules",
+    "--doctest-continue-on-failure",
+]

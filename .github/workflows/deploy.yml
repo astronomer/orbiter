@@ -1,0 +1,58 @@
+name: Deploy
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch: {}
+jobs:
+  build:
+    strategy:
+      matrix:
+        python-version: [ "3.10" ]
+        os:
+          # --8<-- [start:oses]
+          - "ubuntu-20.04"
+          - "windows-latest"
+          - "macos-latest"
+          # --8<-- [end:oses]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      - uses: extractions/setup-just@v1
+      - run: just install
+      - run: just build
+        if: matrix.os == 'ubuntu-20.04'
+      - uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-20.04'
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        if: matrix.os == 'ubuntu-20.04'
+        with:
+          skip-existing: true
+      - run: just build-binary
+      - uses: actions/upload-artifact@v4
+        with:
+          path: |
+            orbiter-*
+          name: binary-${{ matrix.os }}
+          retention-days: 5
+
+  release:
+    needs: build
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/download-artifact@v4
+      - run: ls -R
+      - uses: softprops/action-gh-release@v1
+        with:
+          prerelease: true
+          generate_release_notes: true
+          files: |
+            binary-*/orbiter-*
+            dist/*
