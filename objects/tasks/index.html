@@ -978,7 +978,7 @@ are units of work. An Operator is a pre-defined task with specific functionality
 
       <p><strong>Abstract class</strong> representing a
 <a href="https://airflow.apache.org/docs/apache-airflow/stable/tutorial/fundamentals.html#operators">Task in Airflow</a>,
-must be subclassed (such as <a href="#orbiter.objects.task.OrbiterOperator--orbiter.objects.operators.bash.OrbiterBashOperator"><code>OrbiterBashOperator</code></a>)</p>
+must be subclassed (such as <a class="autorefs autorefs-internal" href="#orbiter.objects.operators.bash.OrbiterBashOperator"><code>OrbiterBashOperator</code></a>)</p>
 <p>Instantiation/inheriting:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">orbiter.objects</span> <span class="kn">import</span> <span class="n">OrbiterRequirement</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">OrbiterMyOperator</span><span class="p">(</span><span class="n">OrbiterOperator</span><span class="p">):</span>

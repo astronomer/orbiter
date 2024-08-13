@@ -718,35 +718,35 @@ which may have a structure like:
 <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.TranslationRuleset"><code>TranslationRuleset.file_type</code></a>.
     For each file, it will:<ol>
 <li>Load the file and turn it into a Python Dictionary</li>
-<li>Apply the <a href=".#orbiter.rules.rulesets.DAGFilterRuleset"><code>TranslationRuleset.dag_filter_ruleset</code></a>
+<li>Apply the <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.DAGFilterRuleset"><code>TranslationRuleset.dag_filter_ruleset</code></a>
     to filter down to keys suspected of being translatable to a DAG,
     in priority order. For each suspected DAG dict:<ol>
-<li>Apply the <a href=".#orbiter.rules.rulesets.DAGRuleset"><code>TranslationRuleset.dag_ruleset</code></a>,
-    to convert the object to an <a href="./../objects/dags/#orbiter.objects.dag.OrbiterDAG"><code>OrbiterDAG</code></a>,
+<li>Apply the <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.DAGRuleset"><code>TranslationRuleset.dag_ruleset</code></a>,
+    to convert the object to an <a class="autorefs autorefs-internal" href="../objects/dags/#orbiter.objects.dag.OrbiterDAG"><code>OrbiterDAG</code></a>,
     in priority-order, stopping when the first rule returns a match.</li>
-<li>Apply the <a href=".#orbiter.rules.rulesets.TaskFilterRuleset"><code>TranslationRuleset.task_filter_ruleset</code></a>
+<li>Apply the <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.TaskFilterRuleset"><code>TranslationRuleset.task_filter_ruleset</code></a>
     to filter down to keys suspected of being translatable to a Task,
     in priority-order. For each suspected Task dict:<ol>
-<li>Apply the <a href=".#orbiter.rules.rulesets.TaskRuleset"><code>TranslationRuleset.task_ruleset</code></a>,
+<li>Apply the <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.TaskRuleset"><code>TranslationRuleset.task_ruleset</code></a>,
     in priority-order, stopping when the first rule returns a match,
     to convert the dictionary to a specific type of Task. If no rule returns a match,
     the dict is filtered.</li>
 </ol>
 </li>
 <li>After the DAG and Tasks are mapped, the
-    <a href=".#orbiter.rules.rulesets.TaskDependencyRuleset"><code>TranslationRuleset.task_dependency_ruleset</code></a>
+    <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.TaskDependencyRuleset"><code>TranslationRuleset.task_dependency_ruleset</code></a>
     is applied in priority-order, stopping when the first rule returns a match,
     to create a list of
-    <a href="./../objects/tasks/#orbiter.objects.task.OrbiterTaskDependency"><code>OrbiterTaskDependency</code></a>.
+    <a class="autorefs autorefs-internal" href="../objects/tasks/#orbiter.objects.task.OrbiterTaskDependency"><code>OrbiterTaskDependency</code></a>
     These task dependencies are then added to each of the tasks they apply to in the
-    <a href="./../objects/dags/#orbiter.objects.dag.OrbiterDAG"><code>OrbiterDAG</code></a></li>
+    <a class="autorefs autorefs-internal" href="../objects/dags/#orbiter.objects.dag.OrbiterDAG"><code>OrbiterDAG</code></a></li>
 </ol>
 </li>
 </ol>
 </li>
 <li>Apply the <code>post_processing_ruleset</code> against the
-    <a href="./../objects/project/#orbiter.objects.project.OrbiterProject"><code>OrbiterProject</code></a></li>
-<li>Return the <a href="./../objects/project/#orbiter.objects.project.OrbiterProject"><code>OrbiterDAG</code></a></li>
+    <a class="autorefs autorefs-internal" href="../objects/project/#orbiter.objects.project.OrbiterProject"><code>OrbiterProject</code></a></li>
+<li>Return the <a class="autorefs autorefs-internal" href="../objects/project/#orbiter.objects.project.OrbiterProject"><code>OrbiterDAG</code></a></li>
 </ol>
 
             <details class="quote">
@@ -898,29 +898,29 @@ which may have a structure like:
 <a id="__codelineno-0-454" name="__codelineno-0-454"></a><span class="sd">    [`TranslationRuleset.file_type`][orbiter.rules.rulesets.TranslationRuleset].</span>
 <a id="__codelineno-0-455" name="__codelineno-0-455"></a><span class="sd">        For each file, it will:</span>
 <a id="__codelineno-0-456" name="__codelineno-0-456"></a><span class="sd">        1. Load the file and turn it into a Python Dictionary</span>
-<a id="__codelineno-0-457" name="__codelineno-0-457"></a><span class="sd">        2. Apply the [`TranslationRuleset.dag_filter_ruleset`](.#orbiter.rules.rulesets.DAGFilterRuleset)</span>
+<a id="__codelineno-0-457" name="__codelineno-0-457"></a><span class="sd">        2. Apply the [`TranslationRuleset.dag_filter_ruleset`][orbiter.rules.rulesets.DAGFilterRuleset]</span>
 <a id="__codelineno-0-458" name="__codelineno-0-458"></a><span class="sd">            to filter down to keys suspected of being translatable to a DAG,</span>
 <a id="__codelineno-0-459" name="__codelineno-0-459"></a><span class="sd">            in priority order. For each suspected DAG dict:</span>
-<a id="__codelineno-0-460" name="__codelineno-0-460"></a><span class="sd">            1. Apply the [`TranslationRuleset.dag_ruleset`](.#orbiter.rules.rulesets.DAGRuleset),</span>
-<a id="__codelineno-0-461" name="__codelineno-0-461"></a><span class="sd">                to convert the object to an [`OrbiterDAG`](./../objects/dags/#orbiter.objects.dag.OrbiterDAG),</span>
+<a id="__codelineno-0-460" name="__codelineno-0-460"></a><span class="sd">            1. Apply the [`TranslationRuleset.dag_ruleset`][orbiter.rules.rulesets.DAGRuleset],</span>
+<a id="__codelineno-0-461" name="__codelineno-0-461"></a><span class="sd">                to convert the object to an [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG],</span>
 <a id="__codelineno-0-462" name="__codelineno-0-462"></a><span class="sd">                in priority-order, stopping when the first rule returns a match.</span>
-<a id="__codelineno-0-463" name="__codelineno-0-463"></a><span class="sd">            2. Apply the [`TranslationRuleset.task_filter_ruleset`](.#orbiter.rules.rulesets.TaskFilterRuleset)</span>
+<a id="__codelineno-0-463" name="__codelineno-0-463"></a><span class="sd">            2. Apply the [`TranslationRuleset.task_filter_ruleset`][orbiter.rules.rulesets.TaskFilterRuleset]</span>
 <a id="__codelineno-0-464" name="__codelineno-0-464"></a><span class="sd">                to filter down to keys suspected of being translatable to a Task,</span>
 <a id="__codelineno-0-465" name="__codelineno-0-465"></a><span class="sd">                in priority-order. For each suspected Task dict:</span>
-<a id="__codelineno-0-466" name="__codelineno-0-466"></a><span class="sd">                1. Apply the [`TranslationRuleset.task_ruleset`](.#orbiter.rules.rulesets.TaskRuleset),</span>
+<a id="__codelineno-0-466" name="__codelineno-0-466"></a><span class="sd">                1. Apply the [`TranslationRuleset.task_ruleset`][orbiter.rules.rulesets.TaskRuleset],</span>
 <a id="__codelineno-0-467" name="__codelineno-0-467"></a><span class="sd">                    in priority-order, stopping when the first rule returns a match,</span>
 <a id="__codelineno-0-468" name="__codelineno-0-468"></a><span class="sd">                    to convert the dictionary to a specific type of Task. If no rule returns a match,</span>
 <a id="__codelineno-0-469" name="__codelineno-0-469"></a><span class="sd">                    the dict is filtered.</span>
 <a id="__codelineno-0-470" name="__codelineno-0-470"></a><span class="sd">            3. After the DAG and Tasks are mapped, the</span>
-<a id="__codelineno-0-471" name="__codelineno-0-471"></a><span class="sd">                [`TranslationRuleset.task_dependency_ruleset`](.#orbiter.rules.rulesets.TaskDependencyRuleset)</span>
+<a id="__codelineno-0-471" name="__codelineno-0-471"></a><span class="sd">                [`TranslationRuleset.task_dependency_ruleset`][orbiter.rules.rulesets.TaskDependencyRuleset]</span>
 <a id="__codelineno-0-472" name="__codelineno-0-472"></a><span class="sd">                is applied in priority-order, stopping when the first rule returns a match,</span>
 <a id="__codelineno-0-473" name="__codelineno-0-473"></a><span class="sd">                to create a list of</span>
-<a id="__codelineno-0-474" name="__codelineno-0-474"></a><span class="sd">                [`OrbiterTaskDependency`](./../objects/tasks/#orbiter.objects.task.OrbiterTaskDependency).</span>
+<a id="__codelineno-0-474" name="__codelineno-0-474"></a><span class="sd">                [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency]</span>
 <a id="__codelineno-0-475" name="__codelineno-0-475"></a><span class="sd">                These task dependencies are then added to each of the tasks they apply to in the</span>
-<a id="__codelineno-0-476" name="__codelineno-0-476"></a><span class="sd">                [`OrbiterDAG`](./../objects/dags/#orbiter.objects.dag.OrbiterDAG)</span>
+<a id="__codelineno-0-476" name="__codelineno-0-476"></a><span class="sd">                [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG]</span>
 <a id="__codelineno-0-477" name="__codelineno-0-477"></a><span class="sd">    2. Apply the `post_processing_ruleset` against the</span>
-<a id="__codelineno-0-478" name="__codelineno-0-478"></a><span class="sd">        [`OrbiterProject`](./../objects/project/#orbiter.objects.project.OrbiterProject)</span>
-<a id="__codelineno-0-479" name="__codelineno-0-479"></a><span class="sd">    3. Return the [`OrbiterDAG`](./../objects/project/#orbiter.objects.project.OrbiterProject)</span>
+<a id="__codelineno-0-478" name="__codelineno-0-478"></a><span class="sd">        [`OrbiterProject`][orbiter.objects.project.OrbiterProject]</span>
+<a id="__codelineno-0-479" name="__codelineno-0-479"></a><span class="sd">    3. Return the [`OrbiterDAG`][orbiter.objects.project.OrbiterProject]</span>
 <a id="__codelineno-0-480" name="__codelineno-0-480"></a><span class="sd">    &quot;&quot;&quot;</span>
 <a id="__codelineno-0-481" name="__codelineno-0-481"></a>    <span class="c1"># Create an initial OrbiterProject</span>
 <a id="__codelineno-0-482" name="__codelineno-0-482"></a>    <span class="n">project</span> <span class="o">=</span> <span class="n">OrbiterProject</span><span class="p">()</span>
