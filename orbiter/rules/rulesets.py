@@ -115,7 +115,7 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
 
         ```
 
-    :param ruleset: List of [`Rule`](.#orbiter.rules.Rule) (or `dict` with the schema of [`Rule`][orbiter.rules.Rule])
+    :param ruleset: List of [`Rule`][orbiter.rules.Rule] (or `dict` with the schema of [`Rule`][orbiter.rules.Rule])
     :type ruleset: List[Rule | Callable[[Any], Any | None]]
     """
 
@@ -297,7 +297,7 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
 
 
 class DAGFilterRuleset(Ruleset):
-    """Ruleset of [`DAGFilterRule`](.#orbiter.rules.DAGFilterRule)"""
+    """Ruleset of [`DAGFilterRule`][orbiter.rules.DAGFilterRule]"""
 
     ruleset: List[
         DAGFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict
@@ -454,29 +454,29 @@ def translate(
     [`TranslationRuleset.file_type`][orbiter.rules.rulesets.TranslationRuleset].
         For each file, it will:
         1. Load the file and turn it into a Python Dictionary
-        2. Apply the [`TranslationRuleset.dag_filter_ruleset`](.#orbiter.rules.rulesets.DAGFilterRuleset)
+        2. Apply the [`TranslationRuleset.dag_filter_ruleset`][orbiter.rules.rulesets.DAGFilterRuleset]
             to filter down to keys suspected of being translatable to a DAG,
             in priority order. For each suspected DAG dict:
-            1. Apply the [`TranslationRuleset.dag_ruleset`](.#orbiter.rules.rulesets.DAGRuleset),
-                to convert the object to an [`OrbiterDAG`](./../objects/dags/#orbiter.objects.dag.OrbiterDAG),
+            1. Apply the [`TranslationRuleset.dag_ruleset`][orbiter.rules.rulesets.DAGRuleset],
+                to convert the object to an [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG],
                 in priority-order, stopping when the first rule returns a match.
-            2. Apply the [`TranslationRuleset.task_filter_ruleset`](.#orbiter.rules.rulesets.TaskFilterRuleset)
+            2. Apply the [`TranslationRuleset.task_filter_ruleset`][orbiter.rules.rulesets.TaskFilterRuleset]
                 to filter down to keys suspected of being translatable to a Task,
                 in priority-order. For each suspected Task dict:
-                1. Apply the [`TranslationRuleset.task_ruleset`](.#orbiter.rules.rulesets.TaskRuleset),
+                1. Apply the [`TranslationRuleset.task_ruleset`][orbiter.rules.rulesets.TaskRuleset],
                     in priority-order, stopping when the first rule returns a match,
                     to convert the dictionary to a specific type of Task. If no rule returns a match,
                     the dict is filtered.
             3. After the DAG and Tasks are mapped, the
-                [`TranslationRuleset.task_dependency_ruleset`](.#orbiter.rules.rulesets.TaskDependencyRuleset)
+                [`TranslationRuleset.task_dependency_ruleset`][orbiter.rules.rulesets.TaskDependencyRuleset]
                 is applied in priority-order, stopping when the first rule returns a match,
                 to create a list of
-                [`OrbiterTaskDependency`](./../objects/tasks/#orbiter.objects.task.OrbiterTaskDependency).
+                [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency]
                 These task dependencies are then added to each of the tasks they apply to in the
-                [`OrbiterDAG`](./../objects/dags/#orbiter.objects.dag.OrbiterDAG)
+                [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG]
     2. Apply the `post_processing_ruleset` against the
-        [`OrbiterProject`](./../objects/project/#orbiter.objects.project.OrbiterProject)
-    3. Return the [`OrbiterDAG`](./../objects/project/#orbiter.objects.project.OrbiterProject)
+        [`OrbiterProject`][orbiter.objects.project.OrbiterProject]
+    3. Return the [`OrbiterDAG`][orbiter.objects.project.OrbiterProject]
     """
     # Create an initial OrbiterProject
     project = OrbiterProject()

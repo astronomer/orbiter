@@ -400,7 +400,7 @@ class OrbiterProject:
         return self
 
     def add_pools(self, pools: OrbiterPool | Iterable[OrbiterPool]) -> "OrbiterProject":
-        """Add [OrbiterPool][orbiter.objects.pools.OrbiterPool] to the Project
+        """Add [OrbiterPool][orbiter.objects.pool.OrbiterPool] to the Project
         or override existing pools with new properties
 
         ```pycon

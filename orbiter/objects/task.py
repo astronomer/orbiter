@@ -112,7 +112,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     """
     **Abstract class** representing a
     [Task in Airflow](https://airflow.apache.org/docs/apache-airflow/stable/tutorial/fundamentals.html#operators),
-    must be subclassed (such as [`OrbiterBashOperator`](#orbiter.objects.operators.bash.OrbiterBashOperator))
+    must be subclassed (such as [`OrbiterBashOperator`][orbiter.objects.operators.bash.OrbiterBashOperator])
 
     Instantiation/inheriting:
     ```pycon
