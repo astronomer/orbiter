@@ -4,17 +4,20 @@ and the [`Rulesets`][orbiter.rules.rulesets.Ruleset] that contain them.
 
 - A [`Rule`][orbiter.rules.Rule] contains a python function that is evaluated and produces something
 (typically an [Orbiter Object](../objects)) or nothing
-- A [`Ruleset`][orbiter.rules.rulesets.Ruleset] is a collection of [`Rule`][orbiter.rules.Rule] objects that are
-    evaluated in descending priority order
+- A [`Ruleset`][orbiter.rules.rulesets.Ruleset] is a collection of [`Rules`][orbiter.rules.Rule] that are
+    evaluated in priority order
 - A [`TranslationRuleset`][orbiter.rules.rulesets.TranslationRuleset]
     is a collection of [`Rulesets`][orbiter.rules.rulesets.Ruleset]
-    that relate to a specific [Origin](../origins) and File Type (e.g. `.json`, `.xml`, etc.).
-    It has a specific `translation_fn`
+    that relate to a specific [Origin](../origins) and File Type (e.g. `.json`, `.xml`, etc.),
+    with a specific `translation_fn`
     (default: [`orbiter.rules.rulesets.translation`][orbiter.rules.rulesets.translate])
-    which determines how to apply the rulesets against the input data.
+    which determines how to apply the [`rulesets`][orbiter.rules.rulesets.Ruleset] against input data.
 
-Different [`Rules`][orbiter.rules.Rule] are applied in different scenarios - such as for converting input to a DAG,
-or a specific Airflow Operator, or for filtering entries from the input data.
+Different [`Rules`][orbiter.rules.Rule] are applied in different scenarios;
+such as for converting input to a DAG ([`@dag_rule`][orbiter.rules.DAGRule]),
+or a specific Airflow Operator ([`@task_rule`][orbiter.rules.TaskRule]),
+or for filtering entries from the input data
+([`@dag_filter_rule`][orbiter.rules.DAGFilterRule], [`@task_filter_rule`][orbiter.rules.TaskFilterRule]).
 
 A [`Rule`][orbiter.rules.Rule] should evaluate to a **single _something_** or nothing.
 
@@ -160,6 +163,10 @@ class DAGFilterRule(Rule):
     def foo(val: dict) -> List[dict]:
         return [{"dag_id": "foo"}]
     ```
+
+    !!! hint
+
+        In addition to filtering, a `DAGFilterRule` can also map input to a more reasonable output for later processing
     """
 
     rule: Callable[[dict], Collection[dict] | None]
@@ -194,6 +201,15 @@ class TaskFilterRule(Rule):
     def foo(val: dict) -> List[dict]:
         return [{"task_id": "foo"}]
     ```
+
+    !!! hint
+
+        In addition to filtering, a `TaskFilterRule` can also map input to a more reasonable output for later processing
+
+    :param val: A dictionary of the task
+    :type val: dict
+    :return: A list of dictionaries of possible tasks or `None`
+    :rtype: List[dict] | None
     """
 
     rule: Callable[[dict], Collection[dict] | None]
@@ -211,14 +227,20 @@ class TaskRule(Rule):
     def foo(val: dict) -> OrbiterOperator | OrbiterTaskGroup:
         return OrbiterOperator(task_id="foo")
     ```
+
+    :param val: A dictionary of the task
+    :type val: dict
+    :return: An subclass of [`OrbiterOperator`][orbiter.objects.task.OrbiterOperator]
+        or [`OrbiterTaskGroup`][orbiter.objects.task_group.OrbiterTaskGroup] or `None`
+    :rtype: OrbiterOperator | OrbiterTaskGroup | None
     """
 
     rule: Callable[[dict], OrbiterOperator | OrbiterTaskGroup | None]
-    """Takes a `dict` and returns an subclass of
-    [`OrbiterOperator`][orbiter.objects.task.OrbiterOperator],
-    or [`OrbiterTaskGroup`][orbiter.objects.task_group.OrbiterTaskGroup],
-    or `None`
-    """
+    # """Takes a `dict` and returns an subclass of
+    # [`OrbiterOperator`][orbiter.objects.task.OrbiterOperator],
+    # or [`OrbiterTaskGroup`][orbiter.objects.task_group.OrbiterTaskGroup],
+    # or `None`
+    # """
 
 
 task_rule: Callable[[...], TaskRule] = rule
@@ -235,17 +257,21 @@ class TaskDependencyRule(Rule):
     def foo(val: OrbiterDAG) -> OrbiterTaskDependency:
         return [OrbiterTaskDependency(task_id="task_id", downstream="downstream")]
     ```
+
+    :param val: An [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG]
+    :type val: OrbiterDAG
+    :return: A list of [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency] or `None`
+    :rtype: List[OrbiterTaskDependency] | None
     """
 
     rule: Callable[[OrbiterDAG], List[OrbiterTaskDependency] | None]
-    """Takes an [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG]
-    and returns [`list[OrbiterTaskDependency]`][orbiter.objects.task.OrbiterTaskDependency] or `None`"""
 
 
 task_dependency_rule: Callable[[...], TaskDependencyRule] = rule
 
 
 class PostProcessingRule(Rule):
+    # noinspection PyUnresolvedReferences
     """
     An `@post_processing_rule` decorator creates a [`PostProcessingRule`][orbiter.rules.PostProcessingRule],
     which takes an [`OrbiterProject`][orbiter.objects.project.OrbiterProject],
@@ -256,10 +282,13 @@ class PostProcessingRule(Rule):
     def foo(val: OrbiterProject) -> None:
         val.dags["foo"].tasks["bar"].description = "Hello World"
     ```
-    """
 
+    :param val: An [`OrbiterProject`][orbiter.objects.project.OrbiterProject]
+    :type val: OrbiterProject
+    :return: `None`
+    :rtype: None
+    """
     rule: Callable[[OrbiterProject], None]
-    """Takes an [`OrbiterProject`][orbiter.objects.project.OrbiterProject] and returns `None`"""
 
 
 post_processing_rule: Callable[[...], PostProcessingRule] = rule

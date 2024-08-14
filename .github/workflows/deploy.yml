@@ -16,6 +16,11 @@ jobs:
           - "macos-latest"
           # --8<-- [end:oses]
     runs-on: ${{ matrix.os }}
+    environment:
+      name: pypi
+      url: https://pypi.org/p/astronomer-orbiter
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

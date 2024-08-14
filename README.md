@@ -2,7 +2,7 @@
 <p align="center">
   <img
     width="200px" height="200px"
-    src="docs/orbiter.svg"
+    src="https://raw.githubusercontent.com/astronomer/orbiter/main/docs/orbiter.svg"
     alt="Logo of Spaceship Orbiting a Planet"
   />
 </p>

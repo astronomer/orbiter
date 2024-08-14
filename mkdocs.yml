@@ -45,6 +45,7 @@ theme:
       - content.tabs.link
       - content.action.edit
       - content.code.copy
+      - content.code.annotate
       - search.share
       - search.highlight
       - search.suggest

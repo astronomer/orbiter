@@ -562,7 +562,7 @@ def translate(
                     dag.tasks[task_dependency.task_id].add_downstream(task_dependency)
 
             logger.debug(f"Adding DAG {dag.dag_id} to project")
-            project.add_dag(dag)
+            project.add_dags(dag)
 
     # POST PROCESSING Ruleset
     translation_ruleset.post_processing_ruleset.apply(val=project, take_first=False)
