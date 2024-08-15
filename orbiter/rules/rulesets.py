@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import functools
+import inspect
 import re
 from _operator import add
 from abc import ABC
@@ -37,24 +38,30 @@ def validate_translate_fn(
     """
     ```pycon
     >>> validate_translate_fn(fake_translate) # a valid function works
+    ... # doctest: +ELLIPSIS
     <function fake_translate at ...>
     >>> validate_translate_fn("orbiter.rules.rulesets.fake_translate") # a valid qualified name works
+    ... # doctest: +ELLIPSIS
     <function fake_translate at ...>
     >>> import json
     >>> # noinspection PyTypeChecker
     ... validate_translate_fn(json.loads)  # an invalid function doesn't work
+    ... # doctest: +IGNORE_EXCEPTION_DETAIL +ELLIPSIS
     Traceback (most recent call last):
     AssertionError: translate_fn=<function ...> must take two arguments
     >>> validate_translate_fn("???")  # an invalid entry doesn't work
+    ... # doctest: +IGNORE_EXCEPTION_DETAIL +ELLIPSIS
     Traceback (most recent call last):
     AssertionError:
 
     ```
     """
     if isinstance(translate_fn, Callable):
-        # noinspection PyUnresolvedReferences
-        assert translate_fn.__code__.co_argcount == 2, (
-            f"translate_fn={translate_fn} must take exactly two arguments: "
+        # unwrap function, if it's wrapped
+        _translate_fn = inspect.unwrap(translate_fn)
+
+        assert _translate_fn.__code__.co_argcount == 2, (
+            f"translate_fn={_translate_fn} must take exactly two arguments: "
             "[translation_ruleset: TranslationRuleset, input_dir: Path]"
         )
     if isinstance(translate_fn, str):
@@ -86,6 +93,151 @@ TranslateFn = Annotated[
     Union[QualifiedImport, Callable[["TranslationRuleset", Path], OrbiterProject]],
     AfterValidator(validate_translate_fn),
 ]
+
+
+# noinspection t
+@validate_call
+def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
+    """
+    Orbiter, by default, expects a folder containing text files (`.json`, `.xml`, `.yaml`, etc.)
+    which may have a structure like:
+    ```json
+    {"<workflow name>": { ...<workflow properties>, "<task name>": { ...<task properties>} }}
+    ```
+
+    The default translation function (`orbiter.rules.rulesets.translate`) performs the following steps:
+
+    1. Look in the input folder for all files with the expected
+    [`TranslationRuleset.file_type`][orbiter.rules.rulesets.TranslationRuleset].
+        For each file, it will:
+        1. Load the file and turn it into a Python Dictionary
+        2. Apply the [`TranslationRuleset.dag_filter_ruleset`][orbiter.rules.rulesets.DAGFilterRuleset]
+            to filter down to keys suspected of being translatable to a DAG,
+            in priority order. For each suspected DAG dict:
+            1. Apply the [`TranslationRuleset.dag_ruleset`][orbiter.rules.rulesets.DAGRuleset],
+                to convert the object to an [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG],
+                in priority-order, stopping when the first rule returns a match.
+            2. Apply the [`TranslationRuleset.task_filter_ruleset`][orbiter.rules.rulesets.TaskFilterRuleset]
+                to filter down to keys suspected of being translatable to a Task,
+                in priority-order. For each suspected Task dict:
+                1. Apply the [`TranslationRuleset.task_ruleset`][orbiter.rules.rulesets.TaskRuleset],
+                    in priority-order, stopping when the first rule returns a match,
+                    to convert the dictionary to a specific type of Task. If no rule returns a match,
+                    the dict is filtered.
+            3. After the DAG and Tasks are mapped, the
+                [`TranslationRuleset.task_dependency_ruleset`][orbiter.rules.rulesets.TaskDependencyRuleset]
+                is applied in priority-order, stopping when the first rule returns a match,
+                to create a list of
+                [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency]
+                These task dependencies are then added to each of the tasks they apply to in the
+                [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG]
+    2. Apply the `post_processing_ruleset` against the
+        [`OrbiterProject`][orbiter.objects.project.OrbiterProject]
+    3. Return the [`OrbiterDAG`][orbiter.objects.project.OrbiterProject]
+    """
+    if not isinstance(translation_ruleset, TranslationRuleset):
+        raise RuntimeError(
+            f"Error! type(translation_ruleset)=={type(translation_ruleset)}!=TranslationRuleset! Exiting!"
+        )
+
+    # Create an initial OrbiterProject
+    project = OrbiterProject()
+
+    extension = translation_ruleset.file_type.value.lower()
+
+    logger.info(f"Finding files with extension={extension} in {input_dir}")
+    files = [
+        directory / file
+        for (directory, _, files) in input_dir.walk()
+        for file in files
+        if extension in file
+    ]
+    logger.info(f"Found {len(files)} files with extension={extension} in {input_dir}")
+
+    for file in files:
+        logger.info(f"Translating file={file.resolve()}")
+
+        # Load the file and convert it into a python dict
+        input_dict = load_filetype(file.read_text(), translation_ruleset.file_type)
+
+        # DAG FILTER Ruleset - filter down to keys suspected of being translatable to a DAG, in priority order.
+        dag_dicts = functools.reduce(
+            add,
+            translation_ruleset.dag_filter_ruleset.apply(val=input_dict),
+            [],
+        )
+        logger.debug(f"Found {len(dag_dicts)} DAG candidates in {file.resolve()}")
+        for dag_dict in dag_dicts:
+            # DAG Ruleset - convert the object to an `OrbiterDAG` via `dag_ruleset`,
+            #         in priority-order, stopping when the first rule returns a match
+            dag: OrbiterDAG | None = translation_ruleset.dag_ruleset.apply(
+                val=dag_dict,
+                take_first=True,
+            )
+            if dag is None:
+                logger.warning(
+                    f"Couldn't extract DAG from dag_dict={dag_dict} with dag_ruleset={translation_ruleset.dag_ruleset}"
+                )
+                continue
+            dag.orbiter_kwargs["file_path"] = str(file.resolve())
+
+            tasks = {}
+            # TASK FILTER Ruleset - Many entries in dag_dict -> Many task_dict
+            task_dicts = functools.reduce(
+                add,
+                translation_ruleset.task_filter_ruleset.apply(val=dag_dict),
+                [],
+            )
+            logger.debug(
+                f"Found {len(task_dicts)} Task candidates in {dag.dag_id} in {file.resolve()}"
+            )
+            for task_dict in task_dicts:
+                # TASK Ruleset one -> one
+                task: OrbiterOperator = translation_ruleset.task_ruleset.apply(
+                    val=task_dict, take_first=True
+                )
+                if task is None:
+                    logger.warning(
+                        f"Couldn't extract task from expected task_dict={task_dict}"
+                    )
+                    continue
+
+                _add_task_deduped(task, tasks)
+            logger.debug(f"Adding {len(tasks)} tasks to DAG {dag.dag_id}")
+            dag.add_tasks(tasks.values())
+
+            # Dag-Level TASK DEPENDENCY Ruleset
+            task_dependencies: List[OrbiterTaskDependency] = (
+                list(chain(*translation_ruleset.task_dependency_ruleset.apply(val=dag)))
+                or []
+            )
+            if not len(task_dependencies):
+                logger.warning(f"Couldn't find task dependencies in dag={dag_dict}")
+            for task_dependency in task_dependencies:
+                task_dependency: OrbiterTaskDependency
+                if task_dependency.task_id not in dag.tasks:
+                    logger.warning(
+                        f"Couldn't find task_id={task_dependency.task_id} in tasks={tasks} for dag_id={dag.dag_id}"
+                    )
+                    continue
+                else:
+                    dag.tasks[task_dependency.task_id].add_downstream(task_dependency)
+
+            logger.debug(f"Adding DAG {dag.dag_id} to project")
+            project.add_dags(dag)
+
+    # POST PROCESSING Ruleset
+    translation_ruleset.post_processing_ruleset.apply(val=project, take_first=False)
+
+    return project
+
+
+def fake_translate(
+    translation_ruleset: TranslationRuleset, input_dir: Path
+) -> OrbiterProject:
+    """Fake translate function, for testing"""
+    _ = (translation_ruleset, input_dir)
+    return OrbiterProject()
 
 
 class Ruleset(BaseModel, frozen=True, extra="forbid"):
@@ -397,7 +549,7 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
     task_ruleset: TaskRuleset | dict
     task_dependency_ruleset: TaskDependencyRuleset | dict
     post_processing_ruleset: PostProcessingRuleset | dict
-    translate_fn: TranslateFn
+    translate_fn: TranslateFn = translate
 
 
 def _add_task_deduped(_task, _tasks, n=""):
@@ -434,148 +586,6 @@ def _add_task_deduped(_task, _tasks, n=""):
         except ValueError:
             n = "1"
         _add_task_deduped(_task, _tasks, n)
-
-
-# noinspection t
-@validate_call
-def translate(
-    translation_ruleset: TranslationRuleset, input_dir: Path
-) -> OrbiterProject:
-    """
-    Orbiter, by default, expects a folder containing text files (`.json`, `.xml`, `.yaml`, etc.)
-    which may have a structure like:
-    ```json
-    {"<workflow name>": { ...<workflow properties>, "<task name>": { ...<task properties>} }}
-    ```
-
-    The default translation function (`orbiter.rules.rulesets.translate`) performs the following steps:
-
-    1. Look in the input folder for all files with the expected
-    [`TranslationRuleset.file_type`][orbiter.rules.rulesets.TranslationRuleset].
-        For each file, it will:
-        1. Load the file and turn it into a Python Dictionary
-        2. Apply the [`TranslationRuleset.dag_filter_ruleset`][orbiter.rules.rulesets.DAGFilterRuleset]
-            to filter down to keys suspected of being translatable to a DAG,
-            in priority order. For each suspected DAG dict:
-            1. Apply the [`TranslationRuleset.dag_ruleset`][orbiter.rules.rulesets.DAGRuleset],
-                to convert the object to an [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG],
-                in priority-order, stopping when the first rule returns a match.
-            2. Apply the [`TranslationRuleset.task_filter_ruleset`][orbiter.rules.rulesets.TaskFilterRuleset]
-                to filter down to keys suspected of being translatable to a Task,
-                in priority-order. For each suspected Task dict:
-                1. Apply the [`TranslationRuleset.task_ruleset`][orbiter.rules.rulesets.TaskRuleset],
-                    in priority-order, stopping when the first rule returns a match,
-                    to convert the dictionary to a specific type of Task. If no rule returns a match,
-                    the dict is filtered.
-            3. After the DAG and Tasks are mapped, the
-                [`TranslationRuleset.task_dependency_ruleset`][orbiter.rules.rulesets.TaskDependencyRuleset]
-                is applied in priority-order, stopping when the first rule returns a match,
-                to create a list of
-                [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency]
-                These task dependencies are then added to each of the tasks they apply to in the
-                [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG]
-    2. Apply the `post_processing_ruleset` against the
-        [`OrbiterProject`][orbiter.objects.project.OrbiterProject]
-    3. Return the [`OrbiterDAG`][orbiter.objects.project.OrbiterProject]
-    """
-    # Create an initial OrbiterProject
-    project = OrbiterProject()
-
-    extension = translation_ruleset.file_type.value.lower()
-
-    logger.info(f"Finding files with extension={extension} in {input_dir}")
-    files = [
-        directory / file
-        for (directory, _, files) in input_dir.walk()
-        for file in files
-        if extension in file
-    ]
-    logger.info(f"Found {len(files)} files with extension={extension} in {input_dir}")
-
-    for file in files:
-        logger.info(f"Translating file={file.resolve()}")
-
-        # Load the file and convert it into a python dict
-        input_dict = load_filetype(file.read_text(), translation_ruleset.file_type)
-
-        # DAG FILTER Ruleset - filter down to keys suspected of being translatable to a DAG, in priority order.
-        dag_dicts = functools.reduce(
-            add,
-            translation_ruleset.dag_filter_ruleset.apply(val=input_dict),
-            [],
-        )
-        logger.debug(f"Found {len(dag_dicts)} DAG candidates in {file.resolve()}")
-        for dag_dict in dag_dicts:
-            # DAG Ruleset - convert the object to an `OrbiterDAG` via `dag_ruleset`,
-            #         in priority-order, stopping when the first rule returns a match
-            dag: OrbiterDAG | None = translation_ruleset.dag_ruleset.apply(
-                val=dag_dict,
-                take_first=True,
-            )
-            if dag is None:
-                logger.warning(
-                    f"Couldn't extract DAG from dag_dict={dag_dict} with dag_ruleset={translation_ruleset.dag_ruleset}"
-                )
-                continue
-            dag.orbiter_kwargs["file_path"] = str(file.resolve())
-
-            tasks = {}
-            # TASK FILTER Ruleset - Many entries in dag_dict -> Many task_dict
-            task_dicts = functools.reduce(
-                add,
-                translation_ruleset.task_filter_ruleset.apply(val=dag_dict),
-                [],
-            )
-            logger.debug(
-                f"Found {len(task_dicts)} Task candidates in {dag.dag_id} in {file.resolve()}"
-            )
-            for task_dict in task_dicts:
-                # TASK Ruleset one -> one
-                task: OrbiterOperator = translation_ruleset.task_ruleset.apply(
-                    val=task_dict, take_first=True
-                )
-                if task is None:
-                    logger.warning(
-                        f"Couldn't extract task from expected task_dict={task_dict}"
-                    )
-                    continue
-
-                _add_task_deduped(task, tasks)
-            logger.debug(f"Adding {len(tasks)} tasks to DAG {dag.dag_id}")
-            dag.add_tasks(tasks.values())
-
-            # Dag-Level TASK DEPENDENCY Ruleset
-            task_dependencies: List[OrbiterTaskDependency] = (
-                list(chain(*translation_ruleset.task_dependency_ruleset.apply(val=dag)))
-                or []
-            )
-            if not len(task_dependencies):
-                logger.warning(f"Couldn't find task dependencies in dag={dag_dict}")
-            for task_dependency in task_dependencies:
-                task_dependency: OrbiterTaskDependency
-                if task_dependency.task_id not in dag.tasks:
-                    logger.warning(
-                        f"Couldn't find task_id={task_dependency.task_id} in tasks={tasks} for dag_id={dag.dag_id}"
-                    )
-                    continue
-                else:
-                    dag.tasks[task_dependency.task_id].add_downstream(task_dependency)
-
-            logger.debug(f"Adding DAG {dag.dag_id} to project")
-            project.add_dags(dag)
-
-    # POST PROCESSING Ruleset
-    translation_ruleset.post_processing_ruleset.apply(val=project, take_first=False)
-
-    return project
-
-
-def fake_translate(
-    translation_ruleset: TranslationRuleset, input_dir: Path
-) -> OrbiterProject:
-    """Fake translate function, for testing"""
-    _ = (translation_ruleset, input_dir)
-    return OrbiterProject()
 
 
 EMPTY_RULESET = {"ruleset": [EMPTY_RULE]}
