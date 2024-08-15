@@ -22,9 +22,6 @@ OrbiterTaskGroup --> "many" OrbiterRequirement
 
 --8<-- [start:mermaid-task-relationships]
 --8<-- [end:mermaid-task-relationships]
-
-# removed, to simplify diagram
-OrbiterTaskGroup --> "many" OrbiterOperator
 """
 
 

@@ -170,7 +170,6 @@ class DAGFilterRule(Rule):
     """
 
     rule: Callable[[dict], Collection[dict] | None]
-    """Takes a `dict` and returns a `list[dict]` of possible-DAG entries or `None`"""
 
 
 dag_filter_rule: Callable[[...], DAGFilterRule] = rule
@@ -187,13 +186,13 @@ class DAGRule(Rule):
     """
 
     rule: Callable[[dict], OrbiterDAG | None]
-    """Takes a `dict` and returns an [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG] or `None`"""
 
 
 dag_rule: Callable[[...], DAGRule] = rule
 
 
 class TaskFilterRule(Rule):
+    # noinspection PyUnresolvedReferences
     """A `@task_filter_rule` decorator creates a [`TaskFilterRule`][orbiter.rules.TaskFilterRule]
 
     ```python
@@ -211,15 +210,14 @@ class TaskFilterRule(Rule):
     :return: A list of dictionaries of possible tasks or `None`
     :rtype: List[dict] | None
     """
-
     rule: Callable[[dict], Collection[dict] | None]
-    """Takes a `dict` and returns `list[dict]` or `None`"""
 
 
 task_filter_rule: Callable[[...], TaskFilterRule] = rule
 
 
 class TaskRule(Rule):
+    # noinspection PyUnresolvedReferences
     """A `@task_rule` decorator creates a [`TaskRule`][orbiter.rules.TaskRule]
 
     ```python
@@ -230,23 +228,18 @@ class TaskRule(Rule):
 
     :param val: A dictionary of the task
     :type val: dict
-    :return: An subclass of [`OrbiterOperator`][orbiter.objects.task.OrbiterOperator]
+    :return: A subclass of [`OrbiterOperator`][orbiter.objects.task.OrbiterOperator]
         or [`OrbiterTaskGroup`][orbiter.objects.task_group.OrbiterTaskGroup] or `None`
     :rtype: OrbiterOperator | OrbiterTaskGroup | None
     """
-
     rule: Callable[[dict], OrbiterOperator | OrbiterTaskGroup | None]
-    # """Takes a `dict` and returns an subclass of
-    # [`OrbiterOperator`][orbiter.objects.task.OrbiterOperator],
-    # or [`OrbiterTaskGroup`][orbiter.objects.task_group.OrbiterTaskGroup],
-    # or `None`
-    # """
 
 
 task_rule: Callable[[...], TaskRule] = rule
 
 
 class TaskDependencyRule(Rule):
+    # noinspection PyUnresolvedReferences
     """
     An `@task_dependency_rule` decorator creates a [`TaskDependencyRule`][orbiter.rules.TaskDependencyRule],
     which takes an [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG]
@@ -263,7 +256,6 @@ class TaskDependencyRule(Rule):
     :return: A list of [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency] or `None`
     :rtype: List[OrbiterTaskDependency] | None
     """
-
     rule: Callable[[OrbiterDAG], List[OrbiterTaskDependency] | None]
 
 

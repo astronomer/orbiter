@@ -13,3 +13,9 @@
     options:
         show_symbol_type_toc: false
         show_symbol_type_heading: true
+
+## Sample Translation Ruleset
+
+```python title="sample_translation.py" linenums="1"
+-8<- "tests/resources/sample_translation.py"
+```

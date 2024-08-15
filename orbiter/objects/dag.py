@@ -110,9 +110,6 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="forbid"):
     orbiter_env_vars: Set[OrbiterEnvVar]
     orbiter_includes: Set[OrbiterInclude]
     --8<-- [end:mermaid-props]
-
-    # removed to simplify the diagram
-    add_tasks(OrbiterOperator | Iterable[OrbiterOperator])
     """
 
     imports: ImportList = [

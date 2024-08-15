@@ -152,15 +152,25 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
         ```
 
     :param imports: List of requirements for the operator
+    :type imports: List[OrbiterRequirement]
     :param task_id: The task_id for the operator
+    :type task_id: str
     :param trigger_rule: optional, conditions under which to start the task
       https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html#trigger-rules
+    :type trigger_rule: str
     :param pool: optional, name of the pool to use
       https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/pools.html#pools
+    :type pool: str
     :param pool_slots: optional, slots for this task to take in the pool
+    :type pool_slots: int
     :param orbiter_pool: optional, OrbiterPool object
+    :type orbiter_pool: OrbiterPool | None
     :param operator: operator name
+    :type operator: str
     :param downstream: downstream tasks
+    :type downstream: Set[OrbiterTaskDependency]
+    :param **kwargs: Other properties that may be passed to other operators
+    :type **kwargs: dict
     """
 
     imports: ImportList

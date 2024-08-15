@@ -21,7 +21,7 @@ flowchart LR
     origin -->| ✨ Translations ✨ | airflow{{ Apache Airflow Project }}
 ```
 The Orbiter **framework** is a set of [Rules](./Rules_and_Rulesets) and [Objects](./objects) that can translate workflows
-from an [Origin](./Origins) system to Airflow-native python code.
+from an [Origin](./origins) system to Airflow-native python code.
 
 ## Usage - Translate via Translations Rulesets
 You can utilize the `orbiter` CLI with pre-built translations to convert workflows from other systems to Apache Airflow.
@@ -42,7 +42,7 @@ are available for download on the [Releases](https://github.com/astronomer/orbit
 Use the `orbiter translate` command to convert workflows via a specific translation ruleset
 
 1. Determine the specific translation ruleset via the [Origins](origins) page,
-    or [create a translation ruleset](#usage---authoring-rulesets--customizing-translations),
+    or [create a translation ruleset](#usage-authoring-rulesets-customizing-translations),
     if one does not exist
 2. Set up a new folder, and create a `workflow/` folder. Add your workflows files to it
     ```shell
@@ -106,7 +106,7 @@ Read more specifics about how to use the framework at [Rules](./Rules_and_Rulese
 ## FAQ
 - **Can this tool convert my workflows from tool X to Airflow?**
 
-    _If you don't see your tool listed in [Supported Origins](./Origins),
+    _If you don't see your tool listed in [Supported Origins](./origins),
     [contact us](https://www.astronomer.io/contact/) for services to create translations,
     create an [issue](https://github.com/astronomer/orbiter-community-translations/issues/new/)
     in our `orbiter-community-translations` repository
