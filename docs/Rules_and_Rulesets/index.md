@@ -14,8 +14,8 @@
         show_symbol_type_toc: false
         show_symbol_type_heading: true
 
-## Sample Translation Ruleset
+## Translation Ruleset Template
 
-```python title="sample_translation.py" linenums="1"
--8<- "tests/resources/sample_translation.py"
+```python title="translation_template.py" linenums="1"
+-8<- "tests/resources/translation_template.py"
 ```
