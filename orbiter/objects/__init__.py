@@ -22,7 +22,7 @@ ImportList = Annotated[List[OrbiterRequirement], AfterValidator(validate_imports
 
 
 class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
-    """AbstractBaseClass for Orbiter objects
+    """**AbstractBaseClass** for Orbiter objects, provides a number of properties
 
     :param imports: List of OrbiterRequirement objects
     :type imports: List[OrbiterRequirement]
@@ -47,16 +47,54 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
     orbiter_includes: Set[OrbiterInclude] | None = None
 
 
-def conn_id(val: str, prefix: str = "", conn_type: str = "generic"):
+def conn_id(conn_id: str, prefix: str = "", conn_type: str = "generic") -> dict:
     """Helper function to add an [OrbiterConnection][orbiter.objects.connection.OrbiterConnection]
-    when adding a `conn_id`"""
+    when adding a `conn_id`
+
+    Usage:
+    ```python
+    OrbiterBashOperator(
+        **conn_id("my_conn_id")
+    )
+    ```
+    :param conn_id: The connection id
+    :type conn_id: str
+    :param prefix: Prefix to add to the connection id
+    :type prefix: str, optional
+    :param conn_type: Connection type
+    :type conn_type: str, optional
+    :return: Dictionary to unpack (e.g. `**conn_id(...)`)
+    :rtype: dict
+    """
     from orbiter.objects.connection import OrbiterConnection
 
     return {
-        f"{prefix + '_' if prefix else ''}conn_id": val,
+        f"{prefix + '_' if prefix else ''}conn_id": conn_id,
         "orbiter_conns": {
             OrbiterConnection(
-                conn_id=val, **({"conn_type": conn_type} if conn_type else {})
+                conn_id=conn_id, **({"conn_type": conn_type} if conn_type else {})
             )
         },
+    }
+
+
+def pool(name: str) -> dict:
+    """Helper function to add a [OrbiterPool][orbiter.objects.pool.OrbiterPool] when adding a `pool`
+
+    Usage:
+    ```python
+    OrbiterBashOperator(
+        **pool("my_pool")
+    )
+    ```
+    :param name: The pool name
+    :type name: str
+    :return: Dictionary to unpack (e.g. `**pool(...)`)
+    :rtype: dict
+    """
+    from orbiter.objects.pool import OrbiterPool
+
+    return {
+        "pool": name,
+        "orbiter_pools": {OrbiterPool(name=name)},
     }

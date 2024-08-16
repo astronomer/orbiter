@@ -1,9 +1,7 @@
-from abc import ABC
-
 from pydantic import BaseModel
 
 
-class OrbiterInclude(BaseModel, ABC, extra="forbid"):
+class OrbiterInclude(BaseModel, extra="forbid"):
     """Represents an included file in an `/include` directory
 
     :param filepath: The relative path (from the output directory) to write the file to

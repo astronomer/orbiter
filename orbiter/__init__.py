@@ -5,10 +5,9 @@ from enum import Enum
 
 __version__ = "1.0.0-alpha3"
 
-from typing import Any, Literal, Tuple
+from typing import Any, Tuple
 
 import inflection
-from pydantic import validate_call
 
 version = __version__
 
@@ -112,39 +111,6 @@ def clean_value(s: str):
     return s
 
 
-@validate_call
-def to_task_id(task_id: str, assignment_suffix: Literal["", "_task"] = "") -> str:
-    # noinspection PyTypeChecker
-    """General utiltty function - turns MyTaskId into my_task_id (or my_task_id_task suffix is `_task`)
-    :param task_id:
-    :param assignment_suffix: e.g. `_task` for `task_id_task = MyOperator(...)`
-
-    ```pycon
-    >>> to_task_id("MyTaskId")
-    'my_task_id'
-    >>> to_task_id("MyTaskId", "_task")
-    'my_task_id_task'
-    >>> to_task_id("MyTaskId", "_other")
-    Traceback (most recent call last):
-    pydantic_core._pydantic_core.ValidationError: ...
-    >>> to_task_id("my_task_id_task", "_task")
-    'my_task_id_task'
-
-    ```
-    """
-    task_id = clean_value(task_id)
-    return task_id + (
-        assignment_suffix
-        if task_id[-len(assignment_suffix) :] != assignment_suffix
-        else ""
-    )
-
-
-@validate_call
-def to_dag_id(dag_id: str) -> str:
-    return clean_value(dag_id)
-
-
 def import_from_qualname(qualname) -> Tuple[str, Any]:
     """Import a function or module from a qualified name
     :param qualname: The qualified name of the function or module to import (e.g. a.b.d.MyOperator or json)
@@ -164,22 +130,6 @@ def import_from_qualname(qualname) -> Tuple[str, Any]:
         name,
         getattr(imported_module, name) if "." in qualname else imported_module,
     )
-
-
-@validate_call
-def load_filetype(input_str: str, file_type: FileType) -> dict:
-    if file_type == FileType.JSON:
-        import json
-
-        return json.loads(input_str)
-    elif file_type == FileType.YAML:
-        import yaml
-
-        return yaml.safe_load(input_str)
-    elif file_type == FileType.XML:
-        return xmltodict_parse(input_str)
-    else:
-        raise NotImplementedError(f"Cannot load file_type={file_type}")
 
 
 if __name__ == "__main__":

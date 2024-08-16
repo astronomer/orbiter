@@ -2,17 +2,17 @@ from __future__ import annotations
 
 import ast
 from abc import ABC
-from typing import Set, List, ClassVar, Annotated, Callable
+from typing import Set, List, ClassVar, Annotated, Callable, Literal
 
 from loguru import logger
-from pydantic import AfterValidator, BaseModel
+from pydantic import AfterValidator, BaseModel, validate_call
 
+from orbiter import clean_value
 from orbiter.ast_helper import OrbiterASTBase, py_bitshift, py_function
 from orbiter.ast_helper import py_assigned_object
 from orbiter.objects import ImportList
 from orbiter.objects import OrbiterBase
 from orbiter.objects.pool import OrbiterPool
-from orbiter import to_task_id
 
 __mermaid__ = """
 --8<-- [start:mermaid-dag-relationships]
@@ -153,24 +153,23 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
 
     :param imports: List of requirements for the operator
     :type imports: List[OrbiterRequirement]
-    :param task_id: The task_id for the operator
+    :param task_id: The `task_id` for the operator, must be unique and snake_case
     :type task_id: str
-    :param trigger_rule: optional, conditions under which to start the task
-      https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html#trigger-rules
-    :type trigger_rule: str
-    :param pool: optional, name of the pool to use
-      https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/pools.html#pools
-    :type pool: str
-    :param pool_slots: optional, slots for this task to take in the pool
-    :type pool_slots: int
-    :param orbiter_pool: optional, OrbiterPool object
-    :type orbiter_pool: OrbiterPool | None
-    :param operator: operator name
-    :type operator: str
-    :param downstream: downstream tasks
-    :type downstream: Set[OrbiterTaskDependency]
-    :param **kwargs: Other properties that may be passed to other operators
-    :type **kwargs: dict
+    :param trigger_rule: Conditions under which to start the task
+        [(docs)](https://airflow.apache.org/docs/apache-airflow/stable/concepts.html#trigger-rules)
+    :type trigger_rule: str, optional
+    :param pool: Name of the
+        [pool](https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/pools.html#pools)
+        to use
+    :type pool: str, optional
+    :param pool_slots: Slots for this task to occupy
+    :type pool_slots: int, optional
+    :param operator: Operator name
+    :type operator: str, optional
+    :param downstream: Downstream tasks, defaults to `set()`
+    :type downstream: Set[OrbiterTaskDependency], optional
+    :param **kwargs: Other properties that may be passed to operator
+    :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """
 
     imports: ImportList
@@ -252,8 +251,11 @@ class OrbiterTask(OrbiterOperator, extra="allow"):
 
     ```
 
-    :param task_id: The task_id for the operator
-    :param imports: List of requirements for the operator (operator is inferred from first "XYZOperator")
+    :param task_id: The `task_id` for the operator. Must be unique and snake_case
+    :type task_id: str
+    :param imports: List of requirements for the operator.
+        The Operator is inferred from first `*Operator` or `*Sensor` imported.
+    :type imports: List[OrbiterRequirement]
     :param **kwargs: Any other keyword arguments to be passed to the operator
     """
 
@@ -308,3 +310,31 @@ class OrbiterTask(OrbiterOperator, extra="allow"):
             if len(callable_props)
             else self_as_ast
         )
+
+
+@validate_call
+def to_task_id(task_id: str, assignment_suffix: Literal["", "_task"] = "") -> str:
+    # noinspection PyTypeChecker
+    """General utiltty function - turns MyTaskId into my_task_id (or my_task_id_task suffix is `_task`)
+    :param task_id:
+    :param assignment_suffix: e.g. `_task` for `task_id_task = MyOperator(...)`
+
+    ```pycon
+    >>> to_task_id("MyTaskId")
+    'my_task_id'
+    >>> to_task_id("MyTaskId", "_task")
+    'my_task_id_task'
+    >>> to_task_id("MyTaskId", "_other")
+    Traceback (most recent call last):
+    pydantic_core._pydantic_core.ValidationError: ...
+    >>> to_task_id("my_task_id_task", "_task")
+    'my_task_id_task'
+
+    ```
+    """
+    task_id = clean_value(task_id)
+    return task_id + (
+        assignment_suffix
+        if task_id[-len(assignment_suffix) :] != assignment_suffix
+        else ""
+    )
