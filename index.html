@@ -322,52 +322,37 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#translate" class="md-nav__link">
     <span class="md-ellipsis">
-      Usage
+      Translate
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Usage">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#cli" class="md-nav__link">
-    <span class="md-ellipsis">
-      CLI
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#supported-origins" class="md-nav__link">
-    <span class="md-ellipsis">
-      Supported Origins
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#customization" class="md-nav__link">
+  <a href="#authoring-rulesets-customization" class="md-nav__link">
     <span class="md-ellipsis">
-      Customization
+      Authoring Rulesets &amp; Customization
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Customization">
+    <nav class="md-nav" aria-label="Authoring Rulesets & Customization">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
+  <a href="#extend-or-customize" class="md-nav__link">
     <span class="md-ellipsis">
-      Example
+      Extend or Customize
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authoring-a-new-ruleset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Authoring a new Ruleset
     </span>
   </a>
   
@@ -648,16 +633,148 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="objects/tasks/" class="md-nav__link">
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
         
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
   
   <span class="md-ellipsis">
     Tasks
   </span>
   
 
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            Tasks
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="objects/Tasks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4_2" id="__nav_5_4_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Operators and Callbacks
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_5_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            Operators and Callbacks
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="objects/Tasks/Operators_and_Callbacks/callbacks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Callbacks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="objects/Tasks/Operators_and_Callbacks/operators/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Operators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -708,75 +825,133 @@
 </p>
 
 <h2 id="what-is-orbiter">What is Orbiter?</h2>
-<p>Orbiter is both a CLI and Framework for converting workflows
+<p>Orbiter is both a <strong>CLI</strong> and <strong>Framework</strong> for converting workflows
 from other orchestration tools to Apache Airflow.</p>
 <p>Generally it can be thoughts of as:
 <pre class="mermaid"><code>flowchart LR
     origin{{ XML/JSON/YAML/Etc Workflows }}
     origin --&gt;| ✨ Translations ✨ | airflow{{ Apache Airflow Project }}</code></pre>
-The Orbiter framework is a set of <a href="./Rules_and_Rulesets">Rules</a> and <a href="./Objects">Objects</a> that can translate workflows
-from an <a href="./Origins">Origin</a> system to Airflow-native python code.</p>
+The <strong>framework</strong> is a set of <a href="./Rules_and_Rulesets">Rules</a> and <a href="./objects">Objects</a> that can translate workflows
+from an <a href="./origins">Origin</a> system to Airflow-native python code.</p>
 <h2 id="installation">Installation</h2>
+<p>You can install the <a href="./CLI"><code>orbiter</code> CLI</a>, if you have Python &gt;= 3.10 installed via <code>pip</code>:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>astronomer-orbiter
 </code></pre></div>
-<h2 id="usage">Usage</h2>
-<h3 id="cli">CLI</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>orbiter<span class="w"> </span>translate<span class="w"> </span>&lt;INPUT_DIR&gt;<span class="w"> </span>&lt;OUTPUT_DIR&gt;<span class="w"> </span>-r<span class="w"> </span>&lt;RULESET&gt;
-</code></pre></div>
-<p>You can see more specifics on how to use the Orbiter CLI in the <a href="CLI">CLI</a> section.</p>
-<h3 id="supported-origins">Supported Origins</h3>
+If you do not have a compatible Python environment, pre-built binary executables of the <code>orbiter</code> CLI
+are available for download on the <a href="https://github.com/astronomer/orbiter/releases">Releases</a> page.</p>
+<h2 id="translate">Translate</h2>
+<p>You can utilize the <a href="./CLI"><code>orbiter</code> CLI</a> with pre-built translations to convert workflows
+from other systems to Apache Airflow.</p>
 <p>The list of systems Orbiter has support for translating is listed at <a href="origins">Origins</a></p>
-<h2 id="customization">Customization</h2>
-<p>Orbiter can be extended to fit specific needs, patterns, or get support for additional origins or specific translations.</p>
-<p>Read more specifics about how to use the framework at <a href="./Rules_and_Rulesets">Rules</a> and <a href="./Objects">Objects</a></p>
-<h3 id="example">Example</h3>
+<p>Use the <code>orbiter translate</code> command to convert workflows via a specific translation ruleset</p>
 <ol>
-<li>Set up a folder like:
-    <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>.
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>├──<span class="w"> </span>override.py
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>└──<span class="w"> </span>workflow
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span>└──<span class="w"> </span>my-sample-workflow.json
+<li>Determine the specific translation ruleset via the <a href="origins">Origins</a> page,
+    or <a href="#authoring-rulesets-customization">create a translation ruleset</a>,
+    if one does not exist</li>
+<li>Set up a new folder, and create a <code>workflow/</code> folder. Add your workflows files to it
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>.
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>└──<span class="w"> </span>workflow/
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span>├──<span class="w"> </span>workflow_a.json
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span>├──<span class="w"> </span>workflow_b.json
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span>└──<span class="w"> </span>...
 </code></pre></div></li>
-<li>With contents like:
-    <div class="highlight"><span class="filename">override.py</span><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span> <span class="nn">orbiter_community_translations.dag_factory</span> <span class="kn">import</span> <span class="n">translation_ruleset</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="kn">from</span> <span class="nn">orbiter.objects.operators.ssh</span> <span class="kn">import</span> <span class="n">OrbiterSSHOperator</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="kn">from</span> <span class="nn">orbiter.objects.task</span> <span class="kn">import</span> <span class="n">OrbiterOperator</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="kn">from</span> <span class="nn">orbiter.rules</span> <span class="kn">import</span> <span class="n">task_rule</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1"># A higher priority means it will be applied before other rules</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="nd">@task_rule</span><span class="p">(</span><span class="n">priority</span><span class="o">=</span><span class="mi">99</span><span class="p">)</span>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="k">def</span> <span class="nf">ssh_rule</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OrbiterOperator</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Demonstration of overriding rulesets, by switching DAG Factory BashOperators to SSHOperators&quot;&quot;&quot;</span>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;operator&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;BashOperator&quot;</span><span class="p">:</span>
-<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>        <span class="k">del</span> <span class="n">val</span><span class="p">[</span><span class="s2">&quot;dependencies&quot;</span><span class="p">]</span>
-<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>        <span class="k">return</span> <span class="n">OrbiterSSHOperator</span><span class="p">(</span>
-<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>            <span class="n">command</span><span class="o">=</span><span class="n">val</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;bash_command&quot;</span><span class="p">),</span>
-<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>            <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Hello World!&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>            <span class="o">**</span><span class="n">val</span><span class="p">,</span>
-<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>        <span class="p">)</span>
-<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>        <span class="k">return</span> <span class="kc">None</span>
-<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>
-<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>
-<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="c1">#  add a custom rule to the default ruleset</span>
-<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="n">translation_ruleset</span><span class="o">.</span><span class="n">task_ruleset</span><span class="o">.</span><span class="n">ruleset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ssh_rule</span><span class="p">)</span>
+<li>Invoke the <code>orbiter</code> CLI (replacing <code>&lt;RULESET&gt;</code> with your desired ruleset). This will produce output to an <code>output/</code> folder:
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>orbiter<span class="w"> </span>translate<span class="w"> </span>workflow/<span class="w"> </span>output/<span class="w"> </span>--ruleset<span class="w"> </span>&lt;RULESET&gt;
 </code></pre></div></li>
-<li>Invoke with your customization:
-    <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>orbiter<span class="w"> </span>translate<span class="w"> </span>workflow<span class="w"> </span>output<span class="w"> </span>-r<span class="w"> </span>override.translation_ruleset
-</code></pre></div></li>
+<li>Review the contents of the <code>output/</code> folder. If extensions or customizations are required, review
+    <a href="#extend-or-customize">how to extend a translation ruleset</a></li>
+<li>Utilize the <a href="https://www.astronomer.io/docs/astro/cli/overview"><code>astro</code> CLI</a>
+    to run Airflow instance with your migrated workloads</li>
+<li>Deploy to <a href="https://www.astronomer.io/try-astro/">Astro</a> to run your translated workflows in production! 🚀</li>
 </ol>
+<p>You can see more specifics on how to use the Orbiter CLI in the <a href="CLI">CLI</a> section.</p>
+<h2 id="authoring-rulesets-customization">Authoring Rulesets &amp; Customization</h2>
+<p>Orbiter can be extended to fit specific needs, patterns, or to support additional origins.</p>
+<p>Read more specifics about how to use the framework at <a href="./Rules_and_Rulesets">Rules</a> and <a href="./objects">Objects</a></p>
+<h3 id="extend-or-customize">Extend or Customize</h3>
+<p>To extend or customize an existing ruleset, you can easily modify it with simple Python code.</p>
+<ol>
+<li>Set up your workspace as described in steps 1+2 of the <a href="#translate">Translate</a> instructions</li>
+<li>Create a Python script, named <code>override.py</code>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>.
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>├──<span class="w"> </span>override.py
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>└──<span class="w"> </span>workflow/
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span>├──<span class="w"> </span>workflow_a.json
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span>├──<span class="w"> </span>workflow_b.json
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span>└──<span class="w"> </span>...
+</code></pre></div></li>
+<li>
+<p>Add contents to <code>override.py</code>:
+    <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">override.py</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-4-1"> 1</a></span>
+<span class="normal"><a href="#__codelineno-4-2"> 2</a></span>
+<span class="normal"><a href="#__codelineno-4-3"> 3</a></span>
+<span class="normal"><a href="#__codelineno-4-4"> 4</a></span>
+<span class="normal"><a href="#__codelineno-4-5"> 5</a></span>
+<span class="normal"><a href="#__codelineno-4-6"> 6</a></span>
+<span class="normal"><a href="#__codelineno-4-7"> 7</a></span>
+<span class="normal"><a href="#__codelineno-4-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-4-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-4-10">10</a></span>
+<span class="normal"><a href="#__codelineno-4-11">11</a></span>
+<span class="normal"><a href="#__codelineno-4-12">12</a></span>
+<span class="normal"><a href="#__codelineno-4-13">13</a></span>
+<span class="normal"><a href="#__codelineno-4-14">14</a></span>
+<span class="normal"><a href="#__codelineno-4-15">15</a></span>
+<span class="normal"><a href="#__codelineno-4-16">16</a></span>
+<span class="normal"><a href="#__codelineno-4-17">17</a></span>
+<span class="normal"><a href="#__codelineno-4-18">18</a></span>
+<span class="normal"><a href="#__codelineno-4-19">19</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="kn">from</span> <span class="nn">orbiter_community_translations.dag_factory</span> <span class="kn">import</span> <span class="n">translation_ruleset</span>  <span class="c1"># (1)!</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="kn">from</span> <span class="nn">orbiter.objects.operators.ssh</span> <span class="kn">import</span> <span class="n">OrbiterSSHOperator</span>  <span class="c1"># (2)!</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="kn">from</span> <span class="nn">orbiter.rules</span> <span class="kn">import</span> <span class="n">task_rule</span>  <span class="c1"># (3)!</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5"></a>
+<a id="__codelineno-4-6" name="__codelineno-4-6"></a><span class="nd">@task_rule</span><span class="p">(</span><span class="n">priority</span><span class="o">=</span><span class="mi">99</span><span class="p">)</span>  <span class="c1"># (4)!</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7"></a><span class="k">def</span> <span class="nf">ssh_rule</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Demonstration of overriding rulesets, by switching DAG Factory BashOperators to SSHOperators&quot;&quot;&quot;</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9"></a>    <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;operator&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;BashOperator&quot;</span><span class="p">:</span>  <span class="c1"># (5)!</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10"></a>        <span class="k">return</span> <span class="n">OrbiterSSHOperator</span><span class="p">(</span>  <span class="c1"># (6)!</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11"></a>            <span class="n">command</span><span class="o">=</span><span class="n">val</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;bash_command&quot;</span><span class="p">),</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12"></a>            <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Hello World!&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13"></a>            <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">val</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;dependencies&quot;</span><span class="p">},</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14"></a>        <span class="p">)</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17"></a>
+<a id="__codelineno-4-18" name="__codelineno-4-18"></a>
+<a id="__codelineno-4-19" name="__codelineno-4-19"></a><span class="n">translation_ruleset</span><span class="o">.</span><span class="n">task_ruleset</span><span class="o">.</span><span class="n">ruleset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ssh_rule</span><span class="p">)</span>  <span class="c1"># (7)!</span>
+</code></pre></div></td></tr></table></div></p>
+<ol>
+<li>Importing specific translation ruleset, determined via the <a href="origins">Origins</a> page</li>
+<li>Importing required <a href="./objects">Orbiter Objects</a></li>
+<li>Importing required <a href="./Rules_and_Rulesets">Rule</a> types</li>
+<li>Create one or more <code>@rule</code> functions, as required. A higher priority means this rule will be applied first.
+    <a href="./Rules_and_Rulesets/rules/#orbiter.rules.TaskRule"><code>@task_rule</code> Reference</a></li>
+<li><code>Rules</code> have an <code>if/else</code> statement - they must always return a <strong>single</strong> thing or <strong>nothing</strong></li>
+<li><a href="./objects/Operators_and_Callbacks/operators/#orbiter.objects.operators.ssh.OrbiterSSHOperator"><code>OrbiterSSHOperator</code> Reference</a></li>
+<li>Append the new <a href="./Rules_and_Rulesets">Rule</a>
+   to the <a href="./Rules_and_Rulesets/rulesets/#orbiter.rules.rulesets.TranslationRuleset"><code>translation_ruleset</code></a></li>
+</ol>
+</li>
+<li>
+<p>Invoke the <code>orbiter</code> CLI, pointing it at your customized ruleset, and writing output to an <code>output/</code> folder:
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>orbiter<span class="w"> </span>translate<span class="w"> </span>workflow/<span class="w"> </span>output/<span class="w"> </span>--ruleset<span class="w"> </span>override.translation_ruleset
+</code></pre></div></p>
+</li>
+<li>Follow the remaining steps 4 -&gt; 6 of the <a href="#translate">Translate</a> instructions</li>
+</ol>
+<h3 id="authoring-a-new-ruleset">Authoring a new Ruleset</h3>
+<p>You can utilize the <a href="./Rules_and_Rulesets/#translation-ruleset-template">Template Translation Ruleset</a>
+as a starter, to create a new ruleset for a specific system.</p>
 <h2 id="faq">FAQ</h2>
 <ul>
 <li>
 <p><strong>Can this tool convert my workflows from tool X to Airflow?</strong></p>
-<p><em>If you don't see your tool listed in <a href="./Origins">Supported Origins</a>,
-you can create an <a href="https://github.com/astronomer/orbiter-community-translations/issues/new/">issue</a>
-to request support for it.
-We also happily accept <a href="https://github.com/astronomer/orbiter-community-translations/pulls/">pull requests</a> .</em></p>
+<p><em>If you don't see your tool listed in <a href="./origins">Supported Origins</a>,
+<a href="https://www.astronomer.io/contact/">contact us</a> for services to create translations,
+create an <a href="https://github.com/astronomer/orbiter-community-translations/issues/new/">issue</a>
+in our <code>orbiter-community-translations</code> repository write a <code>TranslationRuleset</code> and submit a
+<a href="https://github.com/astronomer/orbiter-community-translations/pulls/">pull request</a>
+to share your translations with the community.</em></p>
 </li>
 <li>
 <p><strong>Are the results of this tool under any guarantee of correctness?</strong></p>
@@ -845,7 +1020,7 @@ under <a href="https://creativecommons.org/licenses/by/3.0/us/legalcode">Creativ
       <div class="md-progress" data-md-component="progress" role="progressbar"></div>
     
     
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.path", "navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.expand", "toc.follow", "toc.integrate", "content.tabs.link", "content.action.edit", "content.code.copy", "search.share", "search.highlight", "search.suggest"], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.path", "navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.expand", "toc.follow", "toc.integrate", "content.tabs.link", "content.action.edit", "content.code.copy", "content.code.annotate", "search.share", "search.highlight", "search.suggest"], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="assets/javascripts/bundle.fe8b6f2b.min.js"></script>
