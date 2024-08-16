@@ -19,12 +19,26 @@ class OrbiterPool(BaseModel, AirflowSettingsRender, extra="forbid"):
 
     ```
 
+    !!! note
+
+        Use the utility `pool` function to easily generate both an `OrbiterPool`
+        and `pool` property for an operator
+
+        ```python
+        from orbiter.objects import pool
+
+        OrbiterTask(
+            ... ,
+            **pool("my_pool"),
+        )
+        ```
+
     :param name: The name of the pool
     :type name: str
     :param description: The description of the pool
-    :type description: str
-    :param slots: The number of slots in the pool
-    :type slots: int
+    :type description: str, optional
+    :param slots: The number of slots in the pool. Defaults to 128
+    :type slots: int, optional
     """  # noqa: E501
 
     __mermaid__ = """
@@ -39,7 +53,7 @@ class OrbiterPool(BaseModel, AirflowSettingsRender, extra="forbid"):
 
     name: str
     description: str = ""
-    slots: int
+    slots: int = 128
 
     def __add__(self, other) -> "OrbiterPool":
         self.slots = max((self.slots, other.slots))

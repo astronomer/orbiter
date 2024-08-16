@@ -38,7 +38,7 @@ class OrbiterRequirement(OrbiterASTBase, BaseModel, extra="forbid"):
     :type names: List[str], optional
     :param sys_package: e.g. `"mysql"` - represents a **Debian** system package
     :type sys_package: Set[str], optional
-    """
+    """  # noqa: E501
 
     __mermaid__ = """
     --8<-- [start:mermaid-props]
@@ -47,7 +47,7 @@ class OrbiterRequirement(OrbiterASTBase, BaseModel, extra="forbid"):
     names: List[str] | None
     sys_package: str | None
     --8<-- [end:mermaid-props]
-    """  # noqa: E501
+    """
 
     package: str | None = None
     module: str | None = None

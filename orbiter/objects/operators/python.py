@@ -15,8 +15,9 @@ OrbiterOperator "implements" <|-- OrbiterPythonOperator
 
 class OrbiterPythonOperator(OrbiterOperator):
     """
-    An Airflow [PythonOperator](https://registry.astronomer.io/providers/apache-airflow/versions/latest/modules/PythonOperator)
-
+    An Airflow
+    [PythonOperator](https://registry.astronomer.io/providers/apache-airflow/versions/latest/modules/PythonOperator).
+    Used to execute any Python Function.
 
     ```pycon
     >>> def foo(a, b):
@@ -27,7 +28,7 @@ class OrbiterPythonOperator(OrbiterOperator):
     foo_task = PythonOperator(task_id='foo', python_callable=foo)
 
     ```
-    :param task_id: The task_id for the operator
+    :param task_id: The `task_id` for the operator
     :type task_id: str
     :param python_callable: The python function to execute
     :type python_callable: Callable
@@ -35,6 +36,8 @@ class OrbiterPythonOperator(OrbiterOperator):
     :type op_args: list | None, optional
     :param op_kwargs: The keyword arguments to pass to the python function, defaults to None
     :type op_kwargs: dict | None, optional
+    :param **kwargs: Extra arguments to pass to the operator
+    :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """
 
     __mermaid__ = """
@@ -55,6 +58,7 @@ class OrbiterPythonOperator(OrbiterOperator):
         )
     ]
     operator: str = "PythonOperator"
+    # noinspection Pydantic
     render_attributes: RenderAttributes = OrbiterOperator.render_attributes + [
         "python_callable",
         "op_args",

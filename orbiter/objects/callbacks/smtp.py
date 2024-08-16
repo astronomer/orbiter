@@ -20,7 +20,11 @@ class OrbiterSmtpNotifierCallback(OrbiterCallback, extra="allow"):
     """
     An [Airflow SMTP Callback (link)](https://airflow.apache.org/docs/apache-airflow-providers-smtp/stable/_api/airflow/providers/smtp/notifications/smtp/index.html)
 
-    Usage notes: use `smtp_conn_id` and reference an SMTP Connection
+    !!! note
+
+        Use `smtp_conn_id` and reference an SMTP Connection.
+
+        You can use the `**conn_id("SMTP", conn_type="smtp")` utility function to set both properties at once.
 
     ```pycon
     >>> [_import] = OrbiterSmtpNotifierCallback(to="foo@test.com").imports; _import
@@ -34,21 +38,24 @@ class OrbiterSmtpNotifierCallback(OrbiterCallback, extra="allow"):
     :param to: The email address to send to
     :type to: str | Iterable[str]
     :param from_email: The email address to send from
-    :type from_email: str | None
-    :param smtp_conn_id: The connection id to use
-    :type smtp_conn_id: str | None
+    :type from_email: str, optional
+    :param smtp_conn_id: The connection id to use (Note: use the `**conn_id(...)` utility function). Defaults to "SMTP"
+    :type smtp_conn_id: str, optional
     :param subject: The subject of the email
-    :type subject: str | None
+    :type subject: str, optional
     :param html_content: The content of the email
-    :type html_content: str | None
+    :type html_content: str, optional
     :param cc: The email address to cc
-    :type cc: str | Iterable[str] | None
+    :type cc: str | Iterable[str], optional
+    :param **kwargs
+    :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """  # noqa: E501
 
     __mermaid__ = """
     --8<-- [start:mermaid-props]
     to: str
     from_email: str
+    smtp_conn_id: str
     subject: str
     html_content: str
     cc: str | Iterable[str]

@@ -17,7 +17,6 @@ class OrbiterTimetable(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
     to add a file to a /plugins folder to register the timetable.
 
     :param **kwargs: any other kwargs to provide to Timetable
-    :type **kwargs: dict
     """  # noqa: E501
 
     __mermaid__ = """

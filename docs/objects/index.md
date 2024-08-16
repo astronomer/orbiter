@@ -14,3 +14,5 @@ which is a Directed Acyclic Graph (of [Tasks](./tasks)).
 
 [`OrbiterOperators`][orbiter.objects.task.OrbiterOperator] represent Airflow Tasks, which
 are units of work. An Operator is a pre-defined task with specific functionality.
+
+::: orbiter.objects.OrbiterBase

@@ -47,6 +47,7 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
     :type task_group_id: str
     :param tasks: The tasks in the TaskGroup
     :type tasks: List[OrbiterOperator | OrbiterTaskGroup]
+    :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """
 
     __mermaid__ = """

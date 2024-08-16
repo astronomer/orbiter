@@ -16,22 +16,25 @@ OrbiterOperator "implements" <|-- OrbiterSSHOperator
 class OrbiterSSHOperator(OrbiterOperator):
     """
     An Airflow
-    [SSHOperator](https://registry.astronomer.io/providers/apache-airflow-providers-ssh/versions/latest/modules/SSHOperator)
+    [SSHOperator](https://registry.astronomer.io/providers/apache-airflow-providers-ssh/versions/latest/modules/SSHOperator).
+    Used to run shell commands over SSH.
 
     ```pycon
     >>> OrbiterSSHOperator(task_id="foo", ssh_conn_id="SSH", command="echo 'hello world'")
     foo_task = SSHOperator(task_id='foo', ssh_conn_id='SSH', command="echo 'hello world'")
 
     ```
-    :param task_id: The task_id for the operator
+    :param task_id: The `task_id` for the operator
     :type task_id: str
-    :param ssh_conn_id: The ssh connection to use
+    :param ssh_conn_id: The SSH connection to use. (Note: use the `**conn_id(...)` utility function)
     :type ssh_conn_id: str
     :param command: The command to execute
     :type command: str
     :param environment: The environment variables to set, defaults to None
-    :type environment: dict | None, optional
-    """
+    :type environment: dict, optional
+    :param **kwargs: Extra arguments to pass to the operator
+    :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
+    """  # noqa: E501
 
     __mermaid__ = """
     --8<-- [start:mermaid-props]
@@ -51,6 +54,7 @@ class OrbiterSSHOperator(OrbiterOperator):
         )
     ]
     operator: str = "SSHOperator"
+    # noinspection Pydantic
     render_attributes: RenderAttributes = OrbiterOperator.render_attributes + [
         "ssh_conn_id",
         "command",

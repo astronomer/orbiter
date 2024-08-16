@@ -31,11 +31,11 @@ repos:
         args: [ '--baseline', '.secrets.baseline' ]
 
   - repo: https://github.com/sirosen/texthooks
-    rev: 0.6.6
+    rev: 0.6.7
     hooks: [ { id: fix-smartquotes }, { id: fix-ligatures } ]
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.5.7'
+    rev: 'v0.6.0'
     hooks:
       - id: ruff
         args: [ --fix, --exit-non-zero-on-fix ]

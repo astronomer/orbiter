@@ -11,15 +11,17 @@ OrbiterOperator  "implements" <|--  OrbiterEmptyOperator
 
 class OrbiterEmptyOperator(OrbiterOperator):
     """
-    An Airflow EmptyOperator
+    An Airflow EmptyOperator. Does nothing.
 
     ```pycon
     >>> OrbiterEmptyOperator(task_id="foo")
     foo_task = EmptyOperator(task_id='foo')
 
     ```
-    :param task_id: The task_id for the operator
+    :param task_id: The `task_id` for the operator
     :type task_id: str
+    :param **kwargs: Extra arguments to pass to the operator
+    :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """
 
     __mermaid__ = """
@@ -37,4 +39,5 @@ class OrbiterEmptyOperator(OrbiterOperator):
         )
     ]
     operator: str = "EmptyOperator"
+    # noinspection Pydantic
     render_attributes: RenderAttributes = OrbiterOperator.render_attributes

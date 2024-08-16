@@ -11,17 +11,21 @@ OrbiterOperator "implements" <|-- OrbiterBashOperator
 
 class OrbiterBashOperator(OrbiterOperator):
     """
-    An Airflow [BashOperator](https://registry.astronomer.io/providers/apache-airflow/versions/latest/modules/BashOperator)
+    An Airflow
+    [BashOperator](https://registry.astronomer.io/providers/apache-airflow/versions/latest/modules/BashOperator).
+    Used to run shell commands.
 
     ```pycon
     >>> OrbiterBashOperator(task_id="foo", bash_command="echo 'hello world'")
     foo_task = BashOperator(task_id='foo', bash_command="echo 'hello world'")
 
     ```
-    :param task_id: The task_id for the operator
+    :param task_id: The `task_id` for the operator
     :type task_id: str
-    :param bash_command: The bash command to execute
+    :param bash_command: The shell command to execute
     :type bash_command: str
+    :param **kwargs: Extra arguments to pass to the operator
+    :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """
 
     __mermaid__ = """
@@ -40,6 +44,7 @@ class OrbiterBashOperator(OrbiterOperator):
         )
     ]
     operator: str = "BashOperator"
+    # noinspection Pydantic
     render_attributes: RenderAttributes = OrbiterOperator.render_attributes + [
         "bash_command"
     ]

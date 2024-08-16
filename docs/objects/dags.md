@@ -4,6 +4,7 @@ Airflow workflows are represented by a
 [DAG](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html)
 which is a Directed Acyclic Graph (of [Tasks](../tasks)).
 
+## Diagram
 ```mermaid
 classDiagram
     direction LR
@@ -68,6 +69,11 @@ classDiagram
 
 ::: orbiter.objects.dag.OrbiterDAG
 
+## Timetables
 ::: orbiter.objects.timetables
     options:
+        heading_level: 3
         show_submodules: true
+        show_object_full_path: true
+        show_root_heading: false
+        show_root_toc_entry: false

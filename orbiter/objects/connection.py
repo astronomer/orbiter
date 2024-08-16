@@ -42,8 +42,8 @@ class OrbiterConnection(BaseModel, AirflowSettingsRender, extra="allow"):
 
     :param conn_id: The ID of the connection
     :type conn_id: str
-    :param conn_type: The type of the connection, always lowercase
-    :type conn_type: str | None
+    :param conn_type: The type of the connection, always lowercase. Defaults to 'generic'
+    :type conn_type: str, optional
     :param **kwargs: Additional properties for the connection
     """  # noqa: E501
 

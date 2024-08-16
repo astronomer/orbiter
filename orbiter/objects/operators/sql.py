@@ -10,7 +10,9 @@ OrbiterOperator "implements" <|-- OrbiterSQLExecuteQueryOperator
 
 class OrbiterSQLExecuteQueryOperator(OrbiterOperator):
     """
-    An Airflow [Generic SQL Operator](https://registry.astronomer.io/providers/apache-airflow-providers-common-sql/versions/1.10.1/modules/SQLExecuteQueryOperator)
+    An Airflow
+    [Generic SQL Operator](https://registry.astronomer.io/providers/apache-airflow-providers-common-sql/versions/1.10.1/modules/SQLExecuteQueryOperator).
+    Used to run SQL against any Database.
 
     ```pycon
     >>> OrbiterSQLExecuteQueryOperator(
@@ -19,14 +21,15 @@ class OrbiterSQLExecuteQueryOperator(OrbiterOperator):
     foo_task = SQLExecuteQueryOperator(task_id='foo', conn_id='sql', sql='select 1;')
 
     ```
-    :param task_id: The task_id for the operator
+    :param task_id: The `task_id` for the operator
     :type task_id: str
-    :param conn_id: The connection ID to utilize
+    :param conn_id: The SQL connection to utilize.  (Note: use the `**conn_id(...)` utility function)
     :type conn_id: str
     :param sql: The SQL to execute
     :type sql: str
-
-    """
+    :param **kwargs: Extra arguments to pass to the operator
+    :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
+    """  # noqa: E501
 
     __mermaid__ = """
     --8<-- [start:mermaid-props]
@@ -48,6 +51,7 @@ class OrbiterSQLExecuteQueryOperator(OrbiterOperator):
     conn_id: str
     sql: str
 
+    # noinspection Pydantic
     render_attributes: RenderAttributes = OrbiterOperator.render_attributes + [
         "conn_id",
         "sql",

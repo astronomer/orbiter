@@ -5,6 +5,7 @@ existing checks and practices.
 * [Development Workflow](#development-workflow)
   * [Versioning](#versioning)
   * [Development](#development)
+    * [Just](#just)
     * [Pre-Commit](#pre-commit)
     * [Installing Locally](#installing-locally)
   * [Linting](#linting)

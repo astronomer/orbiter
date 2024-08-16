@@ -13,11 +13,9 @@ __mermaid__ = """
 
 
 class OrbiterCallback(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
-    """An Airflow
+    """**Abstract class** representing an Airflow
     [callback function](https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/logging-monitoring/callbacks.html),
     which might be used in `DAG.on_failure_callback`, or `Task.on_success_callback`, or etc.
-
-    `OrbiterCallback` is an Abstract Base Class, and should be subclassed to create a new callback.
 
     ```pycon
     >>> class OrbiterMyCallback(OrbiterCallback):
@@ -32,6 +30,7 @@ class OrbiterCallback(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
 
     :param function: The name of the function to call
     :type function: str
+    :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """  # noqa: E501
 
     __mermaid__ = """
