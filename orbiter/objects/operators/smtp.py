@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from orbiter.objects import OrbiterRequirement, ImportList
+from typing import Set
+
+from orbiter.objects import OrbiterRequirement, ImportList, OrbiterConnection
 from orbiter.objects.task import OrbiterOperator, RenderAttributes
 
 __mermaid__ = """
@@ -13,16 +15,18 @@ OrbiterOperator "implements" <|-- OrbiterEmailOperator
 class OrbiterEmailOperator(OrbiterOperator):
     # noinspection GrazieInspection
     """
-    An Airflow [EmailOperator](https://registry.astronomer.io/providers/apache-airflow/versions/latest/modules/EmailOperator)
+    An Airflow
+    [EmailOperator](https://registry.astronomer.io/providers/apache-airflow/versions/latest/modules/EmailOperator).
+    Used to send emails.
 
     ```pycon
     >>> OrbiterEmailOperator(
     ...   task_id="foo", to="humans@astronomer.io", subject="Hello", html_content="World!"
     ... )
-    foo_task = EmailOperator(task_id='foo', to='humans@astronomer.io', subject='Hello', html_content='World!')
+    foo_task = EmailOperator(task_id='foo', to='humans@astronomer.io', subject='Hello', html_content='World!', conn_id='SMTP')
 
     ```
-    :param task_id: The task_id for the operator
+    :param task_id: The `task_id` for the operator
     :type task_id: str
     :param to: The recipient of the email
     :type to: str | list[str]
@@ -31,9 +35,12 @@ class OrbiterEmailOperator(OrbiterOperator):
     :param html_content: The content of the email
     :type html_content: str
     :param files: The files to attach to the email, defaults to None
-    :type files: list | None, optional
-
-    """
+    :type files: list, optional
+    :param conn_id: The SMTP connection to use. Defaults to "SMTP" and sets `orbiter_conns` property
+    :type conn_id: str, optional
+    :param **kwargs: Extra arguments to pass to the operator
+    :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
+    """  # noqa: E501
 
     __mermaid__ = """
     --8<-- [start:mermaid-props]
@@ -43,6 +50,7 @@ class OrbiterEmailOperator(OrbiterOperator):
     subject: str
     html_content: str
     files: list | None
+    conn_id: str
     --8<-- [end:mermaid-props]
     """
 
@@ -54,13 +62,19 @@ class OrbiterEmailOperator(OrbiterOperator):
         )
     ]
     operator: str = "EmailOperator"
+    # noinspection Pydantic
     render_attributes: RenderAttributes = OrbiterOperator.render_attributes + [
         "to",
         "subject",
         "html_content",
         "files",
+        "conn_id",
     ]
     to: str | list[str]
     subject: str
     html_content: str
     files: list | None = []
+    conn_id: str | None = "SMTP"
+    orbiter_conns: Set[OrbiterConnection] | None = {
+        OrbiterConnection(conn_id="SMTP", conn_type="smtp")
+    }
