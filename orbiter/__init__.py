@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from enum import Enum
 
-__version__ = "1.0.0-alpha3"
+__version__ = "1.0.0-alpha4"
 
 from typing import Any, Tuple
 
