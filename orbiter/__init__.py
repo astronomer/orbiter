@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from enum import Enum
 
-__version__ = "1.0.0-alpha4"
+__version__ = "1.0.0-alpha5"
 
 from typing import Any, Tuple
 
@@ -16,69 +16,6 @@ class FileType(Enum):
     YAML = "YAML"
     XML = "XML"
     JSON = "JSON"
-
-
-# noinspection t
-def xmltodict_parse(input_str: str) -> Any:
-    """Calls `xmltodict.parse` and does post-processing fixes.
-
-    `xmltodict.parse` returns EITHER
-    - a dict (one child element of type)
-    - or a list of dict (many child element of type)
-    which is very confusing.
-
-    This is an issue with the xml 'spec' they are referencing.
-    This standardizes it to the latter case, by recursively descending.
-
-    MEANING - any elements will be a list of dict, even if there's just one of the element
-
-    ```pycon
-    >>> xmltodict_parse("")
-    Traceback (most recent call last):
-    xml.parsers.expat.ExpatError: no element found: line 1, column 0
-    >>> xmltodict_parse("<a></a>")
-    {'a': None}
-    >>> xmltodict_parse("<a foo='bar'></a>")
-    {'a': [{'@foo': 'bar'}]}
-    >>> xmltodict_parse("<a foo='bar'><foo bar='baz'></foo></a>")  # Singleton - gets modified
-    {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz'}]}]}
-    >>> xmltodict_parse("<a foo='bar'><foo bar='baz'><bar><bop></bop></bar></foo></a>")  # Nested Singletons - modified
-    {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz', 'bar': [{'bop': None}]}]}]}
-    >>> xmltodict_parse("<a foo='bar'><foo bar='baz'></foo><foo bing='bop'></foo></a>")
-    {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz'}, {'@bing': 'bop'}]}]}
-
-    ```
-
-    :param input_str: The XML string to parse
-    :type input_str: str
-    :return: The parsed XML
-    :rtype: dict
-    """
-    import xmltodict
-
-    # noinspection t
-    def _fix(d):
-        """fix the dict in place, recursively, standardizing on a list of dict even if there's only one entry."""
-        # if it's a dict, descend to fix
-        if isinstance(d, dict):
-            for k, v in d.items():
-                # @keys are properties of elements, non-@keys are elements
-                if not k.startswith("@"):
-                    if isinstance(v, dict):
-                        # THE FIX
-                        # any non-@keys should be a list of dict, even if there's just one of the element
-                        d[k] = [v]
-                        _fix(v)
-                    else:
-                        _fix(v)
-        # if it's a list, descend to fix
-        if isinstance(d, list):
-            for v in d:
-                _fix(v)
-
-    output = xmltodict.parse(input_str)
-    _fix(output)
-    return output
 
 
 def clean_value(s: str):

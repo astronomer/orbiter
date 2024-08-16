@@ -7,11 +7,12 @@ and the [`Rulesets`][orbiter.rules.rulesets.Ruleset] that contain them.
 - A [`Ruleset`][orbiter.rules.rulesets.Ruleset] is a collection of [`Rules`][orbiter.rules.Rule] that are
     evaluated in priority order
 - A [`TranslationRuleset`][orbiter.rules.rulesets.TranslationRuleset]
-    is a collection of [`Rulesets`][orbiter.rules.rulesets.Ruleset]
-    that relate to a specific [Origin](../origins) and File Type (e.g. `.json`, `.xml`, etc.),
-    with a specific `translation_fn`
-    (default: [`orbiter.rules.rulesets.translation`][orbiter.rules.rulesets.translate])
-    which determines how to apply the [`rulesets`][orbiter.rules.rulesets.Ruleset] against input data.
+    is a collection of [`Rulesets`][orbiter.rules.rulesets.Ruleset],
+    relating to an [Origin](../origins) and File Type (e.g. `.json`, `.xml`, etc.),
+    with a [`translation_fn` (e.g. `orbiter.rules.rulesets.translate`][orbiter.rules.rulesets.translate])
+    which determines how to apply the rulesets.
+
+![Diagram of Orbiter Translation](../orbiter_diagram.png)
 
 Different [`Rules`][orbiter.rules.Rule] are applied in different scenarios;
 such as for converting input to a DAG ([`@dag_rule`][orbiter.rules.DAGRule]),
@@ -89,6 +90,9 @@ def rule(
 
 class Rule(BaseModel, Callable, extra="forbid"):
     """
+    A `Rule` contains a python function that is evaluated and produces something
+    (typically an [Orbiter Object](../objects)) or nothing
+
     A `Rule` can be created from a decorator
     ```pycon
     >>> @rule(priority=1)

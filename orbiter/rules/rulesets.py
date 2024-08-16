@@ -12,7 +12,7 @@ from typing import List, Any, Collection, Annotated, Callable, Union
 from loguru import logger
 from pydantic import BaseModel, AfterValidator, validate_call
 
-from orbiter import FileType, import_from_qualname, xmltodict_parse
+from orbiter import FileType, import_from_qualname
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.project import OrbiterProject
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
@@ -128,12 +128,15 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
                 [`TranslationRuleset.task_dependency_ruleset`][orbiter.rules.rulesets.TaskDependencyRuleset]
                 is applied in priority-order, stopping when the first rule returns a match,
                 to create a list of
-                [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency]
-                These task dependencies are then added to each of the tasks they apply to in the
+                [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency],
+                which are then added to each task in the
                 [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG]
-    2. Apply the `post_processing_ruleset` against the
-        [`OrbiterProject`][orbiter.objects.project.OrbiterProject]
-    3. Return the [`OrbiterDAG`][orbiter.objects.project.OrbiterProject]
+    2. Apply the [`TranslationRuleset.post_processing_ruleset`][orbiter.rules.rulesets.PostProcessingRuleset],
+        against the [`OrbiterProject`][orbiter.objects.project.OrbiterProject], which can make modifications after all
+        other rules have been applied.
+    3. Return the [`OrbiterProject`][orbiter.objects.project.OrbiterProject]
+
+    After translation - the [`OrbiterProject`][orbiter.objects.project.OrbiterProject] is rendered to the output folder.
     """
 
     def _get_files_with_extension(_extension: str, _input_dir: Path) -> List[Path]:
@@ -511,7 +514,12 @@ class PostProcessingRuleset(Ruleset):
 
 
 class TranslationRuleset(BaseModel, ABC, extra="forbid"):
-    """A container for [`Ruleset`][orbiter.rules.rulesets.Ruleset], which applies to a given type of translation
+    """
+    A `Ruleset` is a collection of [`Rules`][orbiter.rules.Rule] that are
+    evaluated in priority order
+
+    A `TranslationRuleset` is a container for [`Rulesets`][orbiter.rules.rulesets.Ruleset],
+    which applies to a specific translation
 
     ```pycon
     >>> TranslationRuleset(
@@ -606,6 +614,17 @@ EMPTY_RULESET = {"ruleset": [EMPTY_RULE]}
 
 @validate_call
 def load_filetype(input_str: str, file_type: FileType) -> dict:
+    """
+    Orbiter converts all file types into a Python dictionary "intermediate representation" form,
+    prior to any rulesets being applied.
+
+    | FileType | Conversion Method                                           |
+    |----------|-------------------------------------------------------------|
+    | `XML`    | [`xmltodict_parse`][orbiter.rules.rulesets.xmltodict_parse] |
+    | `YAML`   | `yaml.safe_load`                                            |
+    | `JSON`   | `json.loads`                                                |
+    """
+
     if file_type == FileType.JSON:
         import json
 
@@ -618,6 +637,71 @@ def load_filetype(input_str: str, file_type: FileType) -> dict:
         return xmltodict_parse(input_str)
     else:
         raise NotImplementedError(f"Cannot load file_type={file_type}")
+
+
+# noinspection t
+def xmltodict_parse(input_str: str) -> Any:
+    """Calls `xmltodict.parse` and does post-processing fixes.
+
+    !!! note
+
+        The original [`xmltodict.parse`](https://pypi.org/project/xmltodict/) method returns EITHER:
+
+        - a dict (one child element of type)
+        - or a list of dict (many child element of type)
+
+        This behavior can be confusing, and is an issue with the original xml spec being referenced.
+
+        **This method deviates by standardizing to the latter case (always a `list[dict]`).**
+
+        **All XML elements will be a list of dictionaries, even if there's only one element.**
+
+    ```pycon
+    >>> xmltodict_parse("")
+    Traceback (most recent call last):
+    xml.parsers.expat.ExpatError: no element found: line 1, column 0
+    >>> xmltodict_parse("<a></a>")
+    {'a': None}
+    >>> xmltodict_parse("<a foo='bar'></a>")
+    {'a': [{'@foo': 'bar'}]}
+    >>> xmltodict_parse("<a foo='bar'><foo bar='baz'></foo></a>")  # Singleton - gets modified
+    {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz'}]}]}
+    >>> xmltodict_parse("<a foo='bar'><foo bar='baz'><bar><bop></bop></bar></foo></a>")  # Nested Singletons - modified
+    {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz', 'bar': [{'bop': None}]}]}]}
+    >>> xmltodict_parse("<a foo='bar'><foo bar='baz'></foo><foo bing='bop'></foo></a>")
+    {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz'}, {'@bing': 'bop'}]}]}
+
+    ```
+    :param input_str: The XML string to parse
+    :type input_str: str
+    :return: The parsed XML
+    :rtype: dict
+    """
+    import xmltodict
+
+    # noinspection t
+    def _fix(d):
+        """fix the dict in place, recursively, standardizing on a list of dict even if there's only one entry."""
+        # if it's a dict, descend to fix
+        if isinstance(d, dict):
+            for k, v in d.items():
+                # @keys are properties of elements, non-@keys are elements
+                if not k.startswith("@"):
+                    if isinstance(v, dict):
+                        # THE FIX
+                        # any non-@keys should be a list of dict, even if there's just one of the element
+                        d[k] = [v]
+                        _fix(v)
+                    else:
+                        _fix(v)
+        # if it's a list, descend to fix
+        if isinstance(d, list):
+            for v in d:
+                _fix(v)
+
+    output = xmltodict.parse(input_str)
+    _fix(output)
+    return output
 
 
 if __name__ == "__main__":

@@ -21,7 +21,7 @@ flowchart LR
     origin -->| ✨ Translations ✨ | airflow{{ Apache Airflow Project }}
 ```
 The **framework** is a set of [Rules](./Rules_and_Rulesets) and [Objects](./objects) that can translate workflows
-from an [Origin](./origins) system to Airflow-native python code.
+from an [Origin](./origins) system to an Airflow project.
 
 ## Installation
 
@@ -33,7 +33,7 @@ If you do not have a compatible Python environment, pre-built binary executables
 are available for download on the [Releases](https://github.com/astronomer/orbiter/releases) page.
 
 ## Translate
-You can utilize the [`orbiter` CLI](./CLI) with pre-built translations to convert workflows
+You can utilize the [`orbiter` CLI](./cli) with pre-built translations to convert workflows
 from other systems to Apache Airflow.
 
 The list of systems Orbiter has support for translating is listed at [Origins](origins)
@@ -61,7 +61,7 @@ Use the `orbiter translate` command to convert workflows via a specific translat
     to run Airflow instance with your migrated workloads
 6. Deploy to [Astro](https://www.astronomer.io/try-astro/) to run your translated workflows in production! 🚀
 
-You can see more specifics on how to use the Orbiter CLI in the [CLI](CLI) section.
+You can see more specifics on how to use the Orbiter CLI in the [CLI](./cli) section.
 
 ## Authoring Rulesets & Customization
 Orbiter can be extended to fit specific needs, patterns, or to support additional origins.
@@ -103,8 +103,8 @@ To extend or customize an existing ruleset, you can easily modify it with simple
 
 ### Authoring a new Ruleset
 
-You can utilize the [Template Translation Ruleset](./Rules_and_Rulesets/#translation-ruleset-template)
-as a starter, to create a new ruleset for a specific system.
+You can utilize the [Template `TranslationRuleset`](./Rules_and_Rulesets/template)
+as a starter, to create a new [`TranslationRuleset`][orbiter.rules.rulesets.TranslationRuleset].
 
 ## FAQ
 - **Can this tool convert my workflows from tool X to Airflow?**
@@ -112,7 +112,7 @@ as a starter, to create a new ruleset for a specific system.
     _If you don't see your tool listed in [Supported Origins](./origins),
     [contact us](https://www.astronomer.io/contact/) for services to create translations,
     create an [issue](https://github.com/astronomer/orbiter-community-translations/issues/new/)
-    in our `orbiter-community-translations` repository write a `TranslationRuleset` and submit a
+    in the [`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations) repository, or write a `TranslationRuleset` and submit a
     [pull request](https://github.com/astronomer/orbiter-community-translations/pulls/)
     to share your translations with the community._
 

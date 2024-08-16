@@ -57,6 +57,9 @@ markdown_extensions:
 # Auto-documents click
 - mkdocs-click
 
+- toc:
+    permalink: true
+
 - pymdownx.superfences:
     # Mermaid Diagrams
     custom_fences:
