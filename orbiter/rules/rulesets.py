@@ -12,7 +12,7 @@ from typing import List, Any, Collection, Annotated, Callable, Union
 from loguru import logger
 from pydantic import BaseModel, AfterValidator, validate_call
 
-from orbiter import FileType, import_from_qualname, load_filetype
+from orbiter import FileType, import_from_qualname, xmltodict_parse
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.project import OrbiterProject
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
@@ -135,6 +135,15 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
         [`OrbiterProject`][orbiter.objects.project.OrbiterProject]
     3. Return the [`OrbiterDAG`][orbiter.objects.project.OrbiterProject]
     """
+
+    def _get_files_with_extension(_extension: str, _input_dir: Path) -> List[Path]:
+        return [
+            directory / file
+            for (directory, _, files) in _input_dir.walk()
+            for file in files
+            if _extension == file.lower()[-len(_extension) :]
+        ]
+
     if not isinstance(translation_ruleset, TranslationRuleset):
         raise RuntimeError(
             f"Error! type(translation_ruleset)=={type(translation_ruleset)}!=TranslationRuleset! Exiting!"
@@ -146,12 +155,12 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     extension = translation_ruleset.file_type.value.lower()
 
     logger.info(f"Finding files with extension={extension} in {input_dir}")
-    files = [
-        directory / file
-        for (directory, _, files) in input_dir.walk()
-        for file in files
-        if extension in file
-    ]
+    files = _get_files_with_extension(extension, input_dir)
+
+    # .yaml is sometimes '.yml'
+    if extension == "yaml":
+        files.extend(_get_files_with_extension("yml", input_dir))
+
     logger.info(f"Found {len(files)} files with extension={extension} in {input_dir}")
 
     for file in files:
@@ -418,7 +427,6 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         :param take_first: only take the first (if any) result from the ruleset application
         :type take_first: bool
         :param kwargs: key=val pairs to pass to the evaluated rule function
-        :type kwargs: Any
         :returns: List of rules that evaluated to `Any` (in priority order),
                     or an empty list,
                     or `Any` (if `take_first=True`)
@@ -433,13 +441,17 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         results = []
         for _rule in self._sorted():
             result = _rule(**kwargs)
+            should_show_input = "val" in kwargs and not (
+                isinstance(kwargs["val"], OrbiterProject)
+                or isinstance(kwargs["val"], OrbiterDAG)
+            )
             if result is not None:
                 logger.debug(
                     "---------\n"
-                    f"Ruleset: '{self.__class__.__name__}' Matched\n"
-                    f"Rule: '{_rule.__name__}' Matched\n"
-                    f"INPUT: {kwargs}\n"
-                    f"RETURN: {result}\n"
+                    f"[RULESET MATCHED] '{self.__class__.__module__}.{self.__class__.__name__}'\n"
+                    f"[RULE MATCHED] '{_rule.__name__}'\n"
+                    f"[INPUT] {kwargs if should_show_input else '<Skipping...>'}\n"
+                    f"[RETURN] {result}\n"
                     f"---------"
                 )
                 results.append(result)
@@ -590,6 +602,23 @@ def _add_task_deduped(_task, _tasks, n=""):
 
 EMPTY_RULESET = {"ruleset": [EMPTY_RULE]}
 """Empty ruleset, for testing"""
+
+
+@validate_call
+def load_filetype(input_str: str, file_type: FileType) -> dict:
+    if file_type == FileType.JSON:
+        import json
+
+        return json.loads(input_str)
+    elif file_type == FileType.YAML:
+        import yaml
+
+        return yaml.safe_load(input_str)
+    elif file_type == FileType.XML:
+        return xmltodict_parse(input_str)
+    else:
+        raise NotImplementedError(f"Cannot load file_type={file_type}")
+
 
 if __name__ == "__main__":
     import doctest

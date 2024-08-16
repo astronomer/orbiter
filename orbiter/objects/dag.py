@@ -3,11 +3,12 @@ from __future__ import annotations
 import ast
 from datetime import datetime
 from pathlib import Path
-from typing import Annotated, Any, Dict, Iterable, List
+from typing import Annotated, Any, Dict, Iterable, List, Callable
 
 from pendulum import DateTime
 from pydantic import AfterValidator, validate_call
 
+from orbiter import clean_value
 from orbiter.ast_helper import OrbiterASTBase, py_object, py_with
 from orbiter.objects import ImportList, OrbiterBase
 from orbiter.objects.callbacks import OrbiterCallback
@@ -15,7 +16,6 @@ from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
 from orbiter.objects.task_group import OrbiterTaskGroup
 from orbiter.objects.timetables import OrbiterTimetable
-from orbiter import to_dag_id
 
 __mermaid__ = """
 --8<-- [start:mermaid-project-relationships]
@@ -69,27 +69,33 @@ def _get_imports_recursively(
     return imports
 
 
-class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="forbid"):
+class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     """Represents an Airflow
     [DAG](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html),
-    with its tasks and dependencies. Renders to a `.py` file in the `/dags` folder
+    with its tasks and dependencies.
 
-    :param file_path: file path of the DAG
+    Renders to a `.py` file in the `/dags` folder
+
+    :param file_path: File path of the DAG, relative to the `/dags` folder
+        (`filepath=my_dag.py` would render to `dags/my_dag.py`)
     :type file_path: str
-    :param dag_id: The DAG ID
+    :param dag_id: The `dag_id`. Must be unique and snake_case. Good practice is to set `dag_id` == `file_path`
     :type dag_id: str
-    :param schedule: The schedule interval for the DAG
-    :type schedule: str | OrbiterTimetable | None
-    :param catchup: Whether to catch up on missed intervals
-    :type catchup: bool
-    :param start_date: The start date for the DAG
-    :type start_date: DateTime
-    :param default_args: Default arguments for the DAG
-    :type default_args: Dict[str, Any]
+    :param schedule: The schedule for the DAG. Defaults to None (only runs when manually triggered)
+    :type schedule: str | OrbiterTimetable, optional
+    :param catchup: Whether to catchup runs from the `start_date` to now, on first run. Defaults to False
+    :type catchup: bool, optional
+    :param start_date: The start date for the DAG. Defaults to Unix Epoch
+    :type start_date: DateTime, optional
+    :param tags: Tags for the DAG, used for sorting and filtering in the Airflow UI
+    :type tags: List[str], optional
+    :param default_args: Default arguments for any tasks in the DAG
+    :type default_args: Dict[str, Any], optional
     :param params: Params for the DAG
-    :type params: Dict[str, Any]
-    :param doc_md: Markdown documentation for the DAG
-    :type doc_md: str
+    :type params: Dict[str, Any], optional
+    :param doc_md: Documentation for the DAG with markdown support
+    :type doc_md: str, optional
+    :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """
 
     __mermaid__ = """
@@ -100,6 +106,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="forbid"):
     schedule: str | OrbiterTimetable | None
     catchup: bool
     start_date: DateTime
+    tags: List[str]
     default_args: Dict[str, Any]
     params: Dict[str, Any]
     doc_md: str | None
@@ -143,7 +150,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="forbid"):
         "doc_md",
     ]
 
-    def __repr__(self):
+    def repr(self):
         return (
             f"OrbiterDAG("
             f"dag_id={self.dag_id}, "
@@ -171,27 +178,38 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="forbid"):
         ...    default_args={},
         ...    params={},
         ...    schedule="@hourly",
-        ...    start_date=datetime(2000, 1, 1)
-        ...    )._dag_to_ast())
-        "DAG(dag_id='dag_id', schedule='@hourly', start_date=datetime.datetime(2000, 1, 1, 0, 0), catchup=False)"
+        ...    start_date=datetime(2000, 1, 1),
+        ...    description="foo"
+        ... )._dag_to_ast())
+        "DAG(dag_id='dag_id', schedule='@hourly', start_date=datetime.datetime(2000, 1, 1, 0, 0), catchup=False, description='foo')"
 
         ```
         :return: `DAG(...)` as an ast.Expr
-        """
+        """  # noqa: E501
+
+        def prop(k):
+            # special case - nullable_attributes can be False / None
+            if k in self.nullable_attributes:
+                return getattr(self, k)
+            attr = getattr(self, k, None) or getattr(self.model_extra, k, None)
+            return ast.Name(id=attr.__name__) if isinstance(attr, Callable) else attr
+
         index_map = {v: i for i, v in enumerate(self.render_attributes)}
         rendered_params = {
-            k: getattr(self, k)
+            k: prop(k)
             for k in self.render_attributes
             if getattr(self, k) or k in self.nullable_attributes
         }
+        extra_params = {k: prop(k) for k in (self.model_extra.keys() or [])}
         return py_object(
             name="DAG",
             **dict(
                 sorted(
                     rendered_params.items(),
-                    key=lambda pair: index_map[pair[0]],
+                    key=lambda k_v: index_map[k_v[0]],
                 )
             ),
+            **extra_params,
         )
 
     def add_tasks(
@@ -314,3 +332,8 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="forbid"):
 
 # https://github.com/pydantic/pydantic/issues/8790
 OrbiterDAG.add_tasks = validate_call()(OrbiterDAG.add_tasks)
+
+
+@validate_call
+def to_dag_id(dag_id: str) -> str:
+    return clean_value(dag_id)
