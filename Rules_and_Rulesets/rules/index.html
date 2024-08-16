@@ -522,6 +522,27 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../template/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Template
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -822,13 +843,15 @@
             <span class="doc doc-object-name doc-class-name">orbiter.rules.Rule</span>
 
 
-</h2>
+<a href="#orbiter.rules.Rule" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents first">
 
 
-      <p>A <code>Rule</code> can be created from a decorator
+      <p>A <code>Rule</code> contains a python function that is evaluated and produces something
+(typically an <a href="../objects">Orbiter Object</a>) or nothing</p>
+<p>A <code>Rule</code> can be created from a decorator
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="nd">@rule</span><span class="p">(</span><span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">... </span><span class="k">def</span> <span class="nf">my_rule</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="gp">... </span>    <span class="k">return</span> <span class="mi">1</span>
@@ -931,7 +954,7 @@ the passed <code>kwargs</code> are saved in a special <code>orbiter_kwargs</code
             <span class="doc doc-object-name doc-class-name">orbiter.rules.DAGFilterRule</span>
 
 
-</h3>
+<a href="#orbiter.rules.DAGFilterRule" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -978,7 +1001,7 @@ the passed <code>kwargs</code> are saved in a special <code>orbiter_kwargs</code
             <span class="doc doc-object-name doc-class-name">orbiter.rules.DAGRule</span>
 
 
-</h3>
+<a href="#orbiter.rules.DAGRule" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -1021,7 +1044,7 @@ the passed <code>kwargs</code> are saved in a special <code>orbiter_kwargs</code
             <span class="doc doc-object-name doc-class-name">orbiter.rules.TaskFilterRule</span>
 
 
-</h3>
+<a href="#orbiter.rules.TaskFilterRule" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -1117,7 +1140,7 @@ the passed <code>kwargs</code> are saved in a special <code>orbiter_kwargs</code
             <span class="doc doc-object-name doc-class-name">orbiter.rules.TaskRule</span>
 
 
-</h3>
+<a href="#orbiter.rules.TaskRule" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -1209,7 +1232,7 @@ the passed <code>kwargs</code> are saved in a special <code>orbiter_kwargs</code
             <span class="doc doc-object-name doc-class-name">orbiter.rules.TaskDependencyRule</span>
 
 
-</h3>
+<a href="#orbiter.rules.TaskDependencyRule" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -1303,7 +1326,7 @@ and returns a <a class="autorefs autorefs-internal" href="../../objects/Tasks/#o
             <span class="doc doc-object-name doc-class-name">orbiter.rules.PostProcessingRule</span>
 
 
-</h3>
+<a href="#orbiter.rules.PostProcessingRule" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">

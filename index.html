@@ -520,6 +520,27 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Rules_and_Rulesets/template/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Template
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -824,7 +845,7 @@
   <b>Astronomer Orbiter</b> can land legacy workloads safely down in a new home on Apache Airflow!
 </p>
 
-<h2 id="what-is-orbiter">What is Orbiter?</h2>
+<h2 id="what-is-orbiter">What is Orbiter?<a class="headerlink" href="#what-is-orbiter" title="Permanent link">&para;</a></h2>
 <p>Orbiter is both a <strong>CLI</strong> and <strong>Framework</strong> for converting workflows
 from other orchestration tools to Apache Airflow.</p>
 <p>Generally it can be thoughts of as:
@@ -832,15 +853,15 @@ from other orchestration tools to Apache Airflow.</p>
     origin{{ XML/JSON/YAML/Etc Workflows }}
     origin --&gt;| ✨ Translations ✨ | airflow{{ Apache Airflow Project }}</code></pre>
 The <strong>framework</strong> is a set of <a href="./Rules_and_Rulesets">Rules</a> and <a href="./objects">Objects</a> that can translate workflows
-from an <a href="./origins">Origin</a> system to Airflow-native python code.</p>
-<h2 id="installation">Installation</h2>
+from an <a href="./origins">Origin</a> system to an Airflow project.</p>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <p>You can install the <a href="./CLI"><code>orbiter</code> CLI</a>, if you have Python &gt;= 3.10 installed via <code>pip</code>:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>astronomer-orbiter
 </code></pre></div>
 If you do not have a compatible Python environment, pre-built binary executables of the <code>orbiter</code> CLI
 are available for download on the <a href="https://github.com/astronomer/orbiter/releases">Releases</a> page.</p>
-<h2 id="translate">Translate</h2>
-<p>You can utilize the <a href="./CLI"><code>orbiter</code> CLI</a> with pre-built translations to convert workflows
+<h2 id="translate">Translate<a class="headerlink" href="#translate" title="Permanent link">&para;</a></h2>
+<p>You can utilize the <a href="./cli"><code>orbiter</code> CLI</a> with pre-built translations to convert workflows
 from other systems to Apache Airflow.</p>
 <p>The list of systems Orbiter has support for translating is listed at <a href="origins">Origins</a></p>
 <p>Use the <code>orbiter translate</code> command to convert workflows via a specific translation ruleset</p>
@@ -864,11 +885,11 @@ from other systems to Apache Airflow.</p>
     to run Airflow instance with your migrated workloads</li>
 <li>Deploy to <a href="https://www.astronomer.io/try-astro/">Astro</a> to run your translated workflows in production! 🚀</li>
 </ol>
-<p>You can see more specifics on how to use the Orbiter CLI in the <a href="CLI">CLI</a> section.</p>
-<h2 id="authoring-rulesets-customization">Authoring Rulesets &amp; Customization</h2>
+<p>You can see more specifics on how to use the Orbiter CLI in the <a href="./cli">CLI</a> section.</p>
+<h2 id="authoring-rulesets-customization">Authoring Rulesets &amp; Customization<a class="headerlink" href="#authoring-rulesets-customization" title="Permanent link">&para;</a></h2>
 <p>Orbiter can be extended to fit specific needs, patterns, or to support additional origins.</p>
 <p>Read more specifics about how to use the framework at <a href="./Rules_and_Rulesets">Rules</a> and <a href="./objects">Objects</a></p>
-<h3 id="extend-or-customize">Extend or Customize</h3>
+<h3 id="extend-or-customize">Extend or Customize<a class="headerlink" href="#extend-or-customize" title="Permanent link">&para;</a></h3>
 <p>To extend or customize an existing ruleset, you can easily modify it with simple Python code.</p>
 <ol>
 <li>Set up your workspace as described in steps 1+2 of the <a href="#translate">Translate</a> instructions</li>
@@ -939,17 +960,17 @@ from other systems to Apache Airflow.</p>
 </li>
 <li>Follow the remaining steps 4 -&gt; 6 of the <a href="#translate">Translate</a> instructions</li>
 </ol>
-<h3 id="authoring-a-new-ruleset">Authoring a new Ruleset</h3>
-<p>You can utilize the <a href="./Rules_and_Rulesets/#translation-ruleset-template">Template Translation Ruleset</a>
-as a starter, to create a new ruleset for a specific system.</p>
-<h2 id="faq">FAQ</h2>
+<h3 id="authoring-a-new-ruleset">Authoring a new Ruleset<a class="headerlink" href="#authoring-a-new-ruleset" title="Permanent link">&para;</a></h3>
+<p>You can utilize the <a href="./Rules_and_Rulesets/template">Template <code>TranslationRuleset</code></a>
+as a starter, to create a new <a class="autorefs autorefs-internal" href="Rules_and_Rulesets/rulesets/#orbiter.rules.rulesets.TranslationRuleset"><code>TranslationRuleset</code></a>.</p>
+<h2 id="faq">FAQ<a class="headerlink" href="#faq" title="Permanent link">&para;</a></h2>
 <ul>
 <li>
 <p><strong>Can this tool convert my workflows from tool X to Airflow?</strong></p>
 <p><em>If you don't see your tool listed in <a href="./origins">Supported Origins</a>,
 <a href="https://www.astronomer.io/contact/">contact us</a> for services to create translations,
 create an <a href="https://github.com/astronomer/orbiter-community-translations/issues/new/">issue</a>
-in our <code>orbiter-community-translations</code> repository write a <code>TranslationRuleset</code> and submit a
+in the <a href="https://github.com/astronomer/orbiter-community-translations"><code>orbiter-community-translations</code></a> repository, or write a <code>TranslationRuleset</code> and submit a
 <a href="https://github.com/astronomer/orbiter-community-translations/pulls/">pull request</a>
 to share your translations with the community.</em></p>
 </li>
