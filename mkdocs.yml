@@ -85,6 +85,7 @@ markdown_extensions:
 
 plugins:
 - search
+- markdown-exec  # for rendering the csv table of origins to share w/ CLI
 - autorefs
 - mkdocstrings:
     custom_templates: docs/templates

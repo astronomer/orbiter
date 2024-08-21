@@ -9,12 +9,16 @@ include-package-data = false
 version = { attr = "orbiter.__version__" }
 
 [tool.setuptools.packages.find]
+include = ["orbiter", "orbiter.*"]
 exclude = [
     "*venv", "*venv.*",
     "*tests.*", "*tests",
     "*build", "*build.*",
     "*dist", "*dist.*"
 ]
+
+[tool.setuptools.package-data]
+"orbiter.assets" = ["*.csv"]
 
 [project]
 dynamic = ["version"]
@@ -31,6 +35,10 @@ requires-python = ">= 3.10"
 dependencies = [
     # CLI
     "click",
+    "rich-click",
+
+    # CLI prompt
+    "questionary",
 
     # For validation of objects
     "pydantic >= 2.6",
@@ -51,9 +59,12 @@ dependencies = [
 
     # to render timezone-aware DAGs
     "pendulum",
+    "tzdata", # for timezone data, if system doesn't have it?
+
+    # for 'help' command
+    "tabulate",
 
     # logging
-    # "click-loglevel",
     "loguru",
 
     # for code formatting
@@ -75,16 +86,13 @@ dev = [
     "mkdocs-click",
     "mkdocs-material",
     "mkdocstrings-python",
+    "markdown-exec",  # for rendering the csv table of origins to share w/ CLI
     "pygments",
 
     # test
     "pytest>=7.4",
     "pytest-cov>=4.1",
     "pytest-sugar>=0.9.7",
-
-    "apache-airflow",
-    "apache-airflow-providers-ssh",
-    "apache-airflow-providers-sftp",
 
     # lint
     "black>=23.12.0",
@@ -112,6 +120,8 @@ skips = [
     "B101",  # assert - using intentionally
     "B404",  # subprocess - using intentionally
     "B602",  # subprocess shell=True - using intentionally
+    "B603",  # subprocess shell=True - using intentionally
+    "B604",  # subprocess shell=True - using intentionally
 ]
 
 [tool.black]

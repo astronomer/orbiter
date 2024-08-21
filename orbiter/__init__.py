@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import re
 from enum import Enum
+from typing import Any, Tuple
 
 __version__ = "1.0.0-alpha5"
 
-from typing import Any, Tuple
-
-import inflection
-
 version = __version__
+
+KG_ACCOUNT_ID = "3b189b4c-c047-4fdb-9b46-408aa2978330"
 
 
 class FileType(Enum):
@@ -40,6 +39,8 @@ def clean_value(s: str):
 
     ```
     """
+    import inflection
+
     s = s[:250]  # shorten the string to 250 chars max
     s = inflection.underscore(s)  # swap to snake_case
     s = re.sub("[ -]", "_", s)  # swap space or dash to _

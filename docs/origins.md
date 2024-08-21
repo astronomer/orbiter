@@ -1,21 +1,18 @@
-
 An Origin is a source system that contains workflows that can be translated to an Apache Airflow project.
 
 ## Supported Origins
 
-| Origin      | Maintainer                                                                | Ruleset(s)                                   | "Task" | "DAG"    |
-|-------------|---------------------------------------------------------------------------|----------------------------------------------|--------|----------|
-| DAG Factory | [Community](https://github.com/astronomer/orbiter-community-translations) | `orbiter_translations.dag_factory.yaml_base` | -      | -        |
-| Control M   | Astronomer                                                                | `orbiter_translations.control_m.json_base`   | Job    | Folder   |
-|             |                                                                           | `orbiter_translations.control_m.json_ssh`    |        |          |
-|             |                                                                           | `orbiter_translations.control_m.xml_base`    |        |          |
-|             |                                                                           | `orbiter_translations.control_m.xml_ssh`     |        |          |
-| Automic     | Astronomer                                                                |                                              | Job    | Job Plan |
-| Autosys     | Astronomer                                                                |                                              |        |          |
-| JAMS        | Astronomer                                                                |                                              |        |          |
-| SSIS        | Astronomer                                                                | `orbiter_translations.ssis.xml_base`         |        |          |
-| Oozie       | Astronomer                                                                | `orbiter_translations.oozie.xml_base`        |        |          |
-| **& more!** |                                                                           |                                              |        |          |
+```python exec="on"
+from csv import DictReader
+from tabulate import tabulate
+import pkgutil
+
+print(tabulate(
+    list(DictReader(pkgutil.get_data('orbiter.assets', 'supported_origins.csv').decode().splitlines())),
+    headers="keys",
+    tablefmt="pipe"
+))
+```
 
 For [Astronomer](https://www.astronomer.io) maintained Translation Rulesets,
 please [contact us](https://www.astronomer.io/contact/) for access to the most up-to-date versions.

@@ -16,3 +16,7 @@ dist
 orbiter-*-*
 astro
 demo
+test_binary
+workflow
+*.pyz
+orbiter-*

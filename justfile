@@ -3,7 +3,8 @@ set dotenv-load := true
 DOCS_DIR := "docs"
 SRC_DIR := "orbiter"
 EXTRAS := "dev"
-VERSION := `echo $(python -c 'from orbiter import __version__; print(__version__)')`
+VERSION := `echo $(python3 -c 'from orbiter import __version__; print(__version__)')`
+PYTHON := `which python || which python3`
 
 default:
   @just --choose
@@ -14,7 +15,7 @@ help:
 
 # Install project and python dependencies (incl. pre-commit) locally
 install EDITABLE='':
-    pip install {{EDITABLE}} '.[{{EXTRAS}}]'
+    {{ PYTHON }} -m pip install {{EDITABLE}} '.[{{EXTRAS}}]'
 
 # Install pre-commit to local project
 install-precommit: install
@@ -26,11 +27,11 @@ update-secrets:
 
 # Run pytests with config from pyproject.toml
 test:
-    pytest -c pyproject.toml
+    {{ PYTHON }} -m pytest -c pyproject.toml
 
 # Test and emit a coverage report
 test-with-coverage:
-    pytest -c pyproject.toml --cov=./ --cov-report=xml
+    {{ PYTHON }} -m pytest -c pyproject.toml --cov=./ --cov-report=xml
 
 # Run ruff and black (normally done with pre-commit)
 lint:
@@ -69,12 +70,34 @@ deploy: deploy-tag
 
 # Build the project
 build: install clean
-    python -m build
+    {{ PYTHON }} -m build
 
 # Package the `orbiter` binary
 build-binary: clean
-  python -m PyInstaller --onefile --noconfirm --clean --specpath dist --name astronomer-orbiter \
+  {{ PYTHON }} -m PyInstaller --onefile --noconfirm --clean --specpath dist --name astronomer-orbiter \
     --collect-all orbiter \
+    --hidden-import tzdata \
     --recursive-copy-metadata astronomer-orbiter \
     orbiter/__main__.py
   cp dist/astronomer-orbiter orbiter-$(uname -s | awk '{print tolower($0)}' )-$(uname -m)
+
+docker-build-binary:
+    #!/usr/bin/env bash
+    set -euxo pipefail
+    cat <<"EOF" | docker run --platform linux/amd64 -v `pwd`:/data -w /data -i ubuntu /bin/bash
+    apt update && \
+    apt install --yes python3 just pip && \
+    just install --break-system-packages && \
+    just build-binary
+    EOF
+
+docker-run-binary REPO='astronomer-orbiter-translations' RULESET='orbiter_translations.control_m.xml_base.translation_ruleset':
+    #!/usr/bin/env bash
+    set -euxo pipefail
+    cat <<"EOF" | docker run --platform linux/amd64 -v `pwd`:/data -w /data -i ubuntu /bin/bash
+    chmod +x ./orbiter-linux-x86_64 && \
+    set -a && source .env && set +a && \
+    ./orbiter-linux-x86_64 help && \
+    LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 install --repo={{REPO}} && \
+    LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 translate workflow/ output/ --ruleset {{RULESET}}
+    EOF
