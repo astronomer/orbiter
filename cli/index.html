@@ -48,6 +48,8 @@
       
     
     
+      <link rel="stylesheet" href="../assets/_markdown_exec_pyodide.css">
+    
       <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
       <link rel="stylesheet" href="../style.css">
@@ -293,6 +295,17 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    CLI
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -302,6 +315,76 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#orbiter" class="md-nav__link">
+    <span class="md-ellipsis">
+      orbiter
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="orbiter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#help" class="md-nav__link">
+    <span class="md-ellipsis">
+      help
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install" class="md-nav__link">
+    <span class="md-ellipsis">
+      install
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#translate" class="md-nav__link">
+    <span class="md-ellipsis">
+      translate
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logging
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -739,31 +822,132 @@
 
 
 <h1 id="cli">CLI<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h1>
-<h1 id="orbiter">orbiter<a class="headerlink" href="#orbiter" title="Permanent link">&para;</a></h1>
-<p><code>orbiter</code> is a CLI that runs on your workstation
-and converts workflow definitions from other tools to Airflow Projects.</p>
+<h2 id="orbiter">orbiter<a class="headerlink" href="#orbiter" title="Permanent link">&para;</a></h2>
+<p>Orbiter is a CLI that converts other workflows to Airflow Projects.</p>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>orbiter [OPTIONS] COMMAND [ARGS]...
 </code></pre></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>  --version  Show the version and exit.
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  --help     Show this message and exit.
-</code></pre></div>
-<h2 id="translate">translate<a class="headerlink" href="#translate" title="Permanent link">&para;</a></h2>
-<p>Translate workflow artifacts in an <code>INPUT_DIR</code> folder
-to an <code>OUTPUT_DIR</code> Airflow Project folder.</p>
-<p>Provide a specific ruleset with the <code>--ruleset</code> flag.</p>
-<p><code>INPUT_DIR</code> defaults to <code>$CWD/workflow</code></p>
-<p><code>OUTPUT_DIR</code> defaults to <code>$CWD/output</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--version</code></td>
+<td>boolean</td>
+<td>Show the version and exit.</td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>--help</code></td>
+<td>boolean</td>
+<td>Show this message and exit.</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="help">help<a class="headerlink" href="#help" title="Permanent link">&para;</a></h3>
+<p>List available Translation Rulesets</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>orbiter translate [OPTIONS] INPUT_DIR OUTPUT_DIR
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>orbiter help [OPTIONS]
 </code></pre></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>  -r, --ruleset TEXT      Qualified name of a TranslationRuleset  [required]
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  --format / --no-format  [optional] format the output with Ruff  [default:
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>                          format]
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  --help                  Show this message and exit.
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--help</code></td>
+<td>boolean</td>
+<td>Show this message and exit.</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="install">install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h3>
+<p>Install a new Orbiter Translation Ruleset from a repository</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>orbiter install [OPTIONS]
 </code></pre></div>
+<p><strong>Options:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-r</code>, <code>--repo</code></td>
+<td>choice (<code>astronomer-orbiter-translations</code> &#x7C; <code>orbiter-community-translations</code>)</td>
+<td>Choose a repository to install (will prompt, if not given)</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>-k</code>, <code>--key</code></td>
+<td>text</td>
+<td>[Optional] License Key to use for the translation ruleset.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Should look like 'AAAA-BBBB-1111-2222-3333-XXXX-YYYY-ZZZZ' | None |
+| <code>--help</code> | boolean | Show this message and exit. | <code>False</code> |</p>
+<h3 id="translate">translate<a class="headerlink" href="#translate" title="Permanent link">&para;</a></h3>
+<p>Translate workflows in an <code>INPUT_DIR</code> to an <code>OUTPUT_DIR</code> Airflow Project.</p>
+<p>Provide a specific ruleset with the <code>--ruleset</code> flag.</p>
+<p>Run <code>orbiter help</code> to see available rulesets.</p>
+<p><code>INPUT_DIR</code> defaults to <code>$CWD/workflow</code>.</p>
+<p><code>OUTPUT_DIR</code> defaults to <code>$CWD/output</code></p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>orbiter translate [OPTIONS] INPUT_DIR OUTPUT_DIR
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-r</code>, <code>--ruleset</code></td>
+<td>text</td>
+<td>Qualified name of a TranslationRuleset</td>
+<td>_required</td>
+</tr>
+<tr>
+<td><code>--format</code> / <code>--no-format</code></td>
+<td>boolean</td>
+<td>[optional] format the output with Ruff</td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>--help</code></td>
+<td>boolean</td>
+<td>Show this message and exit.</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
 <h2 id="logging">Logging<a class="headerlink" href="#logging" title="Permanent link">&para;</a></h2>
 <p>You can alter the verbosity of the CLI by setting the <code>LOG_LEVEL</code> environment variable. The default is <code>INFO</code>.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LOG_LEVEL</span><span class="o">=</span>DEBUG
@@ -826,6 +1010,8 @@ to an <code>OUTPUT_DIR</code> Airflow Project folder.</p>
     
     
       <script src="../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      
+        <script src="../assets/_markdown_exec_pyodide.js"></script>
       
     
   </body>

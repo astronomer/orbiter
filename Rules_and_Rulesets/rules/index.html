@@ -48,6 +48,8 @@
       
     
     
+      <link rel="stylesheet" href="../../assets/_markdown_exec_pyodide.css">
+    
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
       <link rel="stylesheet" href="../../style.css">
@@ -850,7 +852,7 @@
 
 
       <p>A <code>Rule</code> contains a python function that is evaluated and produces something
-(typically an <a href="../objects">Orbiter Object</a>) or nothing</p>
+(typically an <a href="../objects">Object</a>) or nothing</p>
 <p>A <code>Rule</code> can be created from a decorator
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="nd">@rule</span><span class="p">(</span><span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">... </span><span class="k">def</span> <span class="nf">my_rule</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
@@ -1011,8 +1013,11 @@ the passed <code>kwargs</code> are saved in a special <code>orbiter_kwargs</code
 
       <p>A <code>@dag_rule</code> decorator creates a <a class="autorefs autorefs-internal" href="#orbiter.rules.DAGRule"><code>DAGRule</code></a></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nd">@dag_rule</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">return</span> <span class="n">OrbiterDAG</span><span class="p">(</span><span class="n">dag_id</span><span class="o">=</span><span class="s2">&quot;foo&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OrbiterDAG</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">if</span> <span class="s1">&#39;id&#39;</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>        <span class="k">return</span> <span class="n">OrbiterDAG</span><span class="p">(</span><span class="n">dag_id</span><span class="o">=</span><span class="n">val</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span> <span class="n">file_path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">val</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span><span class="si">}</span><span class="s2">.py&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div>
 
 
@@ -1054,7 +1059,7 @@ the passed <code>kwargs</code> are saved in a special <code>orbiter_kwargs</code
 
       <p>A <code>@task_filter_rule</code> decorator creates a <a class="autorefs autorefs-internal" href="#orbiter.rules.TaskFilterRule"><code>TaskFilterRule</code></a></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nd">@task_filter_rule</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">return</span> <span class="p">[{</span><span class="s2">&quot;task_id&quot;</span><span class="p">:</span> <span class="s2">&quot;foo&quot;</span><span class="p">}]</span>
 </code></pre></div>
 <div class="admonition hint">
@@ -1151,7 +1156,10 @@ the passed <code>kwargs</code> are saved in a special <code>orbiter_kwargs</code
       <p>A <code>@task_rule</code> decorator creates a <a class="autorefs autorefs-internal" href="#orbiter.rules.TaskRule"><code>TaskRule</code></a></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nd">@task_rule</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OrbiterOperator</span> <span class="o">|</span> <span class="n">OrbiterTaskGroup</span><span class="p">:</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">return</span> <span class="n">OrbiterOperator</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="s2">&quot;foo&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">if</span> <span class="s1">&#39;id&#39;</span> <span class="ow">in</span> <span class="n">val</span> <span class="ow">and</span> <span class="s1">&#39;command&#39;</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>        <span class="k">return</span> <span class="n">OrbiterBashOperator</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span> <span class="n">bash_command</span><span class="o">=</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;command&#39;</span><span class="p">])</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div>
 
 
@@ -1245,7 +1253,7 @@ which takes an <a class="autorefs autorefs-internal" href="../../objects/dags/#o
 and returns a <a class="autorefs autorefs-internal" href="../../objects/Tasks/#orbiter.objects.task.OrbiterTaskDependency"><code>list[OrbiterTaskDependency]</code></a> or <code>None</code></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nd">@task_dependency_rule</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="n">OrbiterDAG</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OrbiterTaskDependency</span><span class="p">:</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">return</span> <span class="p">[</span><span class="n">OrbiterTaskDependency</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="s2">&quot;task_id&quot;</span><span class="p">,</span> <span class="n">downstream</span><span class="o">=</span><span class="s2">&quot;downstream&quot;</span><span class="p">)]</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">return</span> <span class="p">[</span><span class="n">OrbiterTaskDependency</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="s2">&quot;upstream&quot;</span><span class="p">,</span> <span class="n">downstream</span><span class="o">=</span><span class="s2">&quot;downstream&quot;</span><span class="p">)]</span>
 </code></pre></div>
 
 
@@ -1339,7 +1347,7 @@ which takes an <a class="autorefs autorefs-internal" href="../../objects/project
 after all other rules have been applied, and modifies it in-place.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nd">@post_processing_rule</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="n">OrbiterProject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">val</span><span class="o">.</span><span class="n">dags</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="s2">&quot;bar&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;Hello World&quot;</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">val</span><span class="o">.</span><span class="n">dags</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="s2">&quot;bar&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">doc</span> <span class="o">=</span> <span class="s2">&quot;Hello World&quot;</span>
 </code></pre></div>
 
 
@@ -1469,6 +1477,8 @@ after all other rules have been applied, and modifies it in-place.</p>
     
     
       <script src="../../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      
+        <script src="../../assets/_markdown_exec_pyodide.js"></script>
       
     
   </body>

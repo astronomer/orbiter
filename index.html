@@ -46,6 +46,8 @@
       
     
     
+      <link rel="stylesheet" href="assets/_markdown_exec_pyodide.css">
+    
       <link rel="stylesheet" href="assets/_mkdocstrings.css">
     
       <link rel="stylesheet" href="style.css">
@@ -861,14 +863,9 @@ from an <a href="./origins">Origin</a> system to an Airflow project.</p>
 If you do not have a compatible Python environment, pre-built binary executables of the <code>orbiter</code> CLI
 are available for download on the <a href="https://github.com/astronomer/orbiter/releases">Releases</a> page.</p>
 <h2 id="translate">Translate<a class="headerlink" href="#translate" title="Permanent link">&para;</a></h2>
-<p>You can utilize the <a href="./cli"><code>orbiter</code> CLI</a> with pre-built translations to convert workflows
+<p>You can utilize the <a href="./cli"><code>orbiter</code> CLI</a> with existing translations to convert workflows
 from other systems to Apache Airflow.</p>
-<p>The list of systems Orbiter has support for translating is listed at <a href="origins">Origins</a></p>
-<p>Use the <code>orbiter translate</code> command to convert workflows via a specific translation ruleset</p>
 <ol>
-<li>Determine the specific translation ruleset via the <a href="origins">Origins</a> page,
-    or <a href="#authoring-rulesets-customization">create a translation ruleset</a>,
-    if one does not exist</li>
 <li>Set up a new folder, and create a <code>workflow/</code> folder. Add your workflows files to it
     <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>.
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>└──<span class="w"> </span>workflow/
@@ -876,7 +873,15 @@ from other systems to Apache Airflow.</p>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span>├──<span class="w"> </span>workflow_b.json
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span>└──<span class="w"> </span>...
 </code></pre></div></li>
-<li>Invoke the <code>orbiter</code> CLI (replacing <code>&lt;RULESET&gt;</code> with your desired ruleset). This will produce output to an <code>output/</code> folder:
+<li>Determine the specific translation ruleset via:<ol>
+<li>the <a href="origins">Origins</a> documentation</li>
+<li>the <a href="./cli#help"><code>orbiter help</code></a> command</li>
+<li>or <a href="#authoring-rulesets-customization">by creating a translation ruleset</a>, if one does not exist</li>
+</ol>
+</li>
+<li>Install the specific translation ruleset via the <a href="./cli#install"><code>orbiter install</code></a> command</li>
+<li>Use the <a href="./cli#translate"><code>orbiter translate</code></a> command with the <code>&lt;RULESET&gt;</code> determined in the last step
+   This will produce output to an <code>output/</code> folder:
     <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>orbiter<span class="w"> </span>translate<span class="w"> </span>workflow/<span class="w"> </span>output/<span class="w"> </span>--ruleset<span class="w"> </span>&lt;RULESET&gt;
 </code></pre></div></li>
 <li>Review the contents of the <code>output/</code> folder. If extensions or customizations are required, review
@@ -943,7 +948,7 @@ from other systems to Apache Airflow.</p>
 </code></pre></div></td></tr></table></div></p>
 <ol>
 <li>Importing specific translation ruleset, determined via the <a href="origins">Origins</a> page</li>
-<li>Importing required <a href="./objects">Orbiter Objects</a></li>
+<li>Importing required <a href="./objects">Objects</a></li>
 <li>Importing required <a href="./Rules_and_Rulesets">Rule</a> types</li>
 <li>Create one or more <code>@rule</code> functions, as required. A higher priority means this rule will be applied first.
     <a href="./Rules_and_Rulesets/rules/#orbiter.rules.TaskRule"><code>@task_rule</code> Reference</a></li>
@@ -1045,6 +1050,8 @@ under <a href="https://creativecommons.org/licenses/by/3.0/us/legalcode">Creativ
     
     
       <script src="assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      
+        <script src="assets/_markdown_exec_pyodide.js"></script>
       
     
   </body>

@@ -48,6 +48,8 @@
       
     
     
+      <link rel="stylesheet" href="../../assets/_markdown_exec_pyodide.css">
+    
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
       <link rel="stylesheet" href="../../style.css">
@@ -862,7 +864,6 @@ which is a Directed Acyclic Graph (of <a href="../tasks">Tasks</a>).</p>
             names: List[str] | None
             sys_package: str | None
     }
-    click OrbiterRequirement href "project/#orbiter.objects.requirement.OrbiterRequirement" "OrbiterRequirement Documentation"
 
     OrbiterDAG "via schedule" --&gt; OrbiterTimetable
     OrbiterDAG --&gt; "many" OrbiterOperator
@@ -886,7 +887,7 @@ which is a Directed Acyclic Graph (of <a href="../tasks">Tasks</a>).</p>
             orbiter_env_vars: Set[OrbiterEnvVar]
             orbiter_includes: Set[OrbiterInclude]
     }
-    click OrbiterDAG href "dags/#orbiter.objects.dag.OrbiterDAG" "OrbiterDAG Documentation"
+    click OrbiterDAG href "#orbiter.objects.dag.OrbiterDAG" "OrbiterDAG Documentation"
 
     OrbiterTaskGroup --&gt; "many" OrbiterRequirement
     class OrbiterTaskGroup["orbiter.objects.task.OrbiterTaskGroup"] {
@@ -894,7 +895,6 @@ which is a Directed Acyclic Graph (of <a href="../tasks">Tasks</a>).</p>
             tasks: List[OrbiterOperator | OrbiterTaskGroup]
             add_downstream(str | List[str] | OrbiterTaskDependency)
     }
-    click OrbiterTaskGroup href "tasks#orbiter.objects.task_group.OrbiterTaskGroup" "OrbiterTaskGroup Documentation"
 
     OrbiterOperator --&gt; "many" OrbiterRequirement
     OrbiterOperator --&gt; "one" OrbiterPool
@@ -912,40 +912,35 @@ which is a Directed Acyclic Graph (of <a href="../tasks">Tasks</a>).</p>
             downstream: Set[OrbiterTaskDependency]
             add_downstream(str | List[str] | OrbiterTaskDependency)
     }
-    click OrbiterOperator href "tasks#orbiter.objects.task.OrbiterOperator" "OrbiterOperator Documentation"
 
     class OrbiterTaskDependency["orbiter.objects.task.OrbiterTaskDependency"] {
             task_id: TaskId
             downstream: TaskId | List[TaskId]
     }
-    click OrbiterTaskDependency href "tasks#orbiter.objects.task.OrbiterTaskDependency" "OrbiterTaskDependency Documentation"
 
     class OrbiterTimetable["orbiter.objects.timetables.OrbiterTimetable"] {
             imports: List[OrbiterRequirements]
             orbiter_includes: Set[OrbiterIncludes]
             **kwargs: dict
     }
-    click OrbiterTimetable href "project/#orbiter.objects.timetables.OrbiterTimetable" "OrbiterTimetable Documentation"
+    click OrbiterTimetable href "#orbiter.objects.timetables.OrbiterTimetable" "OrbiterTimetable Documentation"
 
     class OrbiterConnection["orbiter.objects.connection.OrbiterConnection"] {
             conn_id: str
             conn_type: str
             **kwargs
     }
-    click OrbiterConnection href "project/#orbiter.objects.connection.OrbiterConnection" "OrbiterConnection Documentation"
 
     class OrbiterEnvVar["orbiter.objects.env_var.OrbiterEnvVar"] {
             key: str
             value: str
     }
-    click OrbiterEnvVar href "project/#orbiter.objects.env_var.OrbiterEnvVar" "OrbiterEnvVar Documentation"
 
     class OrbiterPool["orbiter.objects.pool.OrbiterPool"] {
             name: str
             description: str | None
             slots: int | None
     }
-    click OrbiterPool href "project/#orbiter.objects.pool.OrbiterPool" "OrbiterPool Documentation"
 
     class OrbiterRequirement["orbiter.objects.requirement.OrbiterRequirement"] {
             package: str | None
@@ -953,13 +948,11 @@ which is a Directed Acyclic Graph (of <a href="../tasks">Tasks</a>).</p>
             names: List[str] | None
             sys_package: str | None
     }
-    click OrbiterRequirement href "project/#orbiter.objects.requirement.OrbiterRequirement" "OrbiterRequirement Documentation"
 
     class OrbiterVariable["orbiter.objects.variable.OrbiterVariable"] {
             key: str
             value: str
-    }
-    click OrbiterVariable href "project/#orbiter.objects.variable.OrbiterVariable" "OrbiterVariable Documentation"</code></pre>
+    }</code></pre>
 
 
 <div class="doc doc-object doc-class">
@@ -1628,6 +1621,8 @@ that can be supplied with multiple cron strings.</p>
     
     
       <script src="../../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      
+        <script src="../../assets/_markdown_exec_pyodide.js"></script>
       
     
   </body>
