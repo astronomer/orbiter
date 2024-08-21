@@ -68,13 +68,13 @@ classDiagram
     class OrbiterOperator["orbiter.objects.task.OrbiterOperator"] {
         --8<-- "orbiter/objects/task.py:mermaid-op-props"
     }
-    click OrbiterOperator href "tasks#orbiter.objects.task.OrbiterOperator" "OrbiterOperator Documentation"
+    click OrbiterOperator href "#orbiter.objects.task.OrbiterOperator" "OrbiterOperator Documentation"
 
     class OrbiterTask["orbiter.objects.task.OrbiterTask"] {
         <<OrbiterOperator>>
         --8<-- "orbiter/objects/task.py:mermaid-task-props"
     }
-    click OrbiterTask href "tasks#orbiter.objects.task.OrbiterTask" "OrbiterTask Documentation"
+    click OrbiterTask href "#orbiter.objects.task.OrbiterTask" "OrbiterTask Documentation"
 
     --8<-- "orbiter/objects/operators/bash.py:mermaid-relationships"
     class OrbiterBashOperator["orbiter.objects.operators.bash.OrbiterBashOperator"] {

@@ -99,44 +99,43 @@ TranslateFn = Annotated[
 @validate_call
 def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     """
-    Orbiter, by default, expects a folder containing text files (`.json`, `.xml`, `.yaml`, etc.)
-    which may have a structure like:
+    Orbiter expects a folder containing text files which may have a structure like:
     ```json
     {"<workflow name>": { ...<workflow properties>, "<task name>": { ...<task properties>} }}
     ```
 
     The default translation function (`orbiter.rules.rulesets.translate`) performs the following steps:
 
-    1. Look in the input folder for all files with the expected
-    [`TranslationRuleset.file_type`][orbiter.rules.rulesets.TranslationRuleset].
-        For each file, it will:
-        1. Load the file and turn it into a Python Dictionary
-        2. Apply the [`TranslationRuleset.dag_filter_ruleset`][orbiter.rules.rulesets.DAGFilterRuleset]
-            to filter down to keys suspected of being translatable to a DAG,
-            in priority order. For each suspected DAG dict:
-            1. Apply the [`TranslationRuleset.dag_ruleset`][orbiter.rules.rulesets.DAGRuleset],
-                to convert the object to an [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG],
-                in priority-order, stopping when the first rule returns a match.
-            2. Apply the [`TranslationRuleset.task_filter_ruleset`][orbiter.rules.rulesets.TaskFilterRuleset]
-                to filter down to keys suspected of being translatable to a Task,
-                in priority-order. For each suspected Task dict:
-                1. Apply the [`TranslationRuleset.task_ruleset`][orbiter.rules.rulesets.TaskRuleset],
-                    in priority-order, stopping when the first rule returns a match,
-                    to convert the dictionary to a specific type of Task. If no rule returns a match,
-                    the dict is filtered.
-            3. After the DAG and Tasks are mapped, the
-                [`TranslationRuleset.task_dependency_ruleset`][orbiter.rules.rulesets.TaskDependencyRuleset]
-                is applied in priority-order, stopping when the first rule returns a match,
-                to create a list of
-                [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency],
-                which are then added to each task in the
-                [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG]
-    2. Apply the [`TranslationRuleset.post_processing_ruleset`][orbiter.rules.rulesets.PostProcessingRuleset],
+    ![Diagram of Orbiter Translation](../orbiter_diagram.png)
+
+    1. **Find all files** with the expected
+        [`TranslationRuleset.file_type`][orbiter.rules.rulesets.TranslationRuleset]
+        (`.json`, `.xml`, `.yaml`, etc.) in the input folder. Load each file and turn it into a Python Dictionary.
+    2. **For each file:** Apply the [`TranslationRuleset.dag_filter_ruleset`][orbiter.rules.rulesets.DAGFilterRuleset]
+        to filter down to entries that can translate to a DAG, in priority order.
+        - **For each**: Apply the [`TranslationRuleset.dag_ruleset`][orbiter.rules.rulesets.DAGRuleset],
+        to convert the object to an [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG],
+        in priority-order, stopping when the first rule returns a match.
+        If no rule returns a match, the entry is filtered.
+    3. Apply the [`TranslationRuleset.task_filter_ruleset`][orbiter.rules.rulesets.TaskFilterRuleset]
+        to filter down to entries in the DAG that can translate to a Task, in priority-order.
+        - **For each:** Apply the [`TranslationRuleset.task_ruleset`][orbiter.rules.rulesets.TaskRuleset],
+            to convert the object to a specific Task, in priority-order, stopping when the first rule returns a match.
+            If no rule returns a match, the entry is filtered.
+    4. After the DAG and Tasks are mapped, the
+        [`TranslationRuleset.task_dependency_ruleset`][orbiter.rules.rulesets.TaskDependencyRuleset]
+        is applied in priority-order, stopping when the first rule returns a match,
+        to create a list of
+        [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency],
+        which are then added to each task in the
+        [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG]
+    5. Apply the [`TranslationRuleset.post_processing_ruleset`][orbiter.rules.rulesets.PostProcessingRuleset],
         against the [`OrbiterProject`][orbiter.objects.project.OrbiterProject], which can make modifications after all
         other rules have been applied.
-    3. Return the [`OrbiterProject`][orbiter.objects.project.OrbiterProject]
+    6. After translation - the [`OrbiterProject`][orbiter.objects.project.OrbiterProject]
+        is rendered to the output folder.
 
-    After translation - the [`OrbiterProject`][orbiter.objects.project.OrbiterProject] is rendered to the output folder.
+
     """
 
     def _get_files_with_extension(_extension: str, _input_dir: Path) -> List[Path]:

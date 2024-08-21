@@ -1,18 +1,15 @@
 """
-The "brain" of the Orbiter framework is in it's [`Rules`][orbiter.rules.Rule]
+The brain of the Orbiter framework is in it's [`Rules`][orbiter.rules.Rule]
 and the [`Rulesets`][orbiter.rules.rulesets.Ruleset] that contain them.
 
 - A [`Rule`][orbiter.rules.Rule] contains a python function that is evaluated and produces something
-(typically an [Orbiter Object](../objects)) or nothing
+(typically an [Object](../objects)) or nothing
 - A [`Ruleset`][orbiter.rules.rulesets.Ruleset] is a collection of [`Rules`][orbiter.rules.Rule] that are
     evaluated in priority order
 - A [`TranslationRuleset`][orbiter.rules.rulesets.TranslationRuleset]
     is a collection of [`Rulesets`][orbiter.rules.rulesets.Ruleset],
-    relating to an [Origin](../origins) and File Type (e.g. `.json`, `.xml`, etc.),
-    with a [`translation_fn` (e.g. `orbiter.rules.rulesets.translate`][orbiter.rules.rulesets.translate])
-    which determines how to apply the rulesets.
-
-![Diagram of Orbiter Translation](../orbiter_diagram.png)
+    relating to an [Origin](../origins) and [FileType][orbiter.rules.rulesets.load_filetype],
+    with a [`translate_fn`][orbiter.rules.rulesets.translate] which determines how to apply the rulesets.
 
 Different [`Rules`][orbiter.rules.Rule] are applied in different scenarios;
 such as for converting input to a DAG ([`@dag_rule`][orbiter.rules.DAGRule]),
@@ -20,11 +17,9 @@ or a specific Airflow Operator ([`@task_rule`][orbiter.rules.TaskRule]),
 or for filtering entries from the input data
 ([`@dag_filter_rule`][orbiter.rules.DAGFilterRule], [`@task_filter_rule`][orbiter.rules.TaskFilterRule]).
 
-A [`Rule`][orbiter.rules.Rule] should evaluate to a **single _something_** or nothing.
-
 !!! tip
 
-    If we want to map the following input
+    To map the following input
     ```json
     {
         "id": "my_task",
@@ -91,7 +86,7 @@ def rule(
 class Rule(BaseModel, Callable, extra="forbid"):
     """
     A `Rule` contains a python function that is evaluated and produces something
-    (typically an [Orbiter Object](../objects)) or nothing
+    (typically an [Object](../objects)) or nothing
 
     A `Rule` can be created from a decorator
     ```pycon
@@ -184,8 +179,11 @@ class DAGRule(Rule):
 
     ```python
     @dag_rule
-    def foo(val: dict) -> List[dict]:
-        return OrbiterDAG(dag_id="foo")
+    def foo(val: dict) -> OrbiterDAG | None:
+        if 'id' in val:
+            return OrbiterDAG(dag_id=val["id"], file_path=f"{val["id"]}.py")
+        else:
+            return None
     ```
     """
 
@@ -201,7 +199,7 @@ class TaskFilterRule(Rule):
 
     ```python
     @task_filter_rule
-    def foo(val: dict) -> List[dict]:
+    def foo(val: dict) -> List[dict] | None:
         return [{"task_id": "foo"}]
     ```
 
@@ -227,7 +225,10 @@ class TaskRule(Rule):
     ```python
     @task_rule
     def foo(val: dict) -> OrbiterOperator | OrbiterTaskGroup:
-        return OrbiterOperator(task_id="foo")
+        if 'id' in val and 'command' in val:
+            return OrbiterBashOperator(task_id=val['id'], bash_command=val['command'])
+        else:
+            return None
     ```
 
     :param val: A dictionary of the task
@@ -252,7 +253,7 @@ class TaskDependencyRule(Rule):
     ```python
     @task_dependency_rule
     def foo(val: OrbiterDAG) -> OrbiterTaskDependency:
-        return [OrbiterTaskDependency(task_id="task_id", downstream="downstream")]
+        return [OrbiterTaskDependency(task_id="upstream", downstream="downstream")]
     ```
 
     :param val: An [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG]
@@ -276,7 +277,7 @@ class PostProcessingRule(Rule):
     ```python
     @post_processing_rule
     def foo(val: OrbiterProject) -> None:
-        val.dags["foo"].tasks["bar"].description = "Hello World"
+        val.dags["foo"].tasks["bar"].doc = "Hello World"
     ```
 
     :param val: An [`OrbiterProject`][orbiter.objects.project.OrbiterProject]

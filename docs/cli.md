@@ -3,6 +3,8 @@
 ::: mkdocs-click
     :module: orbiter.__main__
     :command: orbiter
+    :depth: 1
+    :style: table
 
 ## Logging
 
