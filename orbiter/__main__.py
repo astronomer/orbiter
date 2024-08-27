@@ -170,7 +170,7 @@ def translate(
 
     Provide a specific ruleset with the `--ruleset` flag.
 
-    Run `orbiter help` to see available rulesets.
+    Run `orbiter list-rulesets` to see available rulesets.
 
     `INPUT_DIR` defaults to `$CWD/workflow`.
 
@@ -329,7 +329,7 @@ def install(
 
 # noinspection PyShadowingBuiltins
 @orbiter.command(help="List available Translation Rulesets")
-def help():
+def list_rulesets():
     console = Console()
 
     table = tabulate(
