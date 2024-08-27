@@ -1,7 +1,7 @@
 import ast
 from abc import ABC
 
-from orbiter.ast_helper import OrbiterASTBase, py_object
+from orbiter.ast_helper import OrbiterASTBase, py_object, py_reference
 from orbiter.objects import OrbiterBase, ImportList, OrbiterRequirement
 from orbiter.objects.task import RenderAttributes
 
@@ -44,11 +44,14 @@ class OrbiterCallback(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
     render_attributes: RenderAttributes = []
 
     def _to_ast(self) -> ast.Expr:
-        return py_object(
-            name=self.function,
-            **{
-                k: getattr(self, k)
-                for k in self.render_attributes
-                if (k and getattr(self, k)) or (k == "from_email")
-            },
-        )
+        if self.render_attributes:
+            return py_object(
+                name=self.function,
+                **{
+                    k: getattr(self, k)
+                    for k in self.render_attributes
+                    if (k and getattr(self, k)) or (k == "from_email")
+                },
+            )
+        else:
+            return py_reference(self.function)
