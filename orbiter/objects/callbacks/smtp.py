@@ -18,7 +18,7 @@ OrbiterCallback "implements" <|--  OrbiterSmtpNotifierCallback
 
 class OrbiterSmtpNotifierCallback(OrbiterCallback, extra="allow"):
     """
-    An [Airflow SMTP Callback (link)](https://airflow.apache.org/docs/apache-airflow-providers-smtp/stable/_api/airflow/providers/smtp/notifications/smtp/index.html)
+    An [Airflow SMTP Callback](https://airflow.apache.org/docs/apache-airflow-providers-smtp/stable/_api/airflow/providers/smtp/notifications/smtp/index.html)
 
     !!! note
 

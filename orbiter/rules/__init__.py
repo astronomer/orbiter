@@ -11,10 +11,11 @@ and the [`Rulesets`][orbiter.rules.rulesets.Ruleset] that contain them.
     relating to an [Origin](../origins) and `FileType`,
     with a [`translate_fn`][orbiter.rules.rulesets.translate] which determines how to apply the rulesets.
 
-Different [`Rules`][orbiter.rules.Rule] are applied in different scenarios;
-such as for converting input to a DAG ([`@dag_rule`][orbiter.rules.DAGRule]),
-or a specific Airflow Operator ([`@task_rule`][orbiter.rules.TaskRule]),
-or for filtering entries from the input data
+Different [`Rules`][orbiter.rules.Rule] are applied in different scenarios, such as:
+
+- converting input to an Airflow DAG ([`@dag_rule`][orbiter.rules.DAGRule]),
+- converting input to a specific Airflow Operator ([`@task_rule`][orbiter.rules.TaskRule]),
+- filtering entries from the input data
 ([`@dag_filter_rule`][orbiter.rules.DAGFilterRule], [`@task_filter_rule`][orbiter.rules.TaskFilterRule]).
 
 !!! tip
@@ -36,6 +37,8 @@ or for filtering entries from the input data
     def my_rule(val):
         if 'command' in val:
             return OrbiterBashOperator(task_id=val['id'], bash_command=val['command'])
+        else:
+            return None
     ```
 
     This returns a

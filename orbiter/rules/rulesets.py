@@ -222,9 +222,10 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
 
     ![Diagram of Orbiter Translation](../orbiter_diagram.png)
 
-    1. **Find all files** with the expected
+    1. [**Find all files**][orbiter.rules.rulesets.TranslationRuleset.get_files_with_extension] with the expected
         [`TranslationRuleset.file_type`][orbiter.rules.rulesets.TranslationRuleset]
-        (`.json`, `.xml`, `.yaml`, etc.) in the input folder. Load each file and turn it into a Python Dictionary.
+        (`.json`, `.xml`, `.yaml`, etc.) in the input folder.
+        - [**Load each file**][orbiter.rules.rulesets.TranslationRuleset.loads] and turn it into a Python Dictionary.
     2. **For each file:** Apply the [`TranslationRuleset.dag_filter_ruleset`][orbiter.rules.rulesets.DAGFilterRuleset]
         to filter down to entries that can translate to a DAG, in priority order.
         - **For each**: Apply the [`TranslationRuleset.dag_ruleset`][orbiter.rules.rulesets.DAGRuleset],
@@ -409,15 +410,16 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         {'a': {'Type': 'Folder'}, 'c': {'Type': 'Folder'}}
 
         ```
+        !!! tip
 
-        You cannot pass input without length
-        ```pycon
-        >>> ruleset.apply_many({})
-        ... # doctest: +IGNORE_EXCEPTION_DETAIL
-        Traceback (most recent call last):
-        RuntimeError: Input is not Collection[Any] with length!
+            You cannot pass input without length
+            ```pycon
+            >>> ruleset.apply_many({})
+            ... # doctest: +IGNORE_EXCEPTION_DETAIL
+            Traceback (most recent call last):
+            RuntimeError: Input is not Collection[Any] with length!
 
-        ```
+            ```
         :param input_val: List to evaluate ruleset over
         :type input_val: Collection[Any]
         :param take_first: Only take the first (if any) result from each ruleset application
@@ -640,7 +642,7 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
     :type dag_filter_ruleset: DAGFilterRuleset | dict
     :param dag_ruleset: [`DAGRuleset`][orbiter.rules.rulesets.DAGRuleset] (of [`DAGRules`][orbiter.rules.DAGRule])
     :type dag_ruleset: DAGRuleset | dict
-    :param task_filter_ruleset: [`TaskFilterRule`][orbiter.rules.rulesets.TaskFilterRule]
+    :param task_filter_ruleset: [`TaskFilterRuleset`][orbiter.rules.rulesets.TaskFilterRuleset]
         (of [`TaskFilterRule`][orbiter.rules.TaskFilterRule])
     :type task_filter_ruleset: TaskFilterRuleset | dict
     :param task_ruleset: [`TaskRuleset`][orbiter.rules.rulesets.TaskRuleset] (of [`TaskRules`][orbiter.rules.TaskRule])

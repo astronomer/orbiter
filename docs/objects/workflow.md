@@ -28,10 +28,6 @@ classDiagram
         --8<-- "orbiter/objects/task.py:mermaid-op-props"
     }
 
-    class OrbiterTaskDependency["orbiter.objects.task.OrbiterTaskDependency"] {
-        --8<-- "orbiter/objects/task.py:mermaid-td-props"
-    }
-
     class OrbiterTimetable["orbiter.objects.timetables.OrbiterTimetable"] {
         --8<-- "orbiter/objects/timetables/__init__.py:mermaid-props"
     }

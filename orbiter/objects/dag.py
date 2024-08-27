@@ -22,7 +22,6 @@ __mermaid__ = """
 OrbiterDAG --> "many" OrbiterInclude
 OrbiterDAG --> "many" OrbiterConnection
 OrbiterDAG --> "many" OrbiterEnvVar
-OrbiterDAG --> "many" OrbiterPool
 OrbiterDAG --> "many" OrbiterRequirement
 OrbiterDAG --> "many" OrbiterVariable
 --8<-- [end:mermaid-project-relationships]
@@ -83,8 +82,8 @@ def _get_imports_recursively(
 
 
 class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
-    """Represents an Airflow
-    [DAG](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html),
+    # noinspection PyUnresolvedReferences
+    """Represents an Airflow [DAG](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html),
     with its tasks and dependencies.
 
     Renders to a `.py` file in the `/dags` folder
@@ -108,6 +107,8 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     :type params: Dict[str, Any], optional
     :param doc_md: Documentation for the DAG with markdown support
     :type doc_md: str, optional
+    :param kwargs: Additional keyword arguments to pass to the DAG
+    :type kwargs: dict, optional
     :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """
 
@@ -124,6 +125,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     params: Dict[str, Any]
     doc_md: str | None
     tasks: Dict[str, OrbiterOperator]
+    kwargs: dict
     orbiter_kwargs: dict
     orbiter_conns: Set[OrbiterConnection]
     orbiter_vars: Set[OrbiterVariable]

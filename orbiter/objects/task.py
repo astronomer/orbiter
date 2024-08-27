@@ -25,7 +25,6 @@ OrbiterOperator --> "one" OrbiterPool
 OrbiterOperator --> "many" OrbiterConnection
 OrbiterOperator --> "many" OrbiterVariable
 OrbiterOperator --> "many" OrbiterEnvVar
-OrbiterOperator --> "many" OrbiterTaskDependency
 --8<-- [end:mermaid-dag-relationships]
 
 --8<-- [start:mermaid-task-relationships]
@@ -117,10 +116,12 @@ class OrbiterTaskDependency(BaseModel, extra="forbid"):
 class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     """
     **Abstract class** representing a
-    [Task in Airflow](https://airflow.apache.org/docs/apache-airflow/stable/tutorial/fundamentals.html#operators),
-    must be subclassed (such as [`OrbiterBashOperator`][orbiter.objects.operators.bash.OrbiterBashOperator])
+    [Task in Airflow](https://airflow.apache.org/docs/apache-airflow/stable/tutorial/fundamentals.html#operators).
 
-    Instantiation/inheriting:
+    **Must be subclassed** (such as [`OrbiterBashOperator`][orbiter.objects.operators.bash.OrbiterBashOperator],
+    or [`OrbiterTask`][orbiter.objects.task.OrbiterTask]).
+
+    Subclassing Example:
     ```pycon
     >>> from orbiter.objects import OrbiterRequirement
     >>> class OrbiterMyOperator(OrbiterOperator):
@@ -206,7 +207,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     pool: str | None
     pool_slots: int | None
     trigger_rule: str | None
-    downstream: Set[OrbiterTaskDependency]
+    downstream: Set[str]
     add_downstream(str | List[str] | OrbiterTaskDependency)
     --8<-- [end:mermaid-op-props]
     """
@@ -247,11 +248,10 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
 
 class OrbiterTask(OrbiterOperator, extra="allow"):
     """
-    A generic Airflow [`OrbiterOperator`][orbiter.objects.task.OrbiterOperator] that can be instantiated directly.
+    A generic version of [`OrbiterOperator`][orbiter.objects.task.OrbiterOperator] that can be instantiated directly.
 
-    The operator that is instantiated is inferred from the `imports` field.
-
-    The first `*Operator` or `*Sensor` import is used.
+    The operator that is instantiated is inferred from the `imports` field,
+    via the first `*Operator` or `*Sensor` import.
 
     [View info for specific operators at the Astronomer Registry.](https://registry.astronomer.io/)
 

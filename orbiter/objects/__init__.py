@@ -34,27 +34,27 @@ ImportList = Annotated[List[OrbiterRequirement], AfterValidator(validate_imports
 class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
     """**AbstractBaseClass** for Orbiter objects, provides a number of properties
 
-    :param imports: List of OrbiterRequirement objects
+    :param imports: List of [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement] objects
     :type imports: List[OrbiterRequirement]
     :param orbiter_kwargs: Optional dictionary of keyword arguments, to preserve what was originally parsed by a rule
     :type orbiter_kwargs: dict, optional
-    :param orbiter_conns: Optional set of OrbiterConnection objects
+    :param orbiter_conns: Optional set of [OrbiterConnection][orbiter.objects.connection.OrbiterConnection] objects
     :type orbiter_conns: Set[OrbiterConnection], optional
-    :param orbiter_vars: Optional set of OrbiterVariable objects
-    :type orbiter_vars: Set[OrbiterVariable], optional
-    :param orbiter_env_vars: Optional set of OrbiterEnvVar objects
+    :param orbiter_env_vars: Optional set of [OrbiterEnvVar][orbiter.objects.env_var.OrbiterEnvVar] objects
     :type orbiter_env_vars: Set[OrbiterEnvVar], optional
-    :param orbiter_includes: Optional set of OrbiterInclude objects
+    :param orbiter_includes: Optional set of [OrbiterInclude][orbiter.objects.include.OrbiterInclude] objects
     :type orbiter_includes: Set[OrbiterInclude], optional
+    :param orbiter_vars: Optional set of [OrbiterVariable][orbiter.objects.variable.OrbiterVariable] objects
+    :type orbiter_vars: Set[OrbiterVariable], optional
     """
 
     imports: ImportList
     orbiter_kwargs: dict = None
 
     orbiter_conns: Set[OrbiterConnection] | None = None
-    orbiter_vars: Set[OrbiterVariable] | None = None
     orbiter_env_vars: Set[OrbiterEnvVar] | None = None
     orbiter_includes: Set[OrbiterInclude] | None = None
+    orbiter_vars: Set[OrbiterVariable] | None = None
 
 
 def conn_id(conn_id: str, prefix: str = "", conn_type: str = "generic") -> dict:
