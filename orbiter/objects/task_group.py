@@ -12,7 +12,7 @@ from orbiter.ast_helper import (
     py_with,
     py_object,
     py_bitshift,
-)  # noqa: F401
+)
 from orbiter.objects import OrbiterBase, ImportList, OrbiterRequirement
 from orbiter.objects.task import (
     TaskId,
@@ -39,6 +39,7 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
 
     ```pycon
     >>> from orbiter.objects.operators.bash import OrbiterBashOperator
+    >>> from orbiter.ast_helper import render_ast
     >>> OrbiterTaskGroup(task_group_id="foo", tasks=[
     ...   OrbiterBashOperator(task_id="b", bash_command="b"),
     ...   OrbiterBashOperator(task_id="a", bash_command="a").add_downstream("b"),

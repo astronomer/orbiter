@@ -12,7 +12,7 @@ from orbiter.ast_helper import (
     OrbiterASTBase,
     py_function,
     py_bitshift,
-)  # noqa: F401
+)
 from orbiter.ast_helper import py_assigned_object
 from orbiter.objects import ImportList
 from orbiter.objects import OrbiterBase
@@ -48,6 +48,7 @@ def task_add_downstream(
     ```pycon
     >>> from orbiter.objects.operators.empty import OrbiterEmptyOperator
     >>> from orbiter.objects.task import task_add_downstream, OrbiterTaskDependency
+    >>> from orbiter.ast_helper import render_ast
     >>> render_ast(task_add_downstream(OrbiterEmptyOperator(task_id="task_id"), "downstream")._downstream_to_ast())
     'task_id_task >> downstream_task'
     >>> render_ast(
