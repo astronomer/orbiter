@@ -1,7 +1,11 @@
+import pytest
+
 from orbiter.__main__ import run
 from tests.conftest import manual_tests
 
 
+# noinspection PyUnreachableCode
+@pytest.mark.skip("Relies on orbiter-community-translations, not yet published")
 @manual_tests
 def test_integration():
     run("just docker-build-binary", shell=True, capture_output=True, text=True)
