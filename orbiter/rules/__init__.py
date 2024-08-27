@@ -2,13 +2,13 @@
 The brain of the Orbiter framework is in it's [`Rules`][orbiter.rules.Rule]
 and the [`Rulesets`][orbiter.rules.rulesets.Ruleset] that contain them.
 
-- A [`Rule`][orbiter.rules.Rule] contains a python function that is evaluated and produces something
-(typically an [Object](../objects)) or nothing
+- A [`Rule`][orbiter.rules.Rule] is a python function that is evaluated and produces **something**
+(typically an [Object](../objects)) or **nothing**
 - A [`Ruleset`][orbiter.rules.rulesets.Ruleset] is a collection of [`Rules`][orbiter.rules.Rule] that are
     evaluated in priority order
 - A [`TranslationRuleset`][orbiter.rules.rulesets.TranslationRuleset]
     is a collection of [`Rulesets`][orbiter.rules.rulesets.Ruleset],
-    relating to an [Origin](../origins) and [FileType][orbiter.rules.rulesets.load_filetype],
+    relating to an [Origin](../origins) and `FileType`,
     with a [`translate_fn`][orbiter.rules.rulesets.translate] which determines how to apply the rulesets.
 
 Different [`Rules`][orbiter.rules.Rule] are applied in different scenarios;
@@ -52,6 +52,8 @@ import re
 from typing import Callable, Any, Collection, TYPE_CHECKING, List
 
 from pydantic import BaseModel, Field
+
+from loguru import logger
 
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
 
@@ -147,11 +149,17 @@ class Rule(BaseModel, Callable, extra="forbid"):
     priority: int = Field(0, ge=0)
 
     def __call__(self, *args, **kwargs):
-        result = self.rule(*args, **kwargs)
-        # Save the original kwargs under orbiter_kwargs
-        if result:
-            if kwargs and hasattr(result, "orbiter_kwargs"):
-                setattr(result, "orbiter_kwargs", kwargs)
+        try:
+            result = self.rule(*args, **kwargs)
+            # Save the original kwargs under orbiter_kwargs
+            if result:
+                if kwargs and hasattr(result, "orbiter_kwargs"):
+                    setattr(result, "orbiter_kwargs", kwargs)
+        except Exception as e:
+            logger.warning(
+                f"[RULE]: {self.rule.__name__}\n[ERROR]:\n{type(e)} - {e}\n[INPUT]:\n{args}\n{kwargs}"
+            )
+            result = None
         return result
 
 
