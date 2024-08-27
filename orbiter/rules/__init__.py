@@ -47,6 +47,7 @@ or for filtering entries from the input data
 from __future__ import annotations
 
 import functools
+import json
 import re
 from typing import Callable, Any, Collection, TYPE_CHECKING, List
 
@@ -289,6 +290,21 @@ class PostProcessingRule(Rule):
 
 
 post_processing_rule: Callable[[...], PostProcessingRule] = rule
+
+
+@task_rule(priority=1)
+def cannot_map_rule(val: dict) -> OrbiterOperator | None:
+    """Can be used in a TaskRuleset.
+    Returns an `OrbiterEmptyOperator` with a doc string that says it cannot map the task.
+    Useful to ensure that tasks that cannot be mapped are still visible in the output.
+    """
+    from orbiter.objects.operators.empty import OrbiterEmptyOperator
+
+    # noinspection PyArgumentList
+    return OrbiterEmptyOperator(
+        task_id="UNKNOWN",
+        doc_md=f"""Input did not translate: `{json.dumps(val, default=str)}`""",
+    )
 
 
 EMPTY_RULE = Rule(rule=lambda _: None, priority=0)
