@@ -3,16 +3,19 @@ from __future__ import annotations
 import functools
 import inspect
 import re
+import uuid
 from _operator import add
 from abc import ABC
 from itertools import chain
 from pathlib import Path
-from typing import List, Any, Collection, Annotated, Callable, Union
+from tempfile import TemporaryDirectory
+from typing import List, Any, Collection, Annotated, Callable, Union, Generator
 
 from loguru import logger
 from pydantic import BaseModel, AfterValidator, validate_call
 
-from orbiter import FileType, import_from_qualname
+from orbiter import FileType
+from orbiter import import_from_qualname
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.project import OrbiterProject
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
@@ -96,6 +99,117 @@ TranslateFn = Annotated[
 
 
 # noinspection t
+def xmltodict_parse(input_str: str) -> Any:
+    """Calls `xmltodict.parse` and does post-processing fixes.
+
+    !!! note
+
+        The original [`xmltodict.parse`](https://pypi.org/project/xmltodict/) method returns EITHER:
+
+        - a dict (one child element of type)
+        - or a list of dict (many child element of type)
+
+        This behavior can be confusing, and is an issue with the original xml spec being referenced.
+
+        **This method deviates by standardizing to the latter case (always a `list[dict]`).**
+
+        **All XML elements will be a list of dictionaries, even if there's only one element.**
+
+    ```pycon
+    >>> xmltodict_parse("")
+    Traceback (most recent call last):
+    xml.parsers.expat.ExpatError: no element found: line 1, column 0
+    >>> xmltodict_parse("<a></a>")
+    {'a': None}
+    >>> xmltodict_parse("<a foo='bar'></a>")
+    {'a': [{'@foo': 'bar'}]}
+    >>> xmltodict_parse("<a foo='bar'><foo bar='baz'></foo></a>")  # Singleton - gets modified
+    {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz'}]}]}
+    >>> xmltodict_parse("<a foo='bar'><foo bar='baz'><bar><bop></bop></bar></foo></a>")  # Nested Singletons - modified
+    {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz', 'bar': [{'bop': None}]}]}]}
+    >>> xmltodict_parse("<a foo='bar'><foo bar='baz'></foo><foo bing='bop'></foo></a>")
+    {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz'}, {'@bing': 'bop'}]}]}
+
+    ```
+    :param input_str: The XML string to parse
+    :type input_str: str
+    :return: The parsed XML
+    :rtype: dict
+    """
+    import xmltodict
+
+    # noinspection t
+    def _fix(d):
+        """fix the dict in place, recursively, standardizing on a list of dict even if there's only one entry."""
+        # if it's a dict, descend to fix
+        if isinstance(d, dict):
+            for k, v in d.items():
+                # @keys are properties of elements, non-@keys are elements
+                if not k.startswith("@"):
+                    if isinstance(v, dict):
+                        # THE FIX
+                        # any non-@keys should be a list of dict, even if there's just one of the element
+                        d[k] = [v]
+                        _fix(v)
+                    else:
+                        _fix(v)
+        # if it's a list, descend to fix
+        if isinstance(d, list):
+            for v in d:
+                _fix(v)
+
+    output = xmltodict.parse(input_str)
+    _fix(output)
+    return output
+
+
+def _add_task_deduped(_task, _tasks, n=""):
+    """
+    If this task_id doesn't already exist, add it as normal to the tasks dictionary.
+    If this task_id does exist - add a number to the end and try again
+
+    ```pycon
+    >>> from pydantic import BaseModel
+    >>> class Task(BaseModel):
+    ...   task_id: str
+    >>> tasks = {}
+    >>> _add_task_deduped(Task(task_id="foo"), tasks); tasks
+    {'foo': Task(task_id='foo')}
+    >>> _add_task_deduped(Task(task_id="foo"), tasks); tasks
+    {'foo': Task(task_id='foo'), 'foo1': Task(task_id='foo1')}
+    >>> _add_task_deduped(Task(task_id="foo"), tasks); tasks
+    {'foo': Task(task_id='foo'), 'foo1': Task(task_id='foo1'), 'foo2': Task(task_id='foo2')}
+
+    ```
+    """
+    if hasattr(_task, "task_id"):
+        _id = "task_id"
+    elif hasattr(_task, "task_group_id"):
+        _id = "task_group_id"
+    else:
+        raise TypeError(
+            "Attempting to add a task without a `task_id` or `task_group_id` attribute"
+        )
+
+    old_task_id = getattr(_task, _id)
+    new_task_id = old_task_id + n
+    if new_task_id not in _tasks:
+        if n != "":
+            logger.warning(
+                f"{old_task_id} encountered more than once, task IDs must be unique! "
+                f"Modifying task ID to '{new_task_id}'!"
+            )
+        setattr(_task, _id, new_task_id)
+        _tasks[new_task_id] = _task
+    else:
+        try:
+            n = str(int(n) + 1)
+        except ValueError:
+            n = "1"
+        _add_task_deduped(_task, _tasks, n)
+
+
+# noinspection t
 @validate_call
 def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     """
@@ -104,7 +218,7 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     {"<workflow name>": { ...<workflow properties>, "<task name>": { ...<task properties>} }}
     ```
 
-    The default translation function (`orbiter.rules.rulesets.translate`) performs the following steps:
+    The standard translation function performs the following steps:
 
     ![Diagram of Orbiter Translation](../orbiter_diagram.png)
 
@@ -137,15 +251,6 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
 
 
     """
-
-    def _get_files_with_extension(_extension: str, _input_dir: Path) -> List[Path]:
-        return [
-            directory / file
-            for (directory, _, files) in _input_dir.walk()
-            for file in files
-            if _extension == file.lower()[-len(_extension) :]
-        ]
-
     if not isinstance(translation_ruleset, TranslationRuleset):
         raise RuntimeError(
             f"Error! type(translation_ruleset)=={type(translation_ruleset)}!=TranslationRuleset! Exiting!"
@@ -154,22 +259,10 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     # Create an initial OrbiterProject
     project = OrbiterProject()
 
-    extension = translation_ruleset.file_type.value.lower()
-
-    logger.info(f"Finding files with extension={extension} in {input_dir}")
-    files = _get_files_with_extension(extension, input_dir)
-
-    # .yaml is sometimes '.yml'
-    if extension == "yaml":
-        files.extend(_get_files_with_extension("yml", input_dir))
-
-    logger.info(f"Found {len(files)} files with extension={extension} in {input_dir}")
-
-    for file in files:
-        logger.info(f"Translating file={file.resolve()}")
-
-        # Load the file and convert it into a python dict
-        input_dict = load_filetype(file.read_text(), translation_ruleset.file_type)
+    for i, (file, input_dict) in enumerate(
+        translation_ruleset.get_files_with_extension(input_dir)
+    ):
+        logger.info(f"Translating [File {i}]={file.resolve()}")
 
         # DAG FILTER Ruleset - filter down to keys suspected of being translatable to a DAG, in priority order.
         dag_dicts = functools.reduce(
@@ -512,6 +605,10 @@ class PostProcessingRuleset(Ruleset):
     ruleset: List[PostProcessingRule | Rule | Callable[[OrbiterProject], None] | dict]
 
 
+EMPTY_RULESET = {"ruleset": [EMPTY_RULE]}
+"""Empty ruleset, for testing"""
+
+
 class TranslationRuleset(BaseModel, ABC, extra="forbid"):
     """
     A `Ruleset` is a collection of [`Rules`][orbiter.rules.Rule] that are
@@ -570,137 +667,122 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
     post_processing_ruleset: PostProcessingRuleset | dict
     translate_fn: TranslateFn = translate
 
+    @validate_call
+    def loads(self, input_str: str) -> dict:
+        """
+        Converts all files of type into a Python dictionary "intermediate representation" form,
+        prior to any rulesets being applied.
 
-def _add_task_deduped(_task, _tasks, n=""):
-    """
-    If this task_id doesn't already exist, add it as normal to the tasks dictionary.
-    If this task_id does exist - add a number to the end and try again
+        | FileType | Conversion Method                                           |
+        |----------|-------------------------------------------------------------|
+        | `XML`    | [`xmltodict_parse`][orbiter.rules.rulesets.xmltodict_parse] |
+        | `YAML`   | `yaml.safe_load`                                            |
+        | `JSON`   | `json.loads`                                                |
 
-    ```pycon
-    >>> from pydantic import BaseModel
-    >>> class Task(BaseModel):
-    ...   task_id: str
-    >>> tasks = {}
-    >>> _add_task_deduped(Task(task_id="foo"), tasks); tasks
-    {'foo': Task(task_id='foo')}
-    >>> _add_task_deduped(Task(task_id="foo"), tasks); tasks
-    {'foo': Task(task_id='foo'), 'foo1': Task(task_id='foo1')}
-    >>> _add_task_deduped(Task(task_id="foo"), tasks); tasks
-    {'foo': Task(task_id='foo'), 'foo1': Task(task_id='foo1'), 'foo2': Task(task_id='foo2')}
+        :param input_str: The string to convert to a dictionary
+        :type input_str: str
+        :return: The dictionary representation of the input_str
+        :rtype: dict
+        """
 
-    ```
-    """
-    new_task_id = _task.task_id + n
-    if new_task_id not in _tasks:
-        if n != "":
-            logger.warning(
-                f"{_task.task_id} encountered more than once, task IDs must be unique! "
-                f"Modifying task ID to '{new_task_id}'!"
+        if self.file_type == FileType.JSON:
+            import json
+
+            return json.loads(input_str)
+        elif self.file_type == FileType.YAML:
+            import yaml
+
+            return yaml.safe_load(input_str)
+        elif self.file_type == FileType.XML:
+            return xmltodict_parse(input_str)
+        else:
+            raise NotImplementedError(f"Cannot load file_type={self.file_type}")
+
+    @validate_call
+    def dumps(self, input_dict: dict) -> str:
+        """
+        Convert Python dictionary back to source string form, useful for testing
+
+        | FileType | Conversion Method   |
+        |----------|---------------------|
+        | `XML`    | `xmltodict.unparse` |
+        | `YAML`   | `yaml.safe_dump`    |
+        | `JSON`   | `json.dumps`        |
+
+        :param input_dict: The dictionary to convert to a string
+        :type input_dict: dict
+        :return str: The string representation of the input_dict, in the file_type format
+        :rtype: str
+        """
+        if self.file_type == FileType.JSON:
+            import json
+
+            return json.dumps(input_dict, indent=2)
+        elif self.file_type == FileType.YAML:
+            import yaml
+
+            return yaml.safe_dump(input_dict)
+        elif self.file_type == FileType.XML:
+            import xmltodict
+
+            return xmltodict.unparse(input_dict)
+        else:
+            raise NotImplementedError(f"Cannot dump file_type={self.file_type}")
+
+    def get_files_with_extension(self, input_dir: Path) -> Generator[Path, dict]:
+        """
+        A generator that yields files with a specific extension(s) in a directory
+
+        :param input_dir: The directory to search in
+        :type input_dir: Path
+        :return: Generator item of (Path, dict) for each file found
+        :rtype: Generator[Path, dict]
+        """
+        extension = f".{self.file_type.value.lower()}"
+        extensions = [extension]
+
+        # YAML and YML are both valid extensions
+        extension_sub = {
+            "yaml": "yml",
+        }
+        if other_extension := extension_sub.get(self.file_type.value.lower()):
+            extensions.append(f".{other_extension}")
+
+        logger.debug(f"Finding files with extension={extensions} in {input_dir}")
+        for directory, _, files in input_dir.walk():
+            logger.debug(f"Checking directory={directory}")
+            for file in files:
+                file = directory / file
+                if file.suffix.lower() in extensions:
+                    logger.debug(f"File={file} matches extension={extensions}")
+                    yield (
+                        # Return the file path
+                        file,
+                        # and load the file and convert it into a python dict
+                        self.loads(file.read_text()),
+                    )
+
+    def test(self, input_value: str | dict) -> OrbiterProject:
+        """
+        Test an input against the whole ruleset.
+        - 'input_dict' (a parsed python dict)
+        - or 'input_str' (raw value) to test against the ruleset.
+
+        :param input_value: The input to test
+            can be either a dict (passed to `translate_ruleset.dumps()` before `translate_ruleset.loads()`)
+            or a string (read directly by `translate_ruleset.loads()`)
+        :type input_value: str | dict
+        :return: OrbiterProject produced after applying the ruleset
+        :rtype: OrbiterProject
+        """
+        with TemporaryDirectory() as tempdir:
+            file = Path(tempdir) / f"{uuid.uuid4()}.{self.file_type.value}"
+            file.write_text(
+                self.dumps(input_value)
+                if isinstance(input_value, dict)
+                else input_value
             )
-        _task.task_id = new_task_id
-        _tasks[new_task_id] = _task
-    else:
-        try:
-            n = str(int(n) + 1)
-        except ValueError:
-            n = "1"
-        _add_task_deduped(_task, _tasks, n)
-
-
-EMPTY_RULESET = {"ruleset": [EMPTY_RULE]}
-"""Empty ruleset, for testing"""
-
-
-@validate_call
-def load_filetype(input_str: str, file_type: FileType) -> dict:
-    """
-    Orbiter converts all file types into a Python dictionary "intermediate representation" form,
-    prior to any rulesets being applied.
-
-    | FileType | Conversion Method                                           |
-    |----------|-------------------------------------------------------------|
-    | `XML`    | [`xmltodict_parse`][orbiter.rules.rulesets.xmltodict_parse] |
-    | `YAML`   | `yaml.safe_load`                                            |
-    | `JSON`   | `json.loads`                                                |
-    """
-
-    if file_type == FileType.JSON:
-        import json
-
-        return json.loads(input_str)
-    elif file_type == FileType.YAML:
-        import yaml
-
-        return yaml.safe_load(input_str)
-    elif file_type == FileType.XML:
-        return xmltodict_parse(input_str)
-    else:
-        raise NotImplementedError(f"Cannot load file_type={file_type}")
-
-
-# noinspection t
-def xmltodict_parse(input_str: str) -> Any:
-    """Calls `xmltodict.parse` and does post-processing fixes.
-
-    !!! note
-
-        The original [`xmltodict.parse`](https://pypi.org/project/xmltodict/) method returns EITHER:
-
-        - a dict (one child element of type)
-        - or a list of dict (many child element of type)
-
-        This behavior can be confusing, and is an issue with the original xml spec being referenced.
-
-        **This method deviates by standardizing to the latter case (always a `list[dict]`).**
-
-        **All XML elements will be a list of dictionaries, even if there's only one element.**
-
-    ```pycon
-    >>> xmltodict_parse("")
-    Traceback (most recent call last):
-    xml.parsers.expat.ExpatError: no element found: line 1, column 0
-    >>> xmltodict_parse("<a></a>")
-    {'a': None}
-    >>> xmltodict_parse("<a foo='bar'></a>")
-    {'a': [{'@foo': 'bar'}]}
-    >>> xmltodict_parse("<a foo='bar'><foo bar='baz'></foo></a>")  # Singleton - gets modified
-    {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz'}]}]}
-    >>> xmltodict_parse("<a foo='bar'><foo bar='baz'><bar><bop></bop></bar></foo></a>")  # Nested Singletons - modified
-    {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz', 'bar': [{'bop': None}]}]}]}
-    >>> xmltodict_parse("<a foo='bar'><foo bar='baz'></foo><foo bing='bop'></foo></a>")
-    {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz'}, {'@bing': 'bop'}]}]}
-
-    ```
-    :param input_str: The XML string to parse
-    :type input_str: str
-    :return: The parsed XML
-    :rtype: dict
-    """
-    import xmltodict
-
-    # noinspection t
-    def _fix(d):
-        """fix the dict in place, recursively, standardizing on a list of dict even if there's only one entry."""
-        # if it's a dict, descend to fix
-        if isinstance(d, dict):
-            for k, v in d.items():
-                # @keys are properties of elements, non-@keys are elements
-                if not k.startswith("@"):
-                    if isinstance(v, dict):
-                        # THE FIX
-                        # any non-@keys should be a list of dict, even if there's just one of the element
-                        d[k] = [v]
-                        _fix(v)
-                    else:
-                        _fix(v)
-        # if it's a list, descend to fix
-        if isinstance(d, list):
-            for v in d:
-                _fix(v)
-
-    output = xmltodict.parse(input_str)
-    _fix(output)
-    return output
+            return self.translate_fn(translation_ruleset=self, input_dir=file.parent)
 
 
 if __name__ == "__main__":
