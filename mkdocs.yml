@@ -109,5 +109,7 @@ plugins:
           docstring_options:
             trim_doctest_flags: true
           show_bases: false
+          extensions:
+          - griffe_inherited_docstrings
 
 copyright: "Apache Airflow® is a trademark of the Apache Software Foundation. Copyright 2024 Astronomer, Inc."

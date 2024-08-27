@@ -33,6 +33,10 @@ test:
 test-with-coverage:
     {{ PYTHON }} -m pytest -c pyproject.toml --cov=./ --cov-report=xml
 
+# Run integration tests
+test-integration $MANUAL_TESTS="true":
+    @just test
+
 # Run ruff and black (normally done with pre-commit)
 lint:
     ruff check .
@@ -51,7 +55,7 @@ deploy-docs UPSTREAM="origin": clean
 
 # Remove temporary or build folders
 clean:
-    rm -rf build dist site *.egg-info
+    rm -rf build dist site *.egg-info *.pyz orbiter-* workflow output
     find . | grep -E "(__pycache__|\.pyc|\.pyo$$)" | xargs rm -rf
 
 # Tag as v$(<src>.__version__) and push to Github
@@ -91,13 +95,14 @@ docker-build-binary:
     just build-binary
     EOF
 
-docker-run-binary REPO='astronomer-orbiter-translations' RULESET='orbiter_translations.control_m.xml_base.translation_ruleset':
+docker-run-binary REPO='orbiter-community-translations' RULESET='orbiter_translations.oozie.xml_demo.translation_ruleset':
     #!/usr/bin/env bash
     set -euxo pipefail
     cat <<"EOF" | docker run --platform linux/amd64 -v `pwd`:/data -w /data -i ubuntu /bin/bash
     chmod +x ./orbiter-linux-x86_64 && \
     set -a && source .env && set +a && \
-    ./orbiter-linux-x86_64 help && \
+    ./orbiter-linux-x86_64 list-rulesets && \
+    mkdir -p workflow && \
     LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 install --repo={{REPO}} && \
     LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 translate workflow/ output/ --ruleset {{RULESET}}
     EOF
