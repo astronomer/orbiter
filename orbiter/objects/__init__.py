@@ -11,6 +11,16 @@ from orbiter.objects.variable import OrbiterVariable
 from orbiter.objects.include import OrbiterInclude
 
 
+CALLBACK_KEYS = [
+    "on_success_callback",
+    "on_failure_callback",
+    "sla_miss_callback",
+    "on_retry_callback",
+    "on_execute_callback",
+    "on_skipped_callback",
+]
+
+
 def validate_imports(v):
     assert len(v)
     for i in v:

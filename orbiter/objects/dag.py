@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 from datetime import datetime
+from functools import reduce
 from pathlib import Path
 from typing import Annotated, Any, Dict, Iterable, List, Callable
 
@@ -10,8 +11,7 @@ from pydantic import AfterValidator, validate_call
 
 from orbiter import clean_value
 from orbiter.ast_helper import OrbiterASTBase, py_object, py_with
-from orbiter.objects import ImportList, OrbiterBase
-from orbiter.objects.callbacks import OrbiterCallback
+from orbiter.objects import ImportList, OrbiterBase, CALLBACK_KEYS
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
 from orbiter.objects.task_group import OrbiterTaskGroup
@@ -41,32 +41,45 @@ DagId = Annotated[str, AfterValidator(lambda d: to_dag_id(d))]
 def _get_imports_recursively(
     tasks: Iterable[OrbiterOperator | OrbiterTaskGroup],
 ) -> List[OrbiterRequirement]:
-    imports = []
-    extra_attributes_imports = []
-    for task in tasks:
-        for callback in [
-            callback
-            for callback in [
-                ((task.__dict__ or {}) | (task.model_extra or {})).get(
-                    "on_failure_callback"
-                ),
-                ((task.__dict__ or {}) | (task.model_extra or {})).get(
-                    "on_success_callback"
-                ),
-            ]
-            if callback
-        ]:
-            callback: OrbiterCallback
-            extra_attributes_imports.extend(callback.imports)
+    """
 
-        imports.extend(
-            task.imports
-            + extra_attributes_imports
-            + _get_imports_recursively(task.tasks)
-            if isinstance(task, OrbiterTaskGroup)
-            else task.imports + extra_attributes_imports
-        )
-    return imports
+    >>> from orbiter.objects.task import OrbiterTask
+    >>> from orbiter.objects.task_group import OrbiterTaskGroup
+    >>> from orbiter.objects.callbacks import OrbiterCallback
+    >>> _get_imports_recursively([
+    ...     OrbiterTask(task_id="foo", imports=[OrbiterRequirement(names=['foo'])]),
+    ...     OrbiterTaskGroup(task_group_id="bar", imports=[OrbiterRequirement(names=['bar'])], tasks=[
+    ...         OrbiterTask(task_id="baz", imports=[OrbiterRequirement(names=['baz'])],
+    ...             on_failure_callback=OrbiterCallback(imports=[OrbiterRequirement(names=['qux'])], function='qux')
+    ...        )
+    ...     ])
+    ... ])
+    ... # doctest: +ELLIPSIS
+    [OrbiterRequirements(...names=[bar]...names=[baz]...names=[foo]...names=[qux]...]
+
+    """
+    imports = set()
+    for task in tasks:
+        # Add task imports
+        imports |= set(task.imports)
+
+        def reduce_imports_from_callback(old, item):
+            try:
+                # Look for on_failure_callback
+                task_props = (getattr(task, "model_extra", {}) or {}) | (
+                    getattr(task, "__dict__", {}) or {}
+                )
+                callback = task_props.get(item)
+                # get imports from callback, merge them all
+                return old | set(getattr(callback, "imports"))
+            except (AttributeError, KeyError):
+                return old
+
+        imports |= reduce(reduce_imports_from_callback, CALLBACK_KEYS, set())
+        if hasattr(task, "tasks"):
+            # descend, for a task group
+            imports |= set(_get_imports_recursively(task.tasks))
+    return list(sorted(imports, key=str))
 
 
 class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
@@ -301,6 +314,13 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
                 if isinstance(self.schedule, OrbiterTimetable)
                 else set()
             )
+            | reduce(
+                # Look for e.g. on_failure_callback in model_extra, get imports, merge them all
+                lambda old, item: old
+                | set(getattr(self.model_extra.get(item, {}), "imports", set())),
+                CALLBACK_KEYS,
+                set(),
+            )
         )
 
         imports = [i._to_ast() for i in sorted(pre_imports)]
@@ -311,14 +331,11 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         )
 
         # foo >> bar
-        task_dependencies = sorted(
-            [
-                downstream
-                for task in self.tasks.values()
-                for downstream in task.downstream
-            ]
-        )
-        task_dependencies = [downstream._to_ast() for downstream in task_dependencies]
+        task_dependencies = [
+            task._downstream_to_ast()
+            for task in sorted(self.tasks.values())
+            if task._downstream_to_ast()
+        ]
 
         # with DAG(...) as dag:
         with_dag = py_with(

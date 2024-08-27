@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 from enum import Enum
 from typing import Any, Tuple
@@ -9,6 +10,9 @@ __version__ = "1.0.1"
 version = __version__
 
 KG_ACCOUNT_ID = "3b189b4c-c047-4fdb-9b46-408aa2978330"
+
+ORBITER_TASK_SUFFIX = os.getenv("ORBITER_TASK_SUFFIX", "_task")
+"""By default, we add `_task` as a suffix to a task name to prevent name collision issues. This can be overridden."""
 
 
 class FileType(Enum):

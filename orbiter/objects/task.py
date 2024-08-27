@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import ast
 from abc import ABC
-from typing import Set, List, ClassVar, Annotated, Callable, Literal
+from typing import Set, List, ClassVar, Annotated, Callable
 
 from loguru import logger
 from pydantic import AfterValidator, BaseModel, validate_call
 
-from orbiter import clean_value
-from orbiter.ast_helper import OrbiterASTBase, py_bitshift, py_function
+from orbiter import clean_value, ORBITER_TASK_SUFFIX
+from orbiter.ast_helper import (
+    OrbiterASTBase,
+    py_function,
+    py_bitshift,
+)  # noqa: F401
 from orbiter.ast_helper import py_assigned_object
 from orbiter.objects import ImportList
 from orbiter.objects import OrbiterBase
@@ -37,57 +41,63 @@ TaskId = Annotated[str, AfterValidator(lambda t: to_task_id(t))]
 def task_add_downstream(
     self, task_id: str | List[str] | OrbiterTaskDependency
 ) -> "OrbiterOperator" | "OrbiterTaskGroup":  # noqa: F821
+    # noinspection PyProtectedMember
     """
     Add a downstream task dependency
-    """
+
+    ```pycon
+    >>> from orbiter.objects.operators.empty import OrbiterEmptyOperator
+    >>> from orbiter.objects.task import task_add_downstream, OrbiterTaskDependency
+    >>> render_ast(task_add_downstream(OrbiterEmptyOperator(task_id="task_id"), "downstream")._downstream_to_ast())
+    'task_id_task >> downstream_task'
+    >>> render_ast(
+    ...     task_add_downstream(OrbiterEmptyOperator(task_id="task_id"),
+    ...     OrbiterTaskDependency(task_id="task_id", downstream="downstream"))._downstream_to_ast()
+    ... )
+    'task_id_task >> downstream_task'
+    >>> render_ast(task_add_downstream(
+    ...     OrbiterEmptyOperator(task_id="task_id"),
+    ...     ["downstream"]
+    ... )._downstream_to_ast())
+    'task_id_task >> downstream_task'
+    >>> render_ast(task_add_downstream(
+    ...     OrbiterEmptyOperator(task_id="task_id"),
+    ...     ["downstream", "downstream2"]
+    ... )._downstream_to_ast())
+    'task_id_task >> [downstream2_task, downstream_task]'
+
+    ```
+    """  # noqa: E501
     if isinstance(task_id, OrbiterTaskDependency):
         task_dependency = task_id
         if task_dependency.task_id != self.task_id:
             raise ValueError(
                 f"task_dependency={task_dependency} has a different task_id than {self.task_id}"
             )
-        self.downstream.add(task_dependency)
+        # do normal parsing logic, but with these downstream items
+        task_id = task_dependency.downstream
+
+    if isinstance(task_id, str):
+        self.downstream |= {to_task_id(task_id)}
+        return self
+    else:
+        if not len(task_id):
+            return self
+
+        downstream_task_id = {to_task_id(t) for t in task_id}
+        logger.debug(f"Adding downstream {downstream_task_id} to {self.task_id}")
+        self.downstream |= downstream_task_id
         return self
 
-    if not len(task_id):
-        return self
 
-    if len(task_id) == 1:
-        task_id = task_id[0]
-    downstream_task_id = (
-        [to_task_id(t) for t in task_id]
-        if isinstance(task_id, list)
-        else to_task_id(task_id)
-    )
-    logger.debug(f"Adding downstream {downstream_task_id} to {self.task_id}")
-    self.downstream.add(
-        OrbiterTaskDependency(task_id=self.task_id, downstream=downstream_task_id)
-    )
-    return self
-
-
-class OrbiterTaskDependency(OrbiterASTBase, BaseModel, extra="forbid"):
+class OrbiterTaskDependency(BaseModel, extra="forbid"):
     """Represents a task dependency, which is added to either an
     [`OrbiterOperator`][orbiter.objects.task.OrbiterOperator]
     or an [`OrbiterTaskGroup`][orbiter.objects.task_group.OrbiterTaskGroup].
 
-    Can take a single downstream `task_id`
-    ```pycon
-    >>> OrbiterTaskDependency(task_id="task_id", downstream="downstream")
-    task_id_task >> downstream_task
-
-    ```
-
-    or a list of downstream `task_ids`
-    ```pycon
-    >>> OrbiterTaskDependency(task_id="task_id", downstream=["a", "b"])
-    task_id_task >> [a_task, b_task]
-
-    ```
-
     :param task_id: The task_id for the operator
     :type task_id: str
-    :param downstream: downstream tasks
+    :param downstream: downstream task(s)
     :type downstream: str | List[str]
     """
 
@@ -96,16 +106,11 @@ class OrbiterTaskDependency(OrbiterASTBase, BaseModel, extra="forbid"):
     downstream: TaskId | List[TaskId]
     # --8<-- [end:mermaid-td-props]
 
-    def _to_ast(self):
-        if isinstance(self.downstream, str):
-            return py_bitshift(
-                to_task_id(self.task_id, "_task"), to_task_id(self.downstream, "_task")
-            )
-        elif isinstance(self.downstream, list):
-            return py_bitshift(
-                to_task_id(self.task_id, "_task"),
-                [to_task_id(t, "_task") for t in self.downstream],
-            )
+    def __str__(self):
+        return f"{self.task_id} >> {self.downstream}"
+
+    def __repr__(self):
+        return str(self)
 
 
 class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
@@ -128,15 +133,16 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
 
     Adding single downstream tasks:
     ```pycon
-    >>> foo.add_downstream("downstream").downstream
-    {task_id_task >> downstream_task}
+    >>> from orbiter.ast_helper import render_ast
+    >>> render_ast(foo.add_downstream("downstream")._downstream_to_ast())
+    'task_id_task >> downstream_task'
 
     ```
 
     Adding multiple downstream tasks:
     ```pycon
-    >>> sorted(list(foo.add_downstream(["a", "b"]).downstream))
-    [task_id_task >> [a_task, b_task], task_id_task >> downstream_task]
+    >>> render_ast(foo.add_downstream(["a", "b"])._downstream_to_ast())
+    'task_id_task >> [a_task, b_task, downstream_task]'
 
     ```
 
@@ -167,7 +173,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     :param operator: Operator name
     :type operator: str, optional
     :param downstream: Downstream tasks, defaults to `set()`
-    :type downstream: Set[OrbiterTaskDependency], optional
+    :type downstream: Set[str], optional
     :param **kwargs: Other properties that may be passed to operator
     :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """
@@ -182,7 +188,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     pool: str | None = None
     pool_slots: int | None = None
     orbiter_pool: OrbiterPool | None = None
-    downstream: Set[OrbiterTaskDependency] = set()
+    downstream: Set[str] = set()
 
     render_attributes: RenderAttributes = [
         "task_id",
@@ -209,6 +215,21 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     ) -> "OrbiterOperator":
         return task_add_downstream(self, task_id)
 
+    def _downstream_to_ast(self) -> List[ast.stmt]:
+        if not self.downstream:
+            return []
+        elif len(self.downstream) == 1:
+            (t,) = tuple(self.downstream)
+            return py_bitshift(
+                to_task_id(self.task_id, ORBITER_TASK_SUFFIX),
+                to_task_id(t, ORBITER_TASK_SUFFIX),
+            )
+        else:
+            return py_bitshift(
+                to_task_id(self.task_id, ORBITER_TASK_SUFFIX),
+                sorted([to_task_id(t, ORBITER_TASK_SUFFIX) for t in self.downstream]),
+            )
+
     def _to_ast(self) -> ast.stmt:
         def prop(k):
             attr = getattr(self, k, None) or getattr(self.model_extra, k, None)
@@ -216,7 +237,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
 
         # foo = Bar(x=x,y=y, z=z)
         return py_assigned_object(
-            to_task_id(self.task_id, "_task"),
+            to_task_id(self.task_id, ORBITER_TASK_SUFFIX),
             self.operator,
             **{k: prop(k) for k in self.render_attributes if k and getattr(self, k)},
             **{k: prop(k) for k in (self.model_extra.keys() or [])},
@@ -291,7 +312,7 @@ class OrbiterTask(OrbiterOperator, extra="allow"):
         [operator] = operator_names
 
         self_as_ast = py_assigned_object(
-            to_task_id(self.task_id, "_task"),
+            to_task_id(self.task_id, ORBITER_TASK_SUFFIX),
             operator,
             **{
                 k: prop(k)
@@ -313,24 +334,22 @@ class OrbiterTask(OrbiterOperator, extra="allow"):
 
 
 @validate_call
-def to_task_id(task_id: str, assignment_suffix: Literal["", "_task"] = "") -> str:
+def to_task_id(task_id: str, assignment_suffix: str = "") -> str:
     # noinspection PyTypeChecker
     """General utiltty function - turns MyTaskId into my_task_id (or my_task_id_task suffix is `_task`)
-    :param task_id:
-    :param assignment_suffix: e.g. `_task` for `task_id_task = MyOperator(...)`
-
     ```pycon
     >>> to_task_id("MyTaskId")
     'my_task_id'
     >>> to_task_id("MyTaskId", "_task")
     'my_task_id_task'
-    >>> to_task_id("MyTaskId", "_other")
-    Traceback (most recent call last):
-    pydantic_core._pydantic_core.ValidationError: ...
     >>> to_task_id("my_task_id_task", "_task")
     'my_task_id_task'
 
     ```
+    :param task_id:
+    :type task_id: str
+    :param assignment_suffix: e.g. `_task` for `task_id_task = MyOperator(...)`
+    :type assignment_suffix: str
     """
     task_id = clean_value(task_id)
     return task_id + (
