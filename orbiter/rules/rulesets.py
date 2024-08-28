@@ -751,7 +751,17 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
             extensions.append(f".{other_extension}")
 
         logger.debug(f"Finding files with extension={extensions} in {input_dir}")
-        for directory, _, files in input_dir.walk():
+
+        def backport_walk(input_dir: Path):
+            """Path.walk() is only available in Python 3.12+, so, backport"""
+            import os
+
+            for result in os.walk(input_dir):
+                yield Path(result[0]), result[1], result[2]
+
+        for directory, _, files in (
+            input_dir.walk() if hasattr(input_dir, "walk") else backport_walk(input_dir)
+        ):
             logger.debug(f"Checking directory={directory}")
             for file in files:
                 file = directory / file

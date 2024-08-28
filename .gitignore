@@ -20,3 +20,4 @@ test_binary
 workflow
 *.pyz
 orbiter-*
+.python-version
