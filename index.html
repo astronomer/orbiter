@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="orbiter.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.31">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.33">
     
     
       
@@ -512,7 +512,7 @@
         
   
   <span class="md-ellipsis">
-    Rulesets
+    Translation
   </span>
   
 
@@ -615,11 +615,11 @@
   
   
     <li class="md-nav__item">
-      <a href="objects/dags/" class="md-nav__link">
+      <a href="objects/project/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Workflow
+    Project
   </span>
   
 
@@ -636,11 +636,11 @@
   
   
     <li class="md-nav__item">
-      <a href="objects/project/" class="md-nav__link">
+      <a href="objects/workflow/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Project
+    Workflow
   </span>
   
 
@@ -857,14 +857,14 @@ from other orchestration tools to Apache Airflow.</p>
 The <strong>framework</strong> is a set of <a href="./Rules_and_Rulesets">Rules</a> and <a href="./objects">Objects</a> that can translate workflows
 from an <a href="./origins">Origin</a> system to an Airflow project.</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<p>You can install the <a href="./CLI"><code>orbiter</code> CLI</a>, if you have Python &gt;= 3.10 installed via <code>pip</code>:
+<p>Install the <a href="./CLI"><code>orbiter</code> CLI</a>, if you have Python &gt;= 3.10 installed via <code>pip</code>:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>astronomer-orbiter
 </code></pre></div>
 If you do not have a compatible Python environment, pre-built binary executables of the <code>orbiter</code> CLI
 are available for download on the <a href="https://github.com/astronomer/orbiter/releases">Releases</a> page.</p>
 <h2 id="translate">Translate<a class="headerlink" href="#translate" title="Permanent link">&para;</a></h2>
-<p>You can utilize the <a href="./cli"><code>orbiter</code> CLI</a> with existing translations to convert workflows
-from other systems to Apache Airflow.</p>
+<p>Utilize the <a href="./cli"><code>orbiter</code> CLI</a> with existing translations to convert workflows
+from other systems to an Airflow project.</p>
 <ol>
 <li>Set up a new folder, and create a <code>workflow/</code> folder. Add your workflows files to it
     <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>.
@@ -875,22 +875,23 @@ from other systems to Apache Airflow.</p>
 </code></pre></div></li>
 <li>Determine the specific translation ruleset via:<ol>
 <li>the <a href="origins">Origins</a> documentation</li>
-<li>the <a href="./cli#help"><code>orbiter help</code></a> command</li>
+<li>the <a href="./cli#list-rulesets"><code>orbiter list-rulesets</code></a> command</li>
 <li>or <a href="#authoring-rulesets-customization">by creating a translation ruleset</a>, if one does not exist</li>
 </ol>
 </li>
-<li>Install the specific translation ruleset via the <a href="./cli#install"><code>orbiter install</code></a> command</li>
+<li>Install the translation ruleset via the <a href="./cli#install"><code>orbiter install</code></a> command (substituting <code>&lt;REPOSITORY&gt;</code> with the value in the last step)
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>orbiter<span class="w"> </span>install<span class="w"> </span>--repo<span class="o">=</span>&lt;REPOSITORY&gt;
+</code></pre></div></li>
 <li>Use the <a href="./cli#translate"><code>orbiter translate</code></a> command with the <code>&lt;RULESET&gt;</code> determined in the last step
    This will produce output to an <code>output/</code> folder:
-    <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>orbiter<span class="w"> </span>translate<span class="w"> </span>workflow/<span class="w"> </span>output/<span class="w"> </span>--ruleset<span class="w"> </span>&lt;RULESET&gt;
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>orbiter<span class="w"> </span>translate<span class="w"> </span>workflow/<span class="w"> </span>--ruleset<span class="w"> </span>&lt;RULESET&gt;<span class="w"> </span>output/
 </code></pre></div></li>
 <li>Review the contents of the <code>output/</code> folder. If extensions or customizations are required, review
     <a href="#extend-or-customize">how to extend a translation ruleset</a></li>
-<li>Utilize the <a href="https://www.astronomer.io/docs/astro/cli/overview"><code>astro</code> CLI</a>
+<li>(optional) Utilize the <a href="https://www.astronomer.io/docs/astro/cli/overview"><code>astro</code> CLI</a>
     to run Airflow instance with your migrated workloads</li>
-<li>Deploy to <a href="https://www.astronomer.io/try-astro/">Astro</a> to run your translated workflows in production! 🚀</li>
+<li>(optional) Deploy to <a href="https://www.astronomer.io/try-astro/">Astro</a> to run your translated workflows in production! 🚀</li>
 </ol>
-<p>You can see more specifics on how to use the Orbiter CLI in the <a href="./cli">CLI</a> section.</p>
 <h2 id="authoring-rulesets-customization">Authoring Rulesets &amp; Customization<a class="headerlink" href="#authoring-rulesets-customization" title="Permanent link">&para;</a></h2>
 <p>Orbiter can be extended to fit specific needs, patterns, or to support additional origins.</p>
 <p>Read more specifics about how to use the framework at <a href="./Rules_and_Rulesets">Rules</a> and <a href="./objects">Objects</a></p>
@@ -899,52 +900,52 @@ from other systems to Apache Airflow.</p>
 <ol>
 <li>Set up your workspace as described in steps 1+2 of the <a href="#translate">Translate</a> instructions</li>
 <li>Create a Python script, named <code>override.py</code>
-    <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>.
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>├──<span class="w"> </span>override.py
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>└──<span class="w"> </span>workflow/
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span>├──<span class="w"> </span>workflow_a.json
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span>├──<span class="w"> </span>workflow_b.json
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span>└──<span class="w"> </span>...
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>.
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>├──<span class="w"> </span>override.py
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>└──<span class="w"> </span>workflow/
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span>├──<span class="w"> </span>workflow_a.json
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span>├──<span class="w"> </span>workflow_b.json
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span>└──<span class="w"> </span>...
 </code></pre></div></li>
 <li>
 <p>Add contents to <code>override.py</code>:
-    <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">override.py</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-4-1"> 1</a></span>
-<span class="normal"><a href="#__codelineno-4-2"> 2</a></span>
-<span class="normal"><a href="#__codelineno-4-3"> 3</a></span>
-<span class="normal"><a href="#__codelineno-4-4"> 4</a></span>
-<span class="normal"><a href="#__codelineno-4-5"> 5</a></span>
-<span class="normal"><a href="#__codelineno-4-6"> 6</a></span>
-<span class="normal"><a href="#__codelineno-4-7"> 7</a></span>
-<span class="normal"><a href="#__codelineno-4-8"> 8</a></span>
-<span class="normal"><a href="#__codelineno-4-9"> 9</a></span>
-<span class="normal"><a href="#__codelineno-4-10">10</a></span>
-<span class="normal"><a href="#__codelineno-4-11">11</a></span>
-<span class="normal"><a href="#__codelineno-4-12">12</a></span>
-<span class="normal"><a href="#__codelineno-4-13">13</a></span>
-<span class="normal"><a href="#__codelineno-4-14">14</a></span>
-<span class="normal"><a href="#__codelineno-4-15">15</a></span>
-<span class="normal"><a href="#__codelineno-4-16">16</a></span>
-<span class="normal"><a href="#__codelineno-4-17">17</a></span>
-<span class="normal"><a href="#__codelineno-4-18">18</a></span>
-<span class="normal"><a href="#__codelineno-4-19">19</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="kn">from</span> <span class="nn">orbiter_community_translations.dag_factory</span> <span class="kn">import</span> <span class="n">translation_ruleset</span>  <span class="c1"># (1)!</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="kn">from</span> <span class="nn">orbiter.objects.operators.ssh</span> <span class="kn">import</span> <span class="n">OrbiterSSHOperator</span>  <span class="c1"># (2)!</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="kn">from</span> <span class="nn">orbiter.rules</span> <span class="kn">import</span> <span class="n">task_rule</span>  <span class="c1"># (3)!</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4"></a>
-<a id="__codelineno-4-5" name="__codelineno-4-5"></a>
-<a id="__codelineno-4-6" name="__codelineno-4-6"></a><span class="nd">@task_rule</span><span class="p">(</span><span class="n">priority</span><span class="o">=</span><span class="mi">99</span><span class="p">)</span>  <span class="c1"># (4)!</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7"></a><span class="k">def</span> <span class="nf">ssh_rule</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Demonstration of overriding rulesets, by switching DAG Factory BashOperators to SSHOperators&quot;&quot;&quot;</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9"></a>    <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;operator&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;BashOperator&quot;</span><span class="p">:</span>  <span class="c1"># (5)!</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10"></a>        <span class="k">return</span> <span class="n">OrbiterSSHOperator</span><span class="p">(</span>  <span class="c1"># (6)!</span>
-<a id="__codelineno-4-11" name="__codelineno-4-11"></a>            <span class="n">command</span><span class="o">=</span><span class="n">val</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;bash_command&quot;</span><span class="p">),</span>
-<a id="__codelineno-4-12" name="__codelineno-4-12"></a>            <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Hello World!&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-13" name="__codelineno-4-13"></a>            <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">val</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;dependencies&quot;</span><span class="p">},</span>
-<a id="__codelineno-4-14" name="__codelineno-4-14"></a>        <span class="p">)</span>
-<a id="__codelineno-4-15" name="__codelineno-4-15"></a>    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-4-16" name="__codelineno-4-16"></a>        <span class="k">return</span> <span class="kc">None</span>
-<a id="__codelineno-4-17" name="__codelineno-4-17"></a>
-<a id="__codelineno-4-18" name="__codelineno-4-18"></a>
-<a id="__codelineno-4-19" name="__codelineno-4-19"></a><span class="n">translation_ruleset</span><span class="o">.</span><span class="n">task_ruleset</span><span class="o">.</span><span class="n">ruleset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ssh_rule</span><span class="p">)</span>  <span class="c1"># (7)!</span>
+    <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">override.py</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-5-1"> 1</a></span>
+<span class="normal"><a href="#__codelineno-5-2"> 2</a></span>
+<span class="normal"><a href="#__codelineno-5-3"> 3</a></span>
+<span class="normal"><a href="#__codelineno-5-4"> 4</a></span>
+<span class="normal"><a href="#__codelineno-5-5"> 5</a></span>
+<span class="normal"><a href="#__codelineno-5-6"> 6</a></span>
+<span class="normal"><a href="#__codelineno-5-7"> 7</a></span>
+<span class="normal"><a href="#__codelineno-5-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-5-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-5-10">10</a></span>
+<span class="normal"><a href="#__codelineno-5-11">11</a></span>
+<span class="normal"><a href="#__codelineno-5-12">12</a></span>
+<span class="normal"><a href="#__codelineno-5-13">13</a></span>
+<span class="normal"><a href="#__codelineno-5-14">14</a></span>
+<span class="normal"><a href="#__codelineno-5-15">15</a></span>
+<span class="normal"><a href="#__codelineno-5-16">16</a></span>
+<span class="normal"><a href="#__codelineno-5-17">17</a></span>
+<span class="normal"><a href="#__codelineno-5-18">18</a></span>
+<span class="normal"><a href="#__codelineno-5-19">19</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="kn">from</span> <span class="nn">orbiter_community_translations.dag_factory</span> <span class="kn">import</span> <span class="n">translation_ruleset</span>  <span class="c1"># (1)!</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2"></a><span class="kn">from</span> <span class="nn">orbiter.objects.operators.ssh</span> <span class="kn">import</span> <span class="n">OrbiterSSHOperator</span>  <span class="c1"># (2)!</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3"></a><span class="kn">from</span> <span class="nn">orbiter.rules</span> <span class="kn">import</span> <span class="n">task_rule</span>  <span class="c1"># (3)!</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5"></a>
+<a id="__codelineno-5-6" name="__codelineno-5-6"></a><span class="nd">@task_rule</span><span class="p">(</span><span class="n">priority</span><span class="o">=</span><span class="mi">99</span><span class="p">)</span>  <span class="c1"># (4)!</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7"></a><span class="k">def</span> <span class="nf">ssh_rule</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Demonstration of overriding rulesets, by switching DAG Factory BashOperators to SSHOperators&quot;&quot;&quot;</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9"></a>    <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;operator&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;BashOperator&quot;</span><span class="p">:</span>  <span class="c1"># (5)!</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10"></a>        <span class="k">return</span> <span class="n">OrbiterSSHOperator</span><span class="p">(</span>  <span class="c1"># (6)!</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11"></a>            <span class="n">command</span><span class="o">=</span><span class="n">val</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;bash_command&quot;</span><span class="p">),</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12"></a>            <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Hello World!&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13"></a>            <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">val</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;dependencies&quot;</span><span class="p">},</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14"></a>        <span class="p">)</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17"></a>
+<a id="__codelineno-5-18" name="__codelineno-5-18"></a>
+<a id="__codelineno-5-19" name="__codelineno-5-19"></a><span class="n">translation_ruleset</span><span class="o">.</span><span class="n">task_ruleset</span><span class="o">.</span><span class="n">ruleset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ssh_rule</span><span class="p">)</span>  <span class="c1"># (7)!</span>
 </code></pre></div></td></tr></table></div></p>
 <ol>
 <li>Importing specific translation ruleset, determined via the <a href="origins">Origins</a> page</li>
@@ -960,14 +961,14 @@ from other systems to Apache Airflow.</p>
 </li>
 <li>
 <p>Invoke the <code>orbiter</code> CLI, pointing it at your customized ruleset, and writing output to an <code>output/</code> folder:
-    <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>orbiter<span class="w"> </span>translate<span class="w"> </span>workflow/<span class="w"> </span>output/<span class="w"> </span>--ruleset<span class="w"> </span>override.translation_ruleset
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>orbiter<span class="w"> </span>translate<span class="w"> </span>workflow/<span class="w"> </span>output/<span class="w"> </span>--ruleset<span class="w"> </span>override.translation_ruleset
 </code></pre></div></p>
 </li>
-<li>Follow the remaining steps 4 -&gt; 6 of the <a href="#translate">Translate</a> instructions</li>
+<li>Follow the remaining steps of the <a href="#translate">Translate</a> instructions</li>
 </ol>
 <h3 id="authoring-a-new-ruleset">Authoring a new Ruleset<a class="headerlink" href="#authoring-a-new-ruleset" title="Permanent link">&para;</a></h3>
-<p>You can utilize the <a href="./Rules_and_Rulesets/template">Template <code>TranslationRuleset</code></a>
-as a starter, to create a new <a class="autorefs autorefs-internal" href="Rules_and_Rulesets/rulesets/#orbiter.rules.rulesets.TranslationRuleset"><code>TranslationRuleset</code></a>.</p>
+<p>You can utilize the <a href="./Rules_and_Rulesets/template"><code>TranslationRuleset</code> Template</a>
+to create a new <a class="autorefs autorefs-internal" href="Rules_and_Rulesets/rulesets/#orbiter.rules.rulesets.TranslationRuleset"><code>TranslationRuleset</code></a>.</p>
 <h2 id="faq">FAQ<a class="headerlink" href="#faq" title="Permanent link">&para;</a></h2>
 <ul>
 <li>
@@ -1049,7 +1050,7 @@ under <a href="https://creativecommons.org/licenses/by/3.0/us/legalcode">Creativ
     <script id="__config" type="application/json">{"base": ".", "features": ["navigation.path", "navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.expand", "toc.follow", "toc.integrate", "content.tabs.link", "content.action.edit", "content.code.copy", "content.code.annotate", "search.share", "search.highlight", "search.suggest"], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      <script src="assets/javascripts/bundle.af256bd8.min.js"></script>
       
         <script src="assets/_markdown_exec_pyodide.js"></script>
       

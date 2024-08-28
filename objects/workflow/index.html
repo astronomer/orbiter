@@ -8,17 +8,17 @@
       
       
       
-        <link rel="canonical" href="https://astronomer.github.io/orbiter/objects/dags/">
+        <link rel="canonical" href="https://astronomer.github.io/orbiter/objects/workflow/">
       
       
-        <link rel="prev" href="../">
+        <link rel="prev" href="../project/">
       
       
-        <link rel="next" href="../project/">
+        <link rel="next" href="../Tasks/">
       
       
       <link rel="icon" href="../../orbiter.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.31">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.33">
     
     
       
@@ -409,7 +409,7 @@
         
   
   <span class="md-ellipsis">
-    Rulesets
+    Translation
   </span>
   
 
@@ -496,6 +496,27 @@
   
   <span class="md-ellipsis">
     Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project
   </span>
   
 
@@ -642,27 +663,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../project/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Project
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -843,7 +843,7 @@
                   
 
   
-    <a href="https://github.com/astronomer/orbiter/edit/main/docs/objects/dags.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/astronomer/orbiter/edit/main/docs/objects/workflow.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
     </a>
@@ -881,6 +881,7 @@ which is a Directed Acyclic Graph (of <a href="../tasks">Tasks</a>).</p>
             params: Dict[str, Any]
             doc_md: str | None
             tasks: Dict[str, OrbiterOperator]
+            kwargs: dict
             orbiter_kwargs: dict
             orbiter_conns: Set[OrbiterConnection]
             orbiter_vars: Set[OrbiterVariable]
@@ -901,7 +902,6 @@ which is a Directed Acyclic Graph (of <a href="../tasks">Tasks</a>).</p>
     OrbiterOperator --&gt; "many" OrbiterConnection
     OrbiterOperator --&gt; "many" OrbiterVariable
     OrbiterOperator --&gt; "many" OrbiterEnvVar
-    OrbiterOperator --&gt; "many" OrbiterTaskDependency
     class OrbiterOperator["orbiter.objects.task.OrbiterOperator"] {
             imports: List[OrbiterRequirement]
             operator: str
@@ -909,13 +909,8 @@ which is a Directed Acyclic Graph (of <a href="../tasks">Tasks</a>).</p>
             pool: str | None
             pool_slots: int | None
             trigger_rule: str | None
-            downstream: Set[OrbiterTaskDependency]
+            downstream: Set[str]
             add_downstream(str | List[str] | OrbiterTaskDependency)
-    }
-
-    class OrbiterTaskDependency["orbiter.objects.task.OrbiterTaskDependency"] {
-            task_id: TaskId
-            downstream: TaskId | List[TaskId]
     }
 
     class OrbiterTimetable["orbiter.objects.timetables.OrbiterTimetable"] {
@@ -969,8 +964,7 @@ which is a Directed Acyclic Graph (of <a href="../tasks">Tasks</a>).</p>
     <div class="doc doc-contents first">
 
 
-      <p>Represents an Airflow
-<a href="https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html">DAG</a>,
+      <p>Represents an Airflow <a href="https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html">DAG</a>,
 with its tasks and dependencies.</p>
 <p>Renders to a <code>.py</code> file in the <code>/dags</code> folder</p>
 
@@ -1082,6 +1076,17 @@ with its tasks and dependencies.</p>
           <td>
             <div class="doc-md-description">
               <p>Documentation for the DAG with markdown support</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><code>kwargs</code></td>
+          <td>
+                <code>dict, optional</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Additional keyword arguments to pass to the DAG</p>
             </div>
           </td>
         </tr>
@@ -1205,22 +1210,7 @@ with its tasks and dependencies.</p>
 
             <details class="quote">
               <summary>Source code in <code>orbiter/objects/dag.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-215">215</a></span>
-<span class="normal"><a href="#__codelineno-0-216">216</a></span>
-<span class="normal"><a href="#__codelineno-0-217">217</a></span>
-<span class="normal"><a href="#__codelineno-0-218">218</a></span>
-<span class="normal"><a href="#__codelineno-0-219">219</a></span>
-<span class="normal"><a href="#__codelineno-0-220">220</a></span>
-<span class="normal"><a href="#__codelineno-0-221">221</a></span>
-<span class="normal"><a href="#__codelineno-0-222">222</a></span>
-<span class="normal"><a href="#__codelineno-0-223">223</a></span>
-<span class="normal"><a href="#__codelineno-0-224">224</a></span>
-<span class="normal"><a href="#__codelineno-0-225">225</a></span>
-<span class="normal"><a href="#__codelineno-0-226">226</a></span>
-<span class="normal"><a href="#__codelineno-0-227">227</a></span>
-<span class="normal"><a href="#__codelineno-0-228">228</a></span>
-<span class="normal"><a href="#__codelineno-0-229">229</a></span>
-<span class="normal"><a href="#__codelineno-0-230">230</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-230">230</a></span>
 <span class="normal"><a href="#__codelineno-0-231">231</a></span>
 <span class="normal"><a href="#__codelineno-0-232">232</a></span>
 <span class="normal"><a href="#__codelineno-0-233">233</a></span>
@@ -1264,66 +1254,81 @@ with its tasks and dependencies.</p>
 <span class="normal"><a href="#__codelineno-0-271">271</a></span>
 <span class="normal"><a href="#__codelineno-0-272">272</a></span>
 <span class="normal"><a href="#__codelineno-0-273">273</a></span>
-<span class="normal"><a href="#__codelineno-0-274">274</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-215" name="__codelineno-0-215"></a><span class="k">def</span> <span class="nf">add_tasks</span><span class="p">(</span>
-<a id="__codelineno-0-216" name="__codelineno-0-216"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-217" name="__codelineno-0-217"></a>    <span class="n">tasks</span><span class="p">:</span> <span class="p">(</span>
-<a id="__codelineno-0-218" name="__codelineno-0-218"></a>        <span class="n">OrbiterOperator</span>
-<a id="__codelineno-0-219" name="__codelineno-0-219"></a>        <span class="o">|</span> <span class="n">OrbiterTaskGroup</span>
-<a id="__codelineno-0-220" name="__codelineno-0-220"></a>        <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OrbiterOperator</span> <span class="o">|</span> <span class="n">OrbiterTaskGroup</span><span class="p">]</span>
-<a id="__codelineno-0-221" name="__codelineno-0-221"></a>    <span class="p">),</span>
-<a id="__codelineno-0-222" name="__codelineno-0-222"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;OrbiterDAG&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-223" name="__codelineno-0-223"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-224" name="__codelineno-0-224"></a><span class="sd">    Add one or more [`OrbiterOperators`][orbiter.objects.task.OrbiterOperator] to the DAG</span>
-<a id="__codelineno-0-225" name="__codelineno-0-225"></a>
-<a id="__codelineno-0-226" name="__codelineno-0-226"></a><span class="sd">    ```pycon</span>
-<a id="__codelineno-0-227" name="__codelineno-0-227"></a><span class="sd">    &gt;&gt;&gt; from orbiter.objects.operators.empty import OrbiterEmptyOperator</span>
-<a id="__codelineno-0-228" name="__codelineno-0-228"></a><span class="sd">    &gt;&gt;&gt; OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks(OrbiterEmptyOperator(task_id=&quot;bar&quot;)).tasks</span>
-<a id="__codelineno-0-229" name="__codelineno-0-229"></a><span class="sd">    {&#39;bar&#39;: bar_task = EmptyOperator(task_id=&#39;bar&#39;)}</span>
-<a id="__codelineno-0-230" name="__codelineno-0-230"></a>
-<a id="__codelineno-0-231" name="__codelineno-0-231"></a><span class="sd">    &gt;&gt;&gt; OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks([OrbiterEmptyOperator(task_id=&quot;bar&quot;)]).tasks</span>
-<a id="__codelineno-0-232" name="__codelineno-0-232"></a><span class="sd">    {&#39;bar&#39;: bar_task = EmptyOperator(task_id=&#39;bar&#39;)}</span>
-<a id="__codelineno-0-233" name="__codelineno-0-233"></a>
-<a id="__codelineno-0-234" name="__codelineno-0-234"></a><span class="sd">    ```</span>
-<a id="__codelineno-0-235" name="__codelineno-0-235"></a>
-<a id="__codelineno-0-236" name="__codelineno-0-236"></a><span class="sd">    !!! tip</span>
-<a id="__codelineno-0-237" name="__codelineno-0-237"></a>
-<a id="__codelineno-0-238" name="__codelineno-0-238"></a><span class="sd">        Validation requires a `OrbiterTaskGroup`, `OrbiterOperator` (or subclass), or list of either to be passed</span>
-<a id="__codelineno-0-239" name="__codelineno-0-239"></a><span class="sd">        ```pycon</span>
-<a id="__codelineno-0-240" name="__codelineno-0-240"></a><span class="sd">        &gt;&gt;&gt; # noinspection PyTypeChecker</span>
-<a id="__codelineno-0-241" name="__codelineno-0-241"></a><span class="sd">        ... OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks(&quot;bar&quot;)</span>
-<a id="__codelineno-0-242" name="__codelineno-0-242"></a><span class="sd">        ... # doctest: +IGNORE_EXCEPTION_DETAIL</span>
-<a id="__codelineno-0-243" name="__codelineno-0-243"></a><span class="sd">        Traceback (most recent call last):</span>
-<a id="__codelineno-0-244" name="__codelineno-0-244"></a><span class="sd">        pydantic_core._pydantic_core.ValidationError: ...</span>
-<a id="__codelineno-0-245" name="__codelineno-0-245"></a><span class="sd">        &gt;&gt;&gt; # noinspection PyTypeChecker</span>
-<a id="__codelineno-0-246" name="__codelineno-0-246"></a><span class="sd">        ... OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks([&quot;bar&quot;])</span>
-<a id="__codelineno-0-247" name="__codelineno-0-247"></a><span class="sd">        ... # doctest: +IGNORE_EXCEPTION_DETAIL</span>
-<a id="__codelineno-0-248" name="__codelineno-0-248"></a><span class="sd">        Traceback (most recent call last):</span>
-<a id="__codelineno-0-249" name="__codelineno-0-249"></a><span class="sd">        pydantic_core._pydantic_core.ValidationError: ...</span>
+<span class="normal"><a href="#__codelineno-0-274">274</a></span>
+<span class="normal"><a href="#__codelineno-0-275">275</a></span>
+<span class="normal"><a href="#__codelineno-0-276">276</a></span>
+<span class="normal"><a href="#__codelineno-0-277">277</a></span>
+<span class="normal"><a href="#__codelineno-0-278">278</a></span>
+<span class="normal"><a href="#__codelineno-0-279">279</a></span>
+<span class="normal"><a href="#__codelineno-0-280">280</a></span>
+<span class="normal"><a href="#__codelineno-0-281">281</a></span>
+<span class="normal"><a href="#__codelineno-0-282">282</a></span>
+<span class="normal"><a href="#__codelineno-0-283">283</a></span>
+<span class="normal"><a href="#__codelineno-0-284">284</a></span>
+<span class="normal"><a href="#__codelineno-0-285">285</a></span>
+<span class="normal"><a href="#__codelineno-0-286">286</a></span>
+<span class="normal"><a href="#__codelineno-0-287">287</a></span>
+<span class="normal"><a href="#__codelineno-0-288">288</a></span>
+<span class="normal"><a href="#__codelineno-0-289">289</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-230" name="__codelineno-0-230"></a><span class="k">def</span> <span class="nf">add_tasks</span><span class="p">(</span>
+<a id="__codelineno-0-231" name="__codelineno-0-231"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-232" name="__codelineno-0-232"></a>    <span class="n">tasks</span><span class="p">:</span> <span class="p">(</span>
+<a id="__codelineno-0-233" name="__codelineno-0-233"></a>        <span class="n">OrbiterOperator</span>
+<a id="__codelineno-0-234" name="__codelineno-0-234"></a>        <span class="o">|</span> <span class="n">OrbiterTaskGroup</span>
+<a id="__codelineno-0-235" name="__codelineno-0-235"></a>        <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OrbiterOperator</span> <span class="o">|</span> <span class="n">OrbiterTaskGroup</span><span class="p">]</span>
+<a id="__codelineno-0-236" name="__codelineno-0-236"></a>    <span class="p">),</span>
+<a id="__codelineno-0-237" name="__codelineno-0-237"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;OrbiterDAG&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-238" name="__codelineno-0-238"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-239" name="__codelineno-0-239"></a><span class="sd">    Add one or more [`OrbiterOperators`][orbiter.objects.task.OrbiterOperator] to the DAG</span>
+<a id="__codelineno-0-240" name="__codelineno-0-240"></a>
+<a id="__codelineno-0-241" name="__codelineno-0-241"></a><span class="sd">    ```pycon</span>
+<a id="__codelineno-0-242" name="__codelineno-0-242"></a><span class="sd">    &gt;&gt;&gt; from orbiter.objects.operators.empty import OrbiterEmptyOperator</span>
+<a id="__codelineno-0-243" name="__codelineno-0-243"></a><span class="sd">    &gt;&gt;&gt; OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks(OrbiterEmptyOperator(task_id=&quot;bar&quot;)).tasks</span>
+<a id="__codelineno-0-244" name="__codelineno-0-244"></a><span class="sd">    {&#39;bar&#39;: bar_task = EmptyOperator(task_id=&#39;bar&#39;)}</span>
+<a id="__codelineno-0-245" name="__codelineno-0-245"></a>
+<a id="__codelineno-0-246" name="__codelineno-0-246"></a><span class="sd">    &gt;&gt;&gt; OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks([OrbiterEmptyOperator(task_id=&quot;bar&quot;)]).tasks</span>
+<a id="__codelineno-0-247" name="__codelineno-0-247"></a><span class="sd">    {&#39;bar&#39;: bar_task = EmptyOperator(task_id=&#39;bar&#39;)}</span>
+<a id="__codelineno-0-248" name="__codelineno-0-248"></a>
+<a id="__codelineno-0-249" name="__codelineno-0-249"></a><span class="sd">    ```</span>
 <a id="__codelineno-0-250" name="__codelineno-0-250"></a>
-<a id="__codelineno-0-251" name="__codelineno-0-251"></a><span class="sd">        ```</span>
-<a id="__codelineno-0-252" name="__codelineno-0-252"></a><span class="sd">    :param tasks: List of [OrbiterOperator][orbiter.objects.task.OrbiterOperator], or OrbiterTaskGroup or subclass</span>
-<a id="__codelineno-0-253" name="__codelineno-0-253"></a><span class="sd">    :type tasks: OrbiterOperator | OrbiterTaskGroup | Iterable[OrbiterOperator | OrbiterTaskGroup]</span>
-<a id="__codelineno-0-254" name="__codelineno-0-254"></a><span class="sd">    :return: self</span>
-<a id="__codelineno-0-255" name="__codelineno-0-255"></a><span class="sd">    :rtype: OrbiterProject</span>
-<a id="__codelineno-0-256" name="__codelineno-0-256"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-257" name="__codelineno-0-257"></a>    <span class="k">if</span> <span class="p">(</span>
-<a id="__codelineno-0-258" name="__codelineno-0-258"></a>        <span class="nb">isinstance</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">OrbiterOperator</span><span class="p">)</span>
-<a id="__codelineno-0-259" name="__codelineno-0-259"></a>        <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">OrbiterTaskGroup</span><span class="p">)</span>
-<a id="__codelineno-0-260" name="__codelineno-0-260"></a>        <span class="ow">or</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">tasks</span><span class="p">),</span> <span class="n">OrbiterOperator</span><span class="p">)</span>
-<a id="__codelineno-0-261" name="__codelineno-0-261"></a>    <span class="p">):</span>
-<a id="__codelineno-0-262" name="__codelineno-0-262"></a>        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">tasks</span><span class="p">]</span>
-<a id="__codelineno-0-263" name="__codelineno-0-263"></a>
-<a id="__codelineno-0-264" name="__codelineno-0-264"></a>    <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
-<a id="__codelineno-0-265" name="__codelineno-0-265"></a>        <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-266" name="__codelineno-0-266"></a>            <span class="n">task_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;task_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span>
-<a id="__codelineno-0-267" name="__codelineno-0-267"></a>                <span class="n">task</span><span class="p">,</span> <span class="s2">&quot;task_group_id&quot;</span>
-<a id="__codelineno-0-268" name="__codelineno-0-268"></a>            <span class="p">)</span>
-<a id="__codelineno-0-269" name="__codelineno-0-269"></a>        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-<a id="__codelineno-0-270" name="__codelineno-0-270"></a>            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-<a id="__codelineno-0-271" name="__codelineno-0-271"></a>                <span class="sa">f</span><span class="s2">&quot;Task </span><span class="si">{</span><span class="n">task</span><span class="si">}</span><span class="s2"> does not have a task_id or task_group_id attribute&quot;</span>
-<a id="__codelineno-0-272" name="__codelineno-0-272"></a>            <span class="p">)</span>
-<a id="__codelineno-0-273" name="__codelineno-0-273"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">task_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span>
-<a id="__codelineno-0-274" name="__codelineno-0-274"></a>    <span class="k">return</span> <span class="bp">self</span>
+<a id="__codelineno-0-251" name="__codelineno-0-251"></a><span class="sd">    !!! tip</span>
+<a id="__codelineno-0-252" name="__codelineno-0-252"></a>
+<a id="__codelineno-0-253" name="__codelineno-0-253"></a><span class="sd">        Validation requires a `OrbiterTaskGroup`, `OrbiterOperator` (or subclass), or list of either to be passed</span>
+<a id="__codelineno-0-254" name="__codelineno-0-254"></a><span class="sd">        ```pycon</span>
+<a id="__codelineno-0-255" name="__codelineno-0-255"></a><span class="sd">        &gt;&gt;&gt; # noinspection PyTypeChecker</span>
+<a id="__codelineno-0-256" name="__codelineno-0-256"></a><span class="sd">        ... OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks(&quot;bar&quot;)</span>
+<a id="__codelineno-0-257" name="__codelineno-0-257"></a><span class="sd">        ... # doctest: +IGNORE_EXCEPTION_DETAIL</span>
+<a id="__codelineno-0-258" name="__codelineno-0-258"></a><span class="sd">        Traceback (most recent call last):</span>
+<a id="__codelineno-0-259" name="__codelineno-0-259"></a><span class="sd">        pydantic_core._pydantic_core.ValidationError: ...</span>
+<a id="__codelineno-0-260" name="__codelineno-0-260"></a><span class="sd">        &gt;&gt;&gt; # noinspection PyTypeChecker</span>
+<a id="__codelineno-0-261" name="__codelineno-0-261"></a><span class="sd">        ... OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks([&quot;bar&quot;])</span>
+<a id="__codelineno-0-262" name="__codelineno-0-262"></a><span class="sd">        ... # doctest: +IGNORE_EXCEPTION_DETAIL</span>
+<a id="__codelineno-0-263" name="__codelineno-0-263"></a><span class="sd">        Traceback (most recent call last):</span>
+<a id="__codelineno-0-264" name="__codelineno-0-264"></a><span class="sd">        pydantic_core._pydantic_core.ValidationError: ...</span>
+<a id="__codelineno-0-265" name="__codelineno-0-265"></a>
+<a id="__codelineno-0-266" name="__codelineno-0-266"></a><span class="sd">        ```</span>
+<a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="sd">    :param tasks: List of [OrbiterOperator][orbiter.objects.task.OrbiterOperator], or OrbiterTaskGroup or subclass</span>
+<a id="__codelineno-0-268" name="__codelineno-0-268"></a><span class="sd">    :type tasks: OrbiterOperator | OrbiterTaskGroup | Iterable[OrbiterOperator | OrbiterTaskGroup]</span>
+<a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="sd">    :return: self</span>
+<a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">    :rtype: OrbiterProject</span>
+<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-272" name="__codelineno-0-272"></a>    <span class="k">if</span> <span class="p">(</span>
+<a id="__codelineno-0-273" name="__codelineno-0-273"></a>        <span class="nb">isinstance</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">OrbiterOperator</span><span class="p">)</span>
+<a id="__codelineno-0-274" name="__codelineno-0-274"></a>        <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">OrbiterTaskGroup</span><span class="p">)</span>
+<a id="__codelineno-0-275" name="__codelineno-0-275"></a>        <span class="ow">or</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">tasks</span><span class="p">),</span> <span class="n">OrbiterOperator</span><span class="p">)</span>
+<a id="__codelineno-0-276" name="__codelineno-0-276"></a>    <span class="p">):</span>
+<a id="__codelineno-0-277" name="__codelineno-0-277"></a>        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">tasks</span><span class="p">]</span>
+<a id="__codelineno-0-278" name="__codelineno-0-278"></a>
+<a id="__codelineno-0-279" name="__codelineno-0-279"></a>    <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
+<a id="__codelineno-0-280" name="__codelineno-0-280"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-281" name="__codelineno-0-281"></a>            <span class="n">task_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;task_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span>
+<a id="__codelineno-0-282" name="__codelineno-0-282"></a>                <span class="n">task</span><span class="p">,</span> <span class="s2">&quot;task_group_id&quot;</span>
+<a id="__codelineno-0-283" name="__codelineno-0-283"></a>            <span class="p">)</span>
+<a id="__codelineno-0-284" name="__codelineno-0-284"></a>        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+<a id="__codelineno-0-285" name="__codelineno-0-285"></a>            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+<a id="__codelineno-0-286" name="__codelineno-0-286"></a>                <span class="sa">f</span><span class="s2">&quot;Task </span><span class="si">{</span><span class="n">task</span><span class="si">}</span><span class="s2"> does not have a task_id or task_group_id attribute&quot;</span>
+<a id="__codelineno-0-287" name="__codelineno-0-287"></a>            <span class="p">)</span>
+<a id="__codelineno-0-288" name="__codelineno-0-288"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">task_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span>
+<a id="__codelineno-0-289" name="__codelineno-0-289"></a>    <span class="k">return</span> <span class="bp">self</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1620,7 +1625,7 @@ that can be supplied with multiple cron strings.</p>
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.path", "navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.expand", "toc.follow", "toc.integrate", "content.tabs.link", "content.action.edit", "content.code.copy", "content.code.annotate", "search.share", "search.highlight", "search.suggest"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      <script src="../../assets/javascripts/bundle.af256bd8.min.js"></script>
       
         <script src="../../assets/_markdown_exec_pyodide.js"></script>
       

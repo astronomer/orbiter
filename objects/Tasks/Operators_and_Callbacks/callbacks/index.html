@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../../../orbiter.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.31">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.33">
     
     
       
@@ -409,7 +409,7 @@
         
   
   <span class="md-ellipsis">
-    Rulesets
+    Translation
   </span>
   
 
@@ -512,11 +512,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../dags/" class="md-nav__link">
+      <a href="../../../project/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Workflow
+    Project
   </span>
   
 
@@ -533,11 +533,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../project/" class="md-nav__link">
+      <a href="../../../workflow/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Project
+    Workflow
   </span>
   
 
@@ -841,17 +841,33 @@ They can also run any general Python function.</p>
     <div class="doc doc-contents ">
 
 
-      <p><strong>Abstract class</strong> representing an Airflow
+      <p>Represents an Airflow
 <a href="https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/logging-monitoring/callbacks.html">callback function</a>,
 which might be used in <code>DAG.on_failure_callback</code>, or <code>Task.on_success_callback</code>, or etc.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">OrbiterMyCallback</span><span class="p">(</span><span class="n">OrbiterCallback</span><span class="p">):</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">... </span>  <span class="n">function</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;my_callback&quot;</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="gp">... </span>  <span class="n">foo</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="gp">... </span>  <span class="n">bar</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="gp">... </span>  <span class="n">render_attributes</span><span class="p">:</span> <span class="n">RenderAttributes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">]</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">OrbiterMyCallback</span><span class="p">(</span><span class="n">foo</span><span class="o">=</span><span class="s2">&quot;fop&quot;</span><span class="p">,</span> <span class="n">bar</span><span class="o">=</span><span class="s2">&quot;bop&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="go">my_callback(foo=&#39;fop&#39;, bar=&#39;bop&#39;)</span>
-</code></pre></div>
+<p>Can be instantiated directly as a bare callback function (with no arguments):
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">orbiter.objects.dag</span> <span class="kn">import</span> <span class="n">OrbiterDAG</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">orbiter.objects.include</span> <span class="kn">import</span> <span class="n">OrbiterInclude</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">my_callback</span> <span class="o">=</span> <span class="n">OrbiterCallback</span><span class="p">(</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="gp">... </span>    <span class="n">function</span><span class="o">=</span><span class="s2">&quot;my_callback&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="gp">... </span>    <span class="n">imports</span><span class="o">=</span><span class="p">[</span><span class="n">OrbiterRequirement</span><span class="p">(</span><span class="n">module</span><span class="o">=</span><span class="s2">&quot;my_callback&quot;</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;my_callback&quot;</span><span class="p">])],</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="gp">... </span>    <span class="n">orbiter_includes</span><span class="o">=</span><span class="p">{</span><span class="n">OrbiterInclude</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;my_callback.py&quot;</span><span class="p">,</span> <span class="n">contents</span><span class="o">=</span><span class="s2">&quot;...&quot;</span><span class="p">)}</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="gp">... </span><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">OrbiterDAG</span><span class="p">(</span><span class="n">dag_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">on_failure_callback</span><span class="o">=</span><span class="n">my_callback</span><span class="p">)</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="gp">... </span><span class="c1"># doctest: +ELLIPSIS</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="go">from airflow import DAG</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="go">from my_callback import my_callback</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="go">...</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="go">with DAG(... on_failure_callback=my_callback):</span>
+</code></pre></div></p>
+<p>or be subclassed:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">OrbiterMyCallback</span><span class="p">(</span><span class="n">OrbiterCallback</span><span class="p">):</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="gp">... </span>  <span class="n">function</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;my_callback&quot;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="gp">... </span>  <span class="n">foo</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="gp">... </span>  <span class="n">bar</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="gp">... </span>  <span class="n">render_attributes</span><span class="p">:</span> <span class="n">RenderAttributes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">OrbiterMyCallback</span><span class="p">(</span><span class="n">foo</span><span class="o">=</span><span class="s2">&quot;fop&quot;</span><span class="p">,</span> <span class="n">bar</span><span class="o">=</span><span class="s2">&quot;bop&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="go">my_callback(foo=&#39;fop&#39;, bar=&#39;bop&#39;)</span>
+</code></pre></div></p>
 
 
 
@@ -949,7 +965,7 @@ which might be used in <code>DAG.on_failure_callback</code>, or <code>Task.on_su
     <div class="doc doc-contents ">
 
 
-      <p>An <a href="https://airflow.apache.org/docs/apache-airflow-providers-smtp/stable/_api/airflow/providers/smtp/notifications/smtp/index.html">Airflow SMTP Callback (link)</a></p>
+      <p>An <a href="https://airflow.apache.org/docs/apache-airflow-providers-smtp/stable/_api/airflow/providers/smtp/notifications/smtp/index.html">Airflow SMTP Callback</a></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Use <code>smtp_conn_id</code> and reference an SMTP Connection.</p>
@@ -1146,7 +1162,7 @@ which might be used in <code>DAG.on_failure_callback</code>, or <code>Task.on_su
     <script id="__config" type="application/json">{"base": "../../../..", "features": ["navigation.path", "navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.expand", "toc.follow", "toc.integrate", "content.tabs.link", "content.action.edit", "content.code.copy", "content.code.annotate", "search.share", "search.highlight", "search.suggest"], "search": "../../../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.af256bd8.min.js"></script>
       
         <script src="../../../../assets/_markdown_exec_pyodide.js"></script>
       

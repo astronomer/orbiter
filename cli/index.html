@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../orbiter.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.31">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.33">
     
     
       
@@ -342,18 +342,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#help" class="md-nav__link">
+  <a href="#install" class="md-nav__link">
     <span class="md-ellipsis">
-      help
+      install
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#install" class="md-nav__link">
+  <a href="#list-rulesets" class="md-nav__link">
     <span class="md-ellipsis">
-      install
+      list-rulesets
     </span>
   </a>
   
@@ -500,7 +500,7 @@
         
   
   <span class="md-ellipsis">
-    Rulesets
+    Translation
   </span>
   
 
@@ -603,11 +603,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../objects/dags/" class="md-nav__link">
+      <a href="../objects/project/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Workflow
+    Project
   </span>
   
 
@@ -624,11 +624,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../objects/project/" class="md-nav__link">
+      <a href="../objects/workflow/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Project
+    Workflow
   </span>
   
 
@@ -852,34 +852,10 @@
 </tr>
 </tbody>
 </table>
-<h3 id="help">help<a class="headerlink" href="#help" title="Permanent link">&para;</a></h3>
-<p>List available Translation Rulesets</p>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>orbiter help [OPTIONS]
-</code></pre></div>
-<p><strong>Options:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>--help</code></td>
-<td>boolean</td>
-<td>Show this message and exit.</td>
-<td><code>False</code></td>
-</tr>
-</tbody>
-</table>
 <h3 id="install">install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h3>
-<p>Install a new Orbiter Translation Ruleset from a repository</p>
+<p>Install a new Translation Ruleset from a repository</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>orbiter install [OPTIONS]
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>orbiter install [OPTIONS]
 </code></pre></div>
 <p><strong>Options:</strong></p>
 <table>
@@ -901,19 +877,48 @@
 <tr>
 <td><code>-k</code>, <code>--key</code></td>
 <td>text</td>
-<td>[Optional] License Key to use for the translation ruleset.</td>
-<td></td>
+<td>[Optional] License Key to use for the translation ruleset. Should look like <code>AAAA-BBBB-1111-2222-3333-XXXX-YYYY-ZZZZ</code></td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>--help</code></td>
+<td>boolean</td>
+<td>Show this message and exit.</td>
+<td><code>False</code></td>
 </tr>
 </tbody>
 </table>
-<p>Should look like 'AAAA-BBBB-1111-2222-3333-XXXX-YYYY-ZZZZ' | None |
-| <code>--help</code> | boolean | Show this message and exit. | <code>False</code> |</p>
+<h3 id="list-rulesets">list-rulesets<a class="headerlink" href="#list-rulesets" title="Permanent link">&para;</a></h3>
+<p>List available Translation Rulesets</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>orbiter list-rulesets [OPTIONS]
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--help</code></td>
+<td>boolean</td>
+<td>Show this message and exit.</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
 <h3 id="translate">translate<a class="headerlink" href="#translate" title="Permanent link">&para;</a></h3>
 <p>Translate workflows in an <code>INPUT_DIR</code> to an <code>OUTPUT_DIR</code> Airflow Project.</p>
 <p>Provide a specific ruleset with the <code>--ruleset</code> flag.</p>
-<p>Run <code>orbiter help</code> to see available rulesets.</p>
+<p>Run <code>orbiter list-rulesets</code> to see available rulesets.</p>
 <p><code>INPUT_DIR</code> defaults to <code>$CWD/workflow</code>.</p>
 <p><code>OUTPUT_DIR</code> defaults to <code>$CWD/output</code></p>
+<p>Formats output with Ruff (<a href="https://astral.sh/ruff">https://astral.sh/ruff</a>), by default.</p>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>orbiter translate [OPTIONS] INPUT_DIR OUTPUT_DIR
 </code></pre></div>
@@ -1009,7 +1014,7 @@
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.path", "navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.expand", "toc.follow", "toc.integrate", "content.tabs.link", "content.action.edit", "content.code.copy", "content.code.annotate", "search.share", "search.highlight", "search.suggest"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      <script src="../assets/javascripts/bundle.af256bd8.min.js"></script>
       
         <script src="../assets/_markdown_exec_pyodide.js"></script>
       
