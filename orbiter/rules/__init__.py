@@ -2,19 +2,20 @@
 The brain of the Orbiter framework is in it's [`Rules`][orbiter.rules.Rule]
 and the [`Rulesets`][orbiter.rules.rulesets.Ruleset] that contain them.
 
-- A [`Rule`][orbiter.rules.Rule] contains a python function that is evaluated and produces something
-(typically an [Object](../objects)) or nothing
+- A [`Rule`][orbiter.rules.Rule] is a python function that is evaluated and produces **something**
+(typically an [Object](../objects)) or **nothing**
 - A [`Ruleset`][orbiter.rules.rulesets.Ruleset] is a collection of [`Rules`][orbiter.rules.Rule] that are
     evaluated in priority order
 - A [`TranslationRuleset`][orbiter.rules.rulesets.TranslationRuleset]
     is a collection of [`Rulesets`][orbiter.rules.rulesets.Ruleset],
-    relating to an [Origin](../origins) and [FileType][orbiter.rules.rulesets.load_filetype],
+    relating to an [Origin](../origins) and `FileType`,
     with a [`translate_fn`][orbiter.rules.rulesets.translate] which determines how to apply the rulesets.
 
-Different [`Rules`][orbiter.rules.Rule] are applied in different scenarios;
-such as for converting input to a DAG ([`@dag_rule`][orbiter.rules.DAGRule]),
-or a specific Airflow Operator ([`@task_rule`][orbiter.rules.TaskRule]),
-or for filtering entries from the input data
+Different [`Rules`][orbiter.rules.Rule] are applied in different scenarios, such as:
+
+- converting input to an Airflow DAG ([`@dag_rule`][orbiter.rules.DAGRule]),
+- converting input to a specific Airflow Operator ([`@task_rule`][orbiter.rules.TaskRule]),
+- filtering entries from the input data
 ([`@dag_filter_rule`][orbiter.rules.DAGFilterRule], [`@task_filter_rule`][orbiter.rules.TaskFilterRule]).
 
 !!! tip
@@ -36,6 +37,8 @@ or for filtering entries from the input data
     def my_rule(val):
         if 'command' in val:
             return OrbiterBashOperator(task_id=val['id'], bash_command=val['command'])
+        else:
+            return None
     ```
 
     This returns a
@@ -47,10 +50,13 @@ or for filtering entries from the input data
 from __future__ import annotations
 
 import functools
+import json
 import re
 from typing import Callable, Any, Collection, TYPE_CHECKING, List
 
 from pydantic import BaseModel, Field
+
+from loguru import logger
 
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
 
@@ -146,11 +152,17 @@ class Rule(BaseModel, Callable, extra="forbid"):
     priority: int = Field(0, ge=0)
 
     def __call__(self, *args, **kwargs):
-        result = self.rule(*args, **kwargs)
-        # Save the original kwargs under orbiter_kwargs
-        if result:
-            if kwargs and hasattr(result, "orbiter_kwargs"):
-                setattr(result, "orbiter_kwargs", kwargs)
+        try:
+            result = self.rule(*args, **kwargs)
+            # Save the original kwargs under orbiter_kwargs
+            if result:
+                if kwargs and hasattr(result, "orbiter_kwargs"):
+                    setattr(result, "orbiter_kwargs", kwargs)
+        except Exception as e:
+            logger.warning(
+                f"[RULE]: {self.rule.__name__}\n[ERROR]:\n{type(e)} - {e}\n[INPUT]:\n{args}\n{kwargs}"
+            )
+            result = None
         return result
 
 
@@ -289,6 +301,21 @@ class PostProcessingRule(Rule):
 
 
 post_processing_rule: Callable[[...], PostProcessingRule] = rule
+
+
+@task_rule(priority=1)
+def cannot_map_rule(val: dict) -> OrbiterOperator | None:
+    """Can be used in a TaskRuleset.
+    Returns an `OrbiterEmptyOperator` with a doc string that says it cannot map the task.
+    Useful to ensure that tasks that cannot be mapped are still visible in the output.
+    """
+    from orbiter.objects.operators.empty import OrbiterEmptyOperator
+
+    # noinspection PyArgumentList
+    return OrbiterEmptyOperator(
+        task_id="UNKNOWN",
+        doc_md=f"""Input did not translate: `{json.dumps(val, default=str)}`""",
+    )
 
 
 EMPTY_RULE = Rule(rule=lambda _: None, priority=0)

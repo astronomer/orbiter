@@ -149,6 +149,17 @@ def py_function(c: Callable):
     return ast.parse(inspect.getsource(c)).body[0]
 
 
+def py_reference(name: str) -> ast.Expr:
+    """
+    ```pycon
+    >>> render_ast(py_reference("foo"))
+    'foo'
+
+    ```
+    """
+    return ast.Expr(value=ast.Name(id=name))
+
+
 def render_ast(ast_object) -> str:
     return ast.unparse(ast_object)
 

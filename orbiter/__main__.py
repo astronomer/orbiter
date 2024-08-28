@@ -170,17 +170,19 @@ def translate(
 
     Provide a specific ruleset with the `--ruleset` flag.
 
-    Run `orbiter help` to see available rulesets.
+    Run `orbiter list-rulesets` to see available rulesets.
 
     `INPUT_DIR` defaults to `$CWD/workflow`.
 
     `OUTPUT_DIR` defaults to `$CWD/output`
+
+    Formats output with Ruff (https://astral.sh/ruff), by default.
     """
     logger.debug(f"Creating output directory {output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    sys.path.insert(0, os.getcwd())
     logger.debug(f"Adding current directory {os.getcwd()} to sys.path")
+    sys.path.insert(0, os.getcwd())
 
     if RUNNING_AS_BINARY:
         _add_pyz()
@@ -265,7 +267,7 @@ def _bin_install(repo: str, key: str):
         raise NotImplementedError()
     _add_pyz()
     (_, _version) = import_from_qualname("orbiter_translations.version")
-    logging.info(f"Successfully installed {repo}, version: {_version}")
+    logger.info(f"Successfully installed {repo}, version: {_version}")
 
 
 # noinspection t
@@ -284,8 +286,8 @@ def _bin_install(repo: str, key: str):
 @click.option(
     "-k",
     "--key",
-    help="[Optional] License Key to use for the translation ruleset.\n\n"
-    "Should look like 'AAAA-BBBB-1111-2222-3333-XXXX-YYYY-ZZZZ'",
+    help="[Optional] License Key to use for the translation ruleset. Should look like "
+    "`AAAA-BBBB-1111-2222-3333-XXXX-YYYY-ZZZZ`",
     type=str,
     default=None,
     allow_from_autoenv=True,
@@ -298,7 +300,7 @@ def install(
     ),
     key: str | None,
 ):
-    """Install a new Orbiter Translation Ruleset from a repository"""
+    """Install a new Translation Ruleset from a repository"""
     if not repo:
         choices = [
             "astronomer-orbiter-translations",
@@ -329,7 +331,7 @@ def install(
 
 # noinspection PyShadowingBuiltins
 @orbiter.command(help="List available Translation Rulesets")
-def help():
+def list_rulesets():
     console = Console()
 
     table = tabulate(

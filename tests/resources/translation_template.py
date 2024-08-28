@@ -12,6 +12,7 @@ from orbiter.rules import (
     task_rule,
     task_dependency_rule,
     post_processing_rule,
+    cannot_map_rule,
 )
 from orbiter.rules.rulesets import (
     DAGFilterRuleset,
@@ -56,19 +57,6 @@ def basic_task_rule(val: dict) -> OrbiterOperator | OrbiterTaskGroup | None:
         return OrbiterEmptyOperator(task_id=val["task_id"])
     else:
         return None
-
-
-@task_rule(priority=1)
-def cannot_map_rule(val: dict) -> OrbiterOperator | OrbiterTaskGroup | None:
-    """This rule returns an `OrbiterEmptyOperator` with a doc string that says it cannot map the task,
-    so we can still see the task in the output. With a priority=1 it will be applied last
-    """
-    import json
-
-    # noinspection PyArgumentList
-    return OrbiterEmptyOperator(
-        task_id=val["task_id"], doc_md=f"Cannot map task! input: {json.dumps(val)}"
-    )
 
 
 @task_dependency_rule

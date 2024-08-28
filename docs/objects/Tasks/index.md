@@ -4,7 +4,7 @@ are units of work. An Operator is a pre-defined task with specific functionality
 
 Operators can be looked up in the [Astronomer Registry](https://registry.astronomer.io/).
 
-The easiest way to utilize an operator is to use a subclass of `OrbiterOperator` (e.g. `OrbiterBashOperator`).
+The easiest way to create an operator in a translation to [use an existing subclass of `OrbiterOperator` (e.g. `OrbiterBashOperator`)](./Operators_and_Callbacks/operators).
 
 If an `OrbiterOperator` subclass doesn't exist for your use case, you can:
 
@@ -27,7 +27,8 @@ If an `OrbiterOperator` subclass doesn't exist for your use case, you can:
         )
     ```
 
-2) Create a new subclass of `OrbiterOperator` (beneficial if you are using it frequently in separate `@task_rules`)
+2) Create a new subclass of `OrbiterOperator`, which can be beneficial if you are using it frequently
+   in separate `@task_rules`
     ```python
     from orbiter.objects.task import OrbiterOperator
     from orbiter.objects.requirement import OrbiterRequirement

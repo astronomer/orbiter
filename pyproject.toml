@@ -88,6 +88,7 @@ dev = [
     "mkdocstrings-python",
     "markdown-exec",  # for rendering the csv table of origins to share w/ CLI
     "pygments",
+    "griffe-inherited-docstrings",
 
     # test
     "pytest>=7.4",

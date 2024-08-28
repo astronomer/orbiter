@@ -254,7 +254,11 @@ class OrbiterProject:
         # noinspection t
         def _add_recursively(
             things: Iterable[
-                OrbiterOperator | OrbiterTaskGroup | OrbiterCallback | OrbiterTimetable
+                OrbiterOperator
+                | OrbiterTaskGroup
+                | OrbiterCallback
+                | OrbiterTimetable
+                | OrbiterDAG
             ],
         ):
             for thing in things:
@@ -278,27 +282,14 @@ class OrbiterProject:
                     self.add_requirements(imports)
                 if isinstance(thing, OrbiterTaskGroup) and (tasks := thing.tasks):
                     _add_recursively(tasks)
-
-                # find callbacks in any 'model extra' or attributes named
-                # "on_success_callback" or "on_failure_callback"
-                if (
-                    hasattr(thing, "__dict__")
-                    and hasattr(thing, "model_extra")
-                    and len(
+                if hasattr(thing, "__dict__") or hasattr(thing, "model_extra"):
+                    # If it's a pydantic model or dict, check its properties for more things to add
+                    _add_recursively(
                         (
-                            callbacks := {
-                                k: v
-                                for k, v in (
-                                    (thing.__dict__ or dict())
-                                    | (thing.model_extra or dict())
-                                ).items()
-                                if k in ("on_success_callback", "on_failure_callback")
-                                and issubclass(type(v), OrbiterCallback)
-                            }
-                        )
+                            (getattr(thing, "__dict__", {}) or dict())
+                            | (getattr(thing, "model_extra", {}) or dict())
+                        ).values()
                     )
-                ):
-                    _add_recursively(callbacks.values())
 
         for dag in [dags] if isinstance(dags, OrbiterDAG) else dags:
             dag_id = dag.dag_id
@@ -309,14 +300,11 @@ class OrbiterProject:
             else:
                 self.dags[dag_id] = dag
 
-            # Add imports to the project
-            self.add_requirements(dag.imports)
-
             # Add anything that might be in the tasks of the DAG - such as imports, Connections, etc
             _add_recursively((dag.tasks or {}).values())
 
             # Add anything that might be in the `dag.schedule` - such as Includes, Timetables, Connections, etc
-            _add_recursively([dag.schedule])
+            _add_recursively([dag])
         return self
 
     def add_env_vars(

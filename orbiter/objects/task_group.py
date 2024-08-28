@@ -6,13 +6,20 @@ from typing import List, Any, Set
 
 from pydantic import field_validator
 
-from orbiter.ast_helper import OrbiterASTBase, py_with, py_object
+from orbiter import ORBITER_TASK_SUFFIX
+from orbiter.ast_helper import (
+    OrbiterASTBase,
+    py_with,
+    py_object,
+    py_bitshift,
+)
 from orbiter.objects import OrbiterBase, ImportList, OrbiterRequirement
 from orbiter.objects.task import (
     TaskId,
     OrbiterTaskDependency,
     OrbiterOperator,
     task_add_downstream,
+    to_task_id,
 )
 
 __mermaid__ = """
@@ -32,14 +39,18 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
 
     ```pycon
     >>> from orbiter.objects.operators.bash import OrbiterBashOperator
+    >>> from orbiter.ast_helper import render_ast
     >>> OrbiterTaskGroup(task_group_id="foo", tasks=[
     ...   OrbiterBashOperator(task_id="b", bash_command="b"),
     ...   OrbiterBashOperator(task_id="a", bash_command="a").add_downstream("b"),
-    ... ])
+    ... ], downstream={"c"})
     with TaskGroup(group_id='foo') as foo:
         b_task = BashOperator(task_id='b', bash_command='b')
         a_task = BashOperator(task_id='a', bash_command='a')
         a_task >> b_task
+
+    >>> render_ast(OrbiterTaskGroup(task_group_id="foo", tasks=[], downstream={"c"})._downstream_to_ast())
+    'foo >> c_task'
 
     ```
 
@@ -67,7 +78,17 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
     ]
     task_group_id: TaskId
     tasks: List[Any]
-    downstream: Set[OrbiterTaskDependency] = set()
+    downstream: Set[str] = set()
+
+    @property
+    def task_id(self):
+        # task_id property, so it can be treated like an OrbiterOperator more easily
+        return self.task_group_id
+
+    @task_id.setter
+    def task_id(self, value):
+        # task_id property, so it can be treated like an OrbiterOperator more easily
+        self.task_group_id = value
 
     # noinspection PyNestedDecorators
     @field_validator("tasks")
@@ -89,11 +110,25 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
     ) -> "OrbiterTaskGroup":
         return task_add_downstream(self, task_id)
 
+    def _downstream_to_ast(self):
+        if not self.downstream:
+            return
+        elif len(self.downstream) == 1:
+            (t,) = tuple(self.downstream)
+            return py_bitshift(
+                to_task_id(self.task_id), to_task_id(t, ORBITER_TASK_SUFFIX)
+            )
+        else:
+            return py_bitshift(
+                to_task_id(self.task_id),
+                sorted([to_task_id(t, ORBITER_TASK_SUFFIX) for t in self.downstream]),
+            )
+
     def _to_ast(self) -> ast.stmt:
         # noinspection PyProtectedMember
         return py_with(
             py_object("TaskGroup", group_id=self.task_group_id).value,
             [operator._to_ast() for operator in self.tasks]
-            + [dep._to_ast() for operator in self.tasks for dep in operator.downstream],
+            + [operator._downstream_to_ast() for operator in self.tasks],
             self.task_group_id,
         )
