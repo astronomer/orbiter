@@ -5,7 +5,7 @@ import re
 from enum import Enum
 from typing import Any, Tuple
 
-__version__ = "1.0.2a1"
+__version__ = "1.0.2"
 
 version = __version__
 
