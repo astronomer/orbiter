@@ -40,6 +40,9 @@ dependencies = [
     # CLI prompt
     "questionary",
 
+    # fetch translation_rulesets in binary mode
+    "requests",
+
     # For validation of objects
     "pydantic >= 2.6",
 
