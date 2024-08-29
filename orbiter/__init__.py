@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 import re
+from enum import Enum
 from typing import Any, Tuple
 
 __version__ = "1.1.0"
 
 version = __version__
+
+
+class FileType(Enum):
+    YAML = "YAML"
+    XML = "XML"
+    JSON = "JSON"
 
 
 def clean_value(s: str):
