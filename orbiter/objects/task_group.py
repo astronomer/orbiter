@@ -6,7 +6,7 @@ from typing import List, Any, Set
 
 from pydantic import field_validator
 
-from orbiter import ORBITER_TASK_SUFFIX
+from orbiter.config import ORBITER_TASK_SUFFIX
 from orbiter.ast_helper import (
     OrbiterASTBase,
     py_with,

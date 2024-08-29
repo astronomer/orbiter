@@ -17,11 +17,16 @@ from tabulate import tabulate
 from csv import DictReader
 from rich.markdown import Markdown
 import pkgutil
+from urllib.request import urlretrieve
 
-from orbiter import import_from_qualname, KG_ACCOUNT_ID
+from orbiter import import_from_qualname
+from orbiter.config import (
+    RUNNING_AS_BINARY,
+    KG_ACCOUNT_ID,
+    TRANSLATION_VERSION,
+    LOG_LEVEL,
+)
 from orbiter.rules.rulesets import TranslationRuleset
-
-RUNNING_AS_BINARY = getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
 
 
 # ### LOGGING ###
@@ -38,7 +43,6 @@ def formatter(r):
 
 
 logger.remove()
-LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 sys.tracebacklimit = 1000 if LOG_LEVEL == "DEBUG" else 0
 logger_defaults = dict(colorize=True, format=formatter)
 exceptions_off = {"backtrace": False, "diagnose": False}
@@ -160,11 +164,18 @@ def orbiter():
     default=True,
     show_default=True,
 )
+@click.option(
+    "--analyze/--no-analyze",
+    help="[optional] print statistics instead of rendering output",
+    default=False,
+    show_default=True,
+)
 def translate(
     input_dir: Path,
     output_dir: Path,
     ruleset: str | None,
     _format: bool,
+    analyze: bool,
 ):
     """Translate workflows in an `INPUT_DIR` to an `OUTPUT_DIR` Airflow Project.
 
@@ -195,9 +206,13 @@ def translate(
         )
 
     try:
-        translation_ruleset.translate_fn(
+        project = translation_ruleset.translate_fn(
             translation_ruleset=translation_ruleset, input_dir=input_dir
-        ).render(output_dir)
+        )
+        if analyze:
+            project.analyze()
+        else:
+            project.render(output_dir)
     except RuntimeError as e:
         logger.error(f"Error encountered during translation: {e}")
         raise click.Abort()
@@ -207,7 +222,8 @@ def translate(
 
 def _pip_install(repo: str, key: str):
     """If we are running via python/pip, we can utilize pip to install translations"""
-    _exec = f"pip3 install {repo}"
+    _exec = f"{sys.executable} -m pip install {repo}"
+    _exec += f"=={TRANSLATION_VERSION}" if TRANSLATION_VERSION != "latest" else ""
     if repo == "astronomer-orbiter-translations":
         if not key:
             raise ValueError(
@@ -247,6 +263,20 @@ def _get_keygen_pyz(key):
         f.write(r.content)
 
 
+def _get_gh_pyz(
+    repo: str = "https://github.com/astronomer/orbiter-community-translations",
+    file: str = "orbiter_translations.pyz",
+):
+    if TRANSLATION_VERSION != "latest":
+        url = f"{repo}/releases/download/{TRANSLATION_VERSION}/{file}"
+    else:
+        url = f"{repo}/releases/latest/download/{file}"
+    logger.info(f"Downloading {file} from {url}")
+    (downloaded_file, res) = urlretrieve(url, file)  # nosec B310
+    logger.debug(f"Downloaded {file} to {downloaded_file}, response: {res}")
+    return downloaded_file
+
+
 def _add_pyz():
     local_pyz = [
         str(_path.resolve()) for _path in Path(".").iterdir() if _path.suffix == ".pyz"
@@ -257,14 +287,14 @@ def _add_pyz():
 
 def _bin_install(repo: str, key: str):
     """If we are running via a PyInstaller binary, we need to download a .pyz"""
-    if repo == "astronomer-orbiter-translations":
+    if "astronomer-orbiter-translations" in repo:
         if not key:
             raise ValueError(
                 "License key is required for 'astronomer-orbiter-translations'!"
             )
         _get_keygen_pyz(key)
     else:
-        raise NotImplementedError()
+        _get_gh_pyz()
     _add_pyz()
     (_, _version) = import_from_qualname("orbiter_translations.version")
     logger.info(f"Successfully installed {repo}, version: {_version}")

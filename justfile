@@ -99,10 +99,33 @@ docker-run-binary REPO='orbiter-community-translations' RULESET='orbiter_transla
     #!/usr/bin/env bash
     set -euxo pipefail
     cat <<"EOF" | docker run --platform linux/amd64 -v `pwd`:/data -w /data -i ubuntu /bin/bash
-    chmod +x ./orbiter-linux-x86_64 && \
+    echo "setting up certificates for https" && \
+    apt update && apt install -y ca-certificates && update-ca-certificates --fresh && \
+    echo "sourcing .env" && \
     set -a && source .env && set +a && \
+    chmod +x ./orbiter-linux-x86_64 && \
+    echo "[ORBITER LIST-RULESETS]" && \
     ./orbiter-linux-x86_64 list-rulesets && \
     mkdir -p workflow && \
+    echo "[ORBITER INSTALL]" && \
     LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 install --repo={{REPO}} && \
+    echo "[ORBITER TRANSLATE]" && \
     LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 translate workflow/ output/ --ruleset {{RULESET}}
+    EOF
+
+docker-run-python REPO='orbiter-community-translations' RULESET='orbiter_translations.oozie.xml_demo.translation_ruleset':
+    #!/usr/bin/env bash
+    set -euxo pipefail
+    cat <<"EOF" | docker run --platform linux/amd64 -v `pwd`:/data -w /data -i python /bin/bash
+    echo "sourcing .env" && \
+    set -a && source .env && set +a && \
+    echo "installing orbiter" && \
+    pip install '.'
+    echo "[ORBITER LIST-RULESETS]" && \
+    orbiter list-rulesets && \
+    mkdir -p workflow && \
+    echo "[ORBITER INSTALL]" && \
+    LOG_LEVEL=DEBUG orbiter install --repo={{REPO}} && \
+    echo "[ORBITER TRANSLATE]" && \
+    LOG_LEVEL=DEBUG orbiter translate workflow/ output/ --ruleset {{RULESET}}
     EOF

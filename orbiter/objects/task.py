@@ -7,13 +7,14 @@ from typing import Set, List, ClassVar, Annotated, Callable
 from loguru import logger
 from pydantic import AfterValidator, BaseModel, validate_call
 
-from orbiter import clean_value, ORBITER_TASK_SUFFIX
+from orbiter import clean_value
 from orbiter.ast_helper import (
     OrbiterASTBase,
     py_function,
     py_bitshift,
 )
 from orbiter.ast_helper import py_assigned_object
+from orbiter.config import ORBITER_TASK_SUFFIX
 from orbiter.objects import ImportList
 from orbiter.objects import OrbiterBase
 from orbiter.objects.pool import OrbiterPool

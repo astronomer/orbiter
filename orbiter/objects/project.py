@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from functools import reduce
 from pathlib import Path
-from typing import Dict, Iterable, Set
+from typing import Dict, Iterable, Set, Literal
 
 import yaml
 from loguru import logger
@@ -609,6 +610,99 @@ class OrbiterProject:
         else:
             logger.debug("No entries for .env")
 
+    @validate_call
+    def analyze(self, output_fmt: Literal["json", "csv", "md"] = "md"):
+        """Print an analysis of the project to the console.
+
+        ```pycon
+        >>> from orbiter.objects.operators.empty import OrbiterEmptyOperator
+        >>> OrbiterProject().add_dags([
+        ...     OrbiterDAG(file_path="", dag_id="foo", orbiter_kwargs={"file_path": "foo.py"},
+        ...         tasks={"bar": OrbiterEmptyOperator(task_id="bar")}
+        ...     ),
+        ...     OrbiterDAG(file_path="", dag_id="baz", orbiter_kwargs={"file_path": "baz.py"},
+        ...         tasks={"bop": OrbiterEmptyOperator(task_id="bop")}
+        ...     )
+        ... ]).analyze()
+        ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+        ┃                                   Analysis                                   ┃
+        ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+        <BLANKLINE>
+        <BLANKLINE>
+                   DAGs   OrbiterEmptyOperator
+         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          foo.py      1                      1
+          baz.py      1                      1
+          Totals      2                      2
+        <BLANKLINE>
+
+        ```
+        """
+        import sys
+
+        dag_analysis = [
+            {
+                "file": dag.orbiter_kwargs.get("file_path", dag.file_path),
+                "dag_id": dag.dag_id,
+                "task_types": [type(task).__name__ for task in dag.tasks.values()],
+            }
+            for dag in self.dags.values()
+        ]
+
+        file_analysis = {}
+        for analysis in dag_analysis:
+            analysis_output = file_analysis.get(analysis["file"], {})
+            analysis_output["DAGs"] = analysis_output.get("DAGs", 0) + 1
+            tasks_of_type = reduce(
+                lambda acc, task_type: acc | {task_type: acc.get(task_type, 0) + 1},
+                analysis["task_types"],
+                dict(),
+            )
+            analysis_output |= tasks_of_type
+            file_analysis[analysis["file"]] = analysis_output
+
+        file_analysis = [{"": k} | v for k, v in file_analysis.items()]
+        totals = {"": "Totals"}
+        for file in file_analysis:
+            for k, v in file.items():
+                if k != "":
+                    totals[k] = totals.get(k, 0) + v
+        file_analysis.append(totals)
+
+        if output_fmt == "json":
+            import json
+
+            json.dump(file_analysis, sys.stdout)
+        elif output_fmt == "csv":
+            import csv
+            import sys
+
+            writer = csv.DictWriter(sys.stdout, fieldnames=file_analysis[0].keys())
+            writer.writeheader()
+            writer.writerows(file_analysis)
+        elif output_fmt == "md":
+            from rich.console import Console
+            from rich.markdown import Markdown
+            from tabulate import tabulate
+
+            console = Console()
+
+            #         DAGs  EmptyOp
+            # file_a     1        1
+            table = tabulate(
+                tabular_data=file_analysis,
+                headers="keys",
+                tablefmt="pipe",
+                # https://github.com/Textualize/rich/issues/3027
+                missingval="⠀",  # (special 'braille space' character)
+            )
+            console.print(
+                Markdown(
+                    f"# Analysis\n{table}",
+                    style="magenta",
+                )
+            )
+
 
 # https://github.com/pydantic/pydantic/issues/8790
 OrbiterProject.add_connections = validate_call()(OrbiterProject.add_connections)
@@ -618,3 +712,13 @@ OrbiterProject.add_includes = validate_call()(OrbiterProject.add_includes)
 OrbiterProject.add_pools = validate_call()(OrbiterProject.add_pools)
 OrbiterProject.add_requirements = validate_call()(OrbiterProject.add_requirements)
 OrbiterProject.add_variables = validate_call()(OrbiterProject.add_variables)
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod(
+        optionflags=doctest.ELLIPSIS
+        | doctest.NORMALIZE_WHITESPACE
+        | doctest.IGNORE_EXCEPTION_DETAIL
+    )
