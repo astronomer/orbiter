@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-      - uses: extractions/setup-just@v1
+      - uses: extractions/setup-just@v2
       - run: just install
       - run: just build
         if: matrix.os == 'ubuntu-20.04'

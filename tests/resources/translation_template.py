@@ -28,9 +28,12 @@ from orbiter.rules.rulesets import (
 @dag_filter_rule
 def basic_dag_filter(val: dict) -> list | None:
     """Filter input down to a list of dictionaries that can be processed by the `@dag_rules`"""
-    for k, v in val.items():
-        pass
-    return []
+    if ...:
+        for k, v in val.items():
+            pass
+        return []
+    else:
+        return None
 
 
 @dag_rule
@@ -45,9 +48,12 @@ def basic_dag_rule(val: dict) -> OrbiterDAG | None:
 @task_filter_rule
 def basic_task_filter(val: dict) -> list | None:
     """Filter input down to a list of dictionaries that can be processed by the `@task_rules`"""
-    for k, v in val.items():
-        pass
-    return []
+    if ...:
+        for k, v in val.items():
+            pass
+        return []
+    else:
+        return None
 
 
 @task_rule(priority=2)
@@ -62,17 +68,23 @@ def basic_task_rule(val: dict) -> OrbiterOperator | OrbiterTaskGroup | None:
 @task_dependency_rule
 def basic_task_dependency_rule(val: OrbiterDAG) -> list | None:
     """Translate input into a list of task dependencies"""
-    for task_dependency in val.orbiter_kwargs["task_dependencies"]:
-        pass
-    return []
+    if ...:
+        for task in val.tasks.values():
+            original_task_kwargs = task.orbiter_kwargs["val"]
+            for task_dependency in original_task_kwargs.get("task_dependencies", []):
+                pass
+        return []
+    else:
+        return None
 
 
 @post_processing_rule
 def basic_post_processing_rule(val: OrbiterProject) -> None:
     """Modify the project in-place, after all other rules have applied"""
-    for dag_id, dag in val.dags.items():
-        for task_id, task in dag.tasks.items():
-            pass
+    if ...:
+        for dag_id, dag in val.dags.items():
+            for task_id, task in dag.tasks.items():
+                pass
 
 
 translation_ruleset = TranslationRuleset(
