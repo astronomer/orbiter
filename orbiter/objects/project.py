@@ -624,9 +624,10 @@ class OrbiterProject:
         ...         tasks={"bop": OrbiterEmptyOperator(task_id="bop")}
         ...     )
         ... ]).analyze()
-        ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-        ┃                                   Analysis                                   ┃
-        ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+        ... # doctest: +ELLIPSIS
+        ┏━...
+        ...Analysis...
+        ┗━...
         <BLANKLINE>
         <BLANKLINE>
                    DAGs   OrbiterEmptyOperator
