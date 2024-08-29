@@ -656,7 +656,7 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
         )
 
     @validate_call
-    def dumps(self, input_dict: dict, ext: str | None) -> str:
+    def dumps(self, input_dict: dict, ext: str | None = None) -> str:
         """
         Convert Python dictionary back to source string form, useful for testing
 
