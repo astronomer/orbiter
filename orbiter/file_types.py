@@ -36,7 +36,9 @@ class FileType(BaseModel, arbitrary_types_allowed=True):
 class FileTypeJSON(FileType):
     extension: ClassVar[Set[str]] = {"JSON"}
     load_fn: ClassVar[Callable[[str], dict]] = json.loads
-    dump_fn: ClassVar[Callable[[dict], str]] = xmltodict.unparse
+    dump_fn: ClassVar[Callable[[dict], str]] = partial(
+        json.dumps, default=str, indent=2
+    )
 
 
 # noinspection t
@@ -106,9 +108,7 @@ def xmltodict_parse(input_str: str) -> Any:
 class FileTypeXML(FileType):
     extension: ClassVar[Set[str]] = {"XML"}
     load_fn: ClassVar[Callable[[str], dict]] = xmltodict_parse
-    dump_fn: ClassVar[Callable[[dict], str]] = partial(
-        json.dumps, default=str, indent=2
-    )
+    dump_fn: ClassVar[Callable[[dict], str]] = xmltodict.unparse
 
 
 class FileTypeYAML(FileType):
