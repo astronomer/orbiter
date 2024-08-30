@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from abc import ABC
 from functools import partial
 from typing import Callable, Set, ClassVar, Any
 
@@ -12,7 +13,17 @@ from pydantic import (
 from pydantic.v1 import validator
 
 
-class FileType(BaseModel, arbitrary_types_allowed=True):
+class FileType(BaseModel, ABC, arbitrary_types_allowed=True):
+    """**Abstract Base** File Type
+
+    :param extension: The file extension(s) for this file type
+    :type extension: Set[str]
+    :param load_fn: The function to load the file into a dictionary for this file type
+    :type load_fn: Callable[[str], dict]
+    :param dump_fn: The function to dump a dictionary to a string for this file type
+    :type dump_fn: Callable[[dict], str]
+    """
+
     extension: ClassVar[Set[str]]
     load_fn: ClassVar[Callable[[str], dict]]
     dump_fn: ClassVar[Callable[[dict], str]]
@@ -34,11 +45,26 @@ class FileType(BaseModel, arbitrary_types_allowed=True):
 
 
 class FileTypeJSON(FileType):
+    """JSON File Type
+
+    ```pycon
+    >>> out = FileTypeJSON.dump_fn({'a': 1}); out
+    '{"a": 1}'
+    >>> FileTypeJSON.load_fn(out)
+    {'a': 1}
+
+    ```
+    :param extension: JSON
+    :type extension: Set[str]
+    :param load_fn: json.loads
+    :type load_fn: Callable[[str], dict]
+    :param dump_fn: json.dumps
+    :type dump_fn: Callable[[dict], str]
+    """
+
     extension: ClassVar[Set[str]] = {"JSON"}
     load_fn: ClassVar[Callable[[str], dict]] = json.loads
-    dump_fn: ClassVar[Callable[[dict], str]] = partial(
-        json.dumps, default=str, indent=2
-    )
+    dump_fn: ClassVar[Callable[[dict], str]] = partial(json.dumps, default=str)
 
 
 # noinspection t
@@ -106,12 +132,60 @@ def xmltodict_parse(input_str: str) -> Any:
 
 
 class FileTypeXML(FileType):
+    """XML File Type
+
+    !!! note
+        This class uses a custom `xmltodict_parse` method to standardize the output to a list of dictionaries
+
+    ```pycon
+    >>> out = FileTypeXML.dump_fn({'a': 1}); out
+    '<?xml version="1.0" encoding="utf-8"?>\\n<a>1</a>'
+    >>> FileTypeXML.load_fn(out)
+    {'a': '1'}
+
+    ```
+    :param extension: XML
+    :type extension: Set[str]
+    :param load_fn: xmltodict_parse
+    :type load_fn: Callable[[str], dict]
+    :param dump_fn: xmltodict.unparse
+    :type dump_fn: Callable[[dict], str]
+    """
+
     extension: ClassVar[Set[str]] = {"XML"}
     load_fn: ClassVar[Callable[[str], dict]] = xmltodict_parse
     dump_fn: ClassVar[Callable[[dict], str]] = xmltodict.unparse
 
 
 class FileTypeYAML(FileType):
+    """YAML File Type
+
+
+    ```pycon
+    >>> out = FileTypeYAML.dump_fn({'a': 1}); out
+    'a: 1\\n'
+    >>> FileTypeYAML.load_fn(out)
+    {'a': 1}
+
+    ```
+    :param extension: YAML, YML
+    :type extension: Set[str]
+    :param load_fn: yaml.safe_load
+    :type load_fn: Callable[[str], dict]
+    :param dump_fn: yaml.safe_dump
+    :type dump_fn: Callable[[dict], str]
+    """
+
     extension: ClassVar[Set[str]] = {"YAML", "YML"}
     load_fn: ClassVar[Callable[[str], dict]] = yaml.safe_load
     dump_fn: ClassVar[Callable[[dict], str]] = yaml.safe_dump
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod(
+        optionflags=doctest.ELLIPSIS
+        | doctest.NORMALIZE_WHITESPACE
+        | doctest.IGNORE_EXCEPTION_DETAIL
+    )

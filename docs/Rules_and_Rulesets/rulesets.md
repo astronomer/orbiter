@@ -4,7 +4,9 @@
         separate_signature: true
         show_signature_annotations: true
         signature_crossrefs: true
-::: orbiter.rules.rulesets.xmltodict_parse
+
+::: orbiter.file_types
+
 ## Rulesets
 ::: orbiter.rules.rulesets.Ruleset
     options:
