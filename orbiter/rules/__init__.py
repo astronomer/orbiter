@@ -3,12 +3,12 @@ The brain of the Orbiter framework is in it's [`Rules`][orbiter.rules.Rule]
 and the [`Rulesets`][orbiter.rules.rulesets.Ruleset] that contain them.
 
 - A [`Rule`][orbiter.rules.Rule] is a python function that is evaluated and produces **something**
-(typically an [Object](../objects)) or **nothing**
+(typically an [Object](../objects/index.md)) or **nothing**
 - A [`Ruleset`][orbiter.rules.rulesets.Ruleset] is a collection of [`Rules`][orbiter.rules.Rule] that are
     evaluated in priority order
 - A [`TranslationRuleset`][orbiter.rules.rulesets.TranslationRuleset]
     is a collection of [`Rulesets`][orbiter.rules.rulesets.Ruleset],
-    relating to an [Origin](../origins) and `FileType`,
+    relating to an [Origin](../origins.md) and [`FileType`][orbiter.file_types.FileType],
     with a [`translate_fn`][orbiter.rules.rulesets.translate] which determines how to apply the rulesets.
 
 Different [`Rules`][orbiter.rules.Rule] are applied in different scenarios, such as:
@@ -92,7 +92,7 @@ def rule(
 class Rule(BaseModel, Callable, extra="forbid"):
     """
     A `Rule` contains a python function that is evaluated and produces something
-    (typically an [Object](../objects)) or nothing
+    (typically an [Object](../objects/index.md)) or nothing
 
     A `Rule` can be created from a decorator
     ```pycon
@@ -116,7 +116,7 @@ class Rule(BaseModel, Callable, extra="forbid"):
 
     !!! tip
 
-        If the returned value is an [Orbiter Object](../../objects),
+        If the returned value is an [Orbiter Object](../../objects/index.md),
         the passed `kwargs` are saved in a special `orbiter_kwargs` property
 
         ```pycon

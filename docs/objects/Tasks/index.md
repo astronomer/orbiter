@@ -4,7 +4,7 @@ are units of work. An Operator is a pre-defined task with specific functionality
 
 Operators can be looked up in the [Astronomer Registry](https://registry.astronomer.io/).
 
-The easiest way to create an operator in a translation to [use an existing subclass of `OrbiterOperator` (e.g. `OrbiterBashOperator`)](./Operators_and_Callbacks/operators).
+The easiest way to create an operator in a translation to [use an existing subclass of `OrbiterOperator` (e.g. `OrbiterBashOperator`)](./Operators_and_Callbacks/operators.md).
 
 If an `OrbiterOperator` subclass doesn't exist for your use case, you can:
 

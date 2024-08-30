@@ -20,5 +20,5 @@ please [contact us](https://www.astronomer.io/contact/) for access to the most u
 If you don't see your Origin system listed, please either:
 
 - [contact us](https://www.astronomer.io/contact/) for services to create translations
-- create an [issue](https://github.com/astronomer/orbiter-community-translations/issues/new/) in our `orbiter-community-translations` repository
-- write a `TranslationRuleset` and submit a [pull request](https://github.com/astronomer/orbiter-community-translations/pulls/) to share your translations with the community
+- create an [issue](https://github.com/astronomer/orbiter-community-translations/issues/new/) in our [`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations) repository
+- write a [`TranslationRuleset` Template](./Rules_and_Rulesets/template.md) and submit a [pull request](https://github.com/astronomer/orbiter-community-translations/pulls/) to share your translations with the community

@@ -2,7 +2,7 @@
 
 Airflow workflows are represented by a
 [DAG](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html)
-which is a Directed Acyclic Graph (of [Tasks](../tasks)).
+which is a Directed Acyclic Graph (of [Tasks](./Tasks/index.md)).
 
 ## Diagram
 ```mermaid

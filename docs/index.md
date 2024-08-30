@@ -20,12 +20,12 @@ flowchart LR
     origin{{ XML/JSON/YAML/Etc Workflows }}
     origin -->| ✨ Translations ✨ | airflow{{ Apache Airflow Project }}
 ```
-The **framework** is a set of [Rules](./Rules_and_Rulesets) and [Objects](./objects) that can translate workflows
-from an [Origin](./origins) system to an Airflow project.
+The **framework** is a set of [Rules](./Rules_and_Rulesets/index.md) and [Objects](./objects/index.md) that can translate workflows
+from an [Origin](./origins.md) system to an Airflow project.
 
 ## Installation
 
-Install the [`orbiter` CLI](./CLI), if you have Python >= 3.10 installed via `pip`:
+Install the [`orbiter` CLI](./cli.md), if you have Python >= 3.10 installed via `pip`:
 ```shell
 pip install astronomer-orbiter
 ```
@@ -33,7 +33,7 @@ If you do not have a compatible Python environment, pre-built binary executables
 are available for download on the [Releases](https://github.com/astronomer/orbiter/releases) page.
 
 ## Translate
-Utilize the [`orbiter` CLI](./cli) with existing translations to convert workflows
+Utilize the [`orbiter` CLI](./cli.md) with existing translations to convert workflows
 from other systems to an Airflow project.
 
 1. Set up a new folder, and create a `workflow/` folder. Add your workflows files to it
@@ -45,14 +45,14 @@ from other systems to an Airflow project.
         └── ...
     ```
 2. Determine the specific translation ruleset via:
-    1. the [Origins](origins) documentation
-    2. the [`orbiter list-rulesets`](./cli#list-rulesets) command
+    1. the [Origins](./origins.md) documentation
+    2. the [`orbiter list-rulesets`](./cli.md#list-rulesets) command
     3. or [by creating a translation ruleset](#authoring-rulesets-customization), if one does not exist
-3. Install the translation ruleset via the [`orbiter install`](./cli#install) command (substituting `<REPOSITORY>` with the value in the last step)
+3. Install the translation ruleset via the [`orbiter install`](./cli.md#install) command (substituting `<REPOSITORY>` with the value in the last step)
     ```shell
     orbiter install --repo=<REPOSITORY>
     ```
-4. Use the [`orbiter translate`](./cli#translate) command with the `<RULESET>` determined in the last step
+4. Use the [`orbiter translate`](./cli.md#translate) command with the `<RULESET>` determined in the last step
    This will produce output to an `output/` folder:
     ```shell
     orbiter translate workflow/ --ruleset <RULESET> output/
@@ -66,7 +66,7 @@ from other systems to an Airflow project.
 ## Authoring Rulesets & Customization
 Orbiter can be extended to fit specific needs, patterns, or to support additional origins.
 
-Read more specifics about how to use the framework at [Rules](./Rules_and_Rulesets) and [Objects](./objects)
+Read more specifics about how to use the framework at [Rules](./Rules_and_Rulesets/index.md) and [Objects](./objects/index.md)
 
 ### Extend or Customize
 To extend or customize an existing ruleset, you can easily modify it with simple Python code.
@@ -82,18 +82,18 @@ To extend or customize an existing ruleset, you can easily modify it with simple
         └── ...
     ```
 3. Add contents to `override.py`:
-    ```python title="override.py" linenums="1"
+   ```python title="override.py" linenums="1"
     -8<- "tests/resources/override/override.py"
     ```
-    1. Importing specific translation ruleset, determined via the [Origins](origins) page
-    2. Importing required [Objects](./objects)
-    3. Importing required [Rule](./Rules_and_Rulesets) types
+    1. Importing specific translation ruleset, determined via the [Origins](origins.md) page
+    2. Importing required [Objects](./objects/index.md)
+    3. Importing required [Rule](./Rules_and_Rulesets/index.md) types
     4. Create one or more `@rule` functions, as required. A higher priority means this rule will be applied first.
-        [`@task_rule` Reference](./Rules_and_Rulesets/rules/#orbiter.rules.TaskRule)
+        [`@task_rule` Reference](./Rules_and_Rulesets/rules.md#orbiter.rules.TaskRule)
     5. `Rules` have an `if/else` statement - they must always return a **single** thing or **nothing**
-    6. [`OrbiterSSHOperator` Reference](./objects/Operators_and_Callbacks/operators/#orbiter.objects.operators.ssh.OrbiterSSHOperator)
-    7. Append the new [Rule](./Rules_and_Rulesets)
-       to the [`translation_ruleset`](./Rules_and_Rulesets/rulesets/#orbiter.rules.rulesets.TranslationRuleset)
+    6. [`OrbiterSSHOperator` Reference](./objects/Tasks/Operators_and_Callbacks/operators.md#orbiter.objects.operators.ssh.OrbiterSSHOperator)
+    7. Append the new [Rule](./Rules_and_Rulesets/index.md)
+       to the [`translation_ruleset`](./Rules_and_Rulesets/rulesets.md#orbiter.rules.rulesets.TranslationRuleset)
 
 4. Invoke the `orbiter` CLI, pointing it at your customized ruleset, and writing output to an `output/` folder:
     ```shell
@@ -103,16 +103,16 @@ To extend or customize an existing ruleset, you can easily modify it with simple
 
 ### Authoring a new Ruleset
 
-You can utilize the [`TranslationRuleset` Template](./Rules_and_Rulesets/template)
+You can utilize the [`TranslationRuleset` Template](./Rules_and_Rulesets/template.md)
 to create a new [`TranslationRuleset`][orbiter.rules.rulesets.TranslationRuleset].
 
 ## FAQ
 - **Can this tool convert my workflows from tool X to Airflow?**
 
-    _If you don't see your tool listed in [Supported Origins](./origins),
+    _If you don't see your tool listed in [Supported Origins](./origins.md),
     [contact us](https://www.astronomer.io/contact/) for services to create translations,
     create an [issue](https://github.com/astronomer/orbiter-community-translations/issues/new/)
-    in the [`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations) repository, or write a `TranslationRuleset` and submit a
+    in the [`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations) repository, or write a [`TranslationRuleset`](./Rules_and_Rulesets/template.md) and submit a
     [pull request](https://github.com/astronomer/orbiter-community-translations/pulls/)
     to share your translations with the community._
 
