@@ -1,5 +1,5 @@
 from __future__ import annotations
-from orbiter import FileType
+from orbiter.file_types import FileTypeJSON
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.operators.empty import OrbiterEmptyOperator
 from orbiter.objects.project import OrbiterProject
@@ -88,7 +88,7 @@ def basic_post_processing_rule(val: OrbiterProject) -> None:
 
 
 translation_ruleset = TranslationRuleset(
-    file_type=FileType.JSON,
+    file_type={FileTypeJSON},
     dag_filter_ruleset=DAGFilterRuleset(ruleset=[basic_dag_filter]),
     dag_ruleset=DAGRuleset(ruleset=[basic_dag_rule]),
     task_filter_ruleset=TaskFilterRuleset(ruleset=[basic_task_filter]),
