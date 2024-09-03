@@ -203,6 +203,10 @@ dag_filter_rule: Callable[[...], DAGFilterRule] = rule
 class DAGRule(Rule):
     """A `@dag_rule` decorator creates a [`DAGRule`][orbiter.rules.DAGRule]
 
+    !!! tip
+
+        A `__file` key is added to the original input, which is the file path of the input.
+
     ```python
     @dag_rule
     def foo(val: dict) -> OrbiterDAG | None:
