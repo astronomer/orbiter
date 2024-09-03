@@ -58,7 +58,7 @@ from pydantic import BaseModel, Field
 
 from loguru import logger
 
-from config import TRIM_LOG_OBJECT_LENGTH
+from orbiter.config import TRIM_LOG_OBJECT_LENGTH
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
 
 if TYPE_CHECKING:
