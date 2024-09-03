@@ -656,7 +656,11 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
             if file.suffix.lower() in {
                 f".{ext.lower()}" for ext in file_type.extension
             }:
-                return file_type.load_fn(file.read_text())
+                try:
+                    return file_type.load_fn(file.read_text())
+                except Exception as e:
+                    logger.error(f"Error loading file={file}! Skipping!\n{e}")
+                    continue
         raise TypeError(
             f"Invalid file_type={file.suffix}, does not match file_type={self.file_type}"
         )
@@ -705,9 +709,6 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
                     )
                 except TypeError:
                     logger.debug(f"File={file} not of correct type, skipping...")
-                    continue
-                except Exception as e:
-                    logger.exception(f"Error loading file={file}, {e}")
                     continue
 
     def test(self, input_value: str | dict) -> OrbiterProject:
