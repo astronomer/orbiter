@@ -54,6 +54,43 @@ logger.add(
     **(exceptions_off if LOG_LEVEL != "DEBUG" else exceptions_on),
 )
 
+INPUT_DIR_ARGS = ("input-dir",)
+INPUT_DIR_KWARGS = dict(
+    type=click.Path(
+        exists=True,
+        dir_okay=True,
+        file_okay=False,
+        readable=True,
+        resolve_path=True,
+        path_type=Path,
+    ),
+    default=Path.cwd() / "workflow",
+    required=True,
+)
+RULESET_ARGS = (
+    "-r",
+    "--ruleset",
+)
+RULESET_KWARGS = dict(
+    help="Qualified name of a TranslationRuleset",
+    type=str,
+    prompt="Ruleset to use? (e.g. orbiter_community_translations.dag_factory.translation_ruleset)",
+    required=True,
+)
+
+
+def import_ruleset(ruleset: str) -> TranslationRuleset:
+    if RUNNING_AS_BINARY:
+        _add_pyz()
+
+    logger.debug(f"Importing ruleset: {ruleset}")
+    (_, translation_ruleset) = import_from_qualname(ruleset)
+    if not isinstance(translation_ruleset, TranslationRuleset):
+        raise RuntimeError(
+            f"translation_ruleset={translation_ruleset} is not a TranslationRuleset"
+        )
+    return translation_ruleset
+
 
 def run(cmd: str, **kwargs):
     """Helper method to run a command and log the output"""
@@ -124,19 +161,7 @@ def orbiter():
 
 
 @orbiter.command()
-@click.argument(
-    "input-dir",
-    type=click.Path(
-        exists=True,
-        dir_okay=True,
-        file_okay=False,
-        readable=True,
-        resolve_path=True,
-        path_type=Path,
-    ),
-    default=Path.cwd() / "workflow",
-    required=True,
-)
+@click.argument(*INPUT_DIR_ARGS, **INPUT_DIR_KWARGS)
 @click.argument(
     "output-dir",
     type=click.Path(
@@ -149,14 +174,7 @@ def orbiter():
     default=Path.cwd() / "output",
     required=True,
 )
-@click.option(
-    "-r",
-    "--ruleset",
-    help="Qualified name of a TranslationRuleset",
-    type=str,
-    prompt="Ruleset to use? (e.g. orbiter_community_translations.dag_factory.translation_ruleset)",
-    required=True,
-)
+@click.option(*RULESET_ARGS, **RULESET_KWARGS)
 @click.option(
     "--format/--no-format",
     "_format",
@@ -164,18 +182,11 @@ def orbiter():
     default=True,
     show_default=True,
 )
-@click.option(
-    "--analyze/--no-analyze",
-    help="[optional] print statistics instead of rendering output",
-    default=False,
-    show_default=True,
-)
 def translate(
     input_dir: Path,
     output_dir: Path,
     ruleset: str | None,
     _format: bool,
-    analyze: bool,
 ):
     """Translate workflows in an `INPUT_DIR` to an `OUTPUT_DIR` Airflow Project.
 
@@ -192,32 +203,61 @@ def translate(
     logger.debug(f"Creating output directory {output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    logger.debug(f"Adding current directory {os.getcwd()} to sys.path")
-    sys.path.insert(0, os.getcwd())
-
-    if RUNNING_AS_BINARY:
-        _add_pyz()
-
-    logger.debug(f"Importing ruleset: {ruleset}")
-    (_, translation_ruleset) = import_from_qualname(ruleset)
-    if not isinstance(translation_ruleset, TranslationRuleset):
-        raise RuntimeError(
-            f"translation_ruleset={translation_ruleset} is not a TranslationRuleset"
-        )
-
+    translation_ruleset = import_ruleset(ruleset)
     try:
-        project = translation_ruleset.translate_fn(
+        translation_ruleset.translate_fn(
             translation_ruleset=translation_ruleset, input_dir=input_dir
-        )
-        if analyze:
-            project.analyze()
-        else:
-            project.render(output_dir)
+        ).render(output_dir)
     except RuntimeError as e:
         logger.error(f"Error encountered during translation: {e}")
         raise click.Abort()
     if _format:
         run_ruff_formatter(output_dir)
+
+
+@orbiter.command()
+@click.argument(*INPUT_DIR_ARGS, **INPUT_DIR_KWARGS)
+@click.option(*RULESET_ARGS, **RULESET_KWARGS)
+@click.option(
+    "--format",
+    "_format",
+    type=click.Choice(["json", "csv", "md"]),
+    default="md",
+    help="[optional] format for analysis output",
+    show_default=True,
+)
+@click.option(
+    "-o",
+    "--output-file",
+    type=click.File("w", lazy=True),
+    default="-",
+    show_default=True,
+    help="File to write to, defaults to '-' (stdout)",
+)
+def analyze(
+    input_dir: Path,
+    ruleset: str | None,
+    _format: Literal["json", "csv", "md"],
+    output_file: Path | None,
+):
+    """Analyze workflows in an `INPUT_DIR`
+
+    Provide a specific ruleset with the `--ruleset` flag.
+
+    Run `orbiter list-rulesets` to see available rulesets.
+
+    `INPUT_DIR` defaults to `$CWD/workflow`.
+    """
+    if isinstance(output_file, Path):
+        output_file = output_file.open("w", newline="")
+    translation_ruleset = import_ruleset(ruleset)
+    try:
+        translation_ruleset.translate_fn(
+            translation_ruleset=translation_ruleset, input_dir=input_dir
+        ).analyze(_format, output_file)
+    except RuntimeError as e:
+        logger.exception(f"Error encountered during translation: {e}")
+        raise click.Abort()
 
 
 def _pip_install(repo: str, key: str):
@@ -278,6 +318,9 @@ def _get_gh_pyz(
 
 
 def _add_pyz():
+    logger.debug(f"Adding current directory {os.getcwd()} to sys.path")
+    sys.path.insert(0, os.getcwd())
+
     local_pyz = [
         str(_path.resolve()) for _path in Path(".").iterdir() if _path.suffix == ".pyz"
     ]

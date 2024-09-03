@@ -52,12 +52,13 @@ from __future__ import annotations
 import functools
 import json
 import re
-from typing import Callable, Any, Collection, TYPE_CHECKING, List
+from typing import Callable, Any, Collection, TYPE_CHECKING, List, Mapping
 
 from pydantic import BaseModel, Field
 
 from loguru import logger
 
+from orbiter.config import TRIM_LOG_OBJECT_LENGTH
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
 
 if TYPE_CHECKING:
@@ -67,6 +68,17 @@ if TYPE_CHECKING:
 
 qualname_validator_regex = r"^[\w.]+$"
 qualname_validator = re.compile(qualname_validator_regex)
+
+
+def trim_dict(v):
+    """Stringify and trim a dictionary if it's greater than a certain length
+    (used to trim down overwhelming log output)"""
+    if TRIM_LOG_OBJECT_LENGTH != -1 and isinstance(v, Mapping):
+        if len(str(v)) > TRIM_LOG_OBJECT_LENGTH:
+            return json.dumps(v, default=str)[:TRIM_LOG_OBJECT_LENGTH] + "..."
+    if isinstance(v, list):
+        return [trim_dict(_v) for _v in v]
+    return v
 
 
 def rule(
@@ -160,7 +172,9 @@ class Rule(BaseModel, Callable, extra="forbid"):
                     setattr(result, "orbiter_kwargs", kwargs)
         except Exception as e:
             logger.warning(
-                f"[RULE]: {self.rule.__name__}\n[ERROR]:\n{type(e)} - {e}\n[INPUT]:\n{args}\n{kwargs}"
+                f"[RULE]: {self.rule.__name__}\n"
+                f"[ERROR]:\n{type(e)} - {trim_dict(e)}\n"
+                f"[INPUT]:\n{trim_dict(args)}\n{trim_dict(kwargs)}"
             )
             result = None
         return result
@@ -188,6 +202,10 @@ dag_filter_rule: Callable[[...], DAGFilterRule] = rule
 
 class DAGRule(Rule):
     """A `@dag_rule` decorator creates a [`DAGRule`][orbiter.rules.DAGRule]
+
+    !!! tip
+
+        A `__file` key is added to the original input, which is the file path of the input.
 
     ```python
     @dag_rule
@@ -314,7 +332,7 @@ def cannot_map_rule(val: dict) -> OrbiterOperator | None:
     # noinspection PyArgumentList
     return OrbiterEmptyOperator(
         task_id="UNKNOWN",
-        doc_md=f"""Input did not translate: `{json.dumps(val, default=str)}`""",
+        doc_md=f"""[task_type=UNKNOWN] Input did not translate: `{trim_dict(val)}`""",
     )
 
 

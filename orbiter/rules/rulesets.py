@@ -39,7 +39,8 @@ from orbiter.rules import (
     TaskDependencyRule,
     PostProcessingRule,
     EMPTY_RULE,
-)  # noqa: F401
+    trim_dict,
+)
 
 
 def _backport_walk(input_dir: Path):
@@ -182,7 +183,8 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
         - [**Load each file**][orbiter.rules.rulesets.TranslationRuleset.loads] and turn it into a Python Dictionary.
     2. **For each file:** Apply the [`TranslationRuleset.dag_filter_ruleset`][orbiter.rules.rulesets.DAGFilterRuleset]
         to filter down to entries that can translate to a DAG, in priority order.
-        - **For each**: Apply the [`TranslationRuleset.dag_ruleset`][orbiter.rules.rulesets.DAGRuleset],
+        The file name is added under a `__file` key.
+        - **For each dictionary**: Apply the [`TranslationRuleset.dag_ruleset`][orbiter.rules.rulesets.DAGRuleset],
         to convert the object to an [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG],
         in priority-order, stopping when the first rule returns a match.
         If no rule returns a match, the entry is filtered.
@@ -203,8 +205,6 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
         other rules have been applied.
     6. After translation - the [`OrbiterProject`][orbiter.objects.project.OrbiterProject]
         is rendered to the output folder.
-
-
     """
     if not isinstance(translation_ruleset, TranslationRuleset):
         raise RuntimeError(
@@ -220,11 +220,15 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
         logger.info(f"Translating [File {i}]={file.resolve()}")
 
         # DAG FILTER Ruleset - filter down to keys suspected of being translatable to a DAG, in priority order.
-        dag_dicts = functools.reduce(
+        dag_dicts: List[dict] = functools.reduce(
             add,
             translation_ruleset.dag_filter_ruleset.apply(val=input_dict),
             [],
         )
+        # Add __file as a key to each DAG dict
+        dag_dicts = [
+            {"__file": file.relative_to(input_dir)} | dag_dict for dag_dict in dag_dicts
+        ]
         logger.debug(f"Found {len(dag_dicts)} DAG candidates in {file.resolve()}")
         for dag_dict in dag_dicts:
             # DAG Ruleset - convert the object to an `OrbiterDAG` via `dag_ruleset`,
@@ -238,7 +242,7 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
                     f"Couldn't extract DAG from dag_dict={dag_dict} with dag_ruleset={translation_ruleset.dag_ruleset}"
                 )
                 continue
-            dag.orbiter_kwargs["file_path"] = str(file.resolve())
+            dag.orbiter_kwargs["file_path"] = file.relative_to(input_dir)
 
             tasks = {}
             # TASK FILTER Ruleset - Many entries in dag_dict -> Many task_dict
@@ -271,7 +275,9 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
                 or []
             )
             if not len(task_dependencies):
-                logger.warning(f"Couldn't find task dependencies in dag={dag_dict}")
+                logger.warning(
+                    f"Couldn't find task dependencies in " f"dag={trim_dict(dag_dict)}"
+                )
             for task_dependency in task_dependencies:
                 task_dependency: OrbiterTaskDependency
                 if task_dependency.task_id not in dag.tasks:
@@ -501,8 +507,8 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
                     "---------\n"
                     f"[RULESET MATCHED] '{self.__class__.__module__}.{self.__class__.__name__}'\n"
                     f"[RULE MATCHED] '{_rule.__name__}'\n"
-                    f"[INPUT] {kwargs if should_show_input else '<Skipping...>'}\n"
-                    f"[RETURN] {result}\n"
+                    f"[INPUT] {trim_dict(kwargs) if should_show_input else '<Skipping...>'}\n"
+                    f"[RETURN] {trim_dict(result)}\n"
                     f"---------"
                 )
                 results.append(result)
@@ -650,7 +656,11 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
             if file.suffix.lower() in {
                 f".{ext.lower()}" for ext in file_type.extension
             }:
-                return file_type.load_fn(file.read_text())
+                try:
+                    return file_type.load_fn(file.read_text())
+                except Exception as e:
+                    logger.error(f"Error loading file={file}! Skipping!\n{e}")
+                    continue
         raise TypeError(
             f"Invalid file_type={file.suffix}, does not match file_type={self.file_type}"
         )
@@ -699,9 +709,6 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
                     )
                 except TypeError:
                     logger.debug(f"File={file} not of correct type, skipping...")
-                    continue
-                except Exception as e:
-                    logger.exception(f"Error loading file={file}, {e}")
                     continue
 
     def test(self, input_value: str | dict) -> OrbiterProject:
