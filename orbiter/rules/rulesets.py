@@ -39,7 +39,8 @@ from orbiter.rules import (
     TaskDependencyRule,
     PostProcessingRule,
     EMPTY_RULE,
-)  # noqa: F401
+    trim_dict,
+)
 
 
 def _backport_walk(input_dir: Path):
@@ -203,8 +204,6 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
         other rules have been applied.
     6. After translation - the [`OrbiterProject`][orbiter.objects.project.OrbiterProject]
         is rendered to the output folder.
-
-
     """
     if not isinstance(translation_ruleset, TranslationRuleset):
         raise RuntimeError(
@@ -271,7 +270,9 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
                 or []
             )
             if not len(task_dependencies):
-                logger.warning(f"Couldn't find task dependencies in dag={dag_dict}")
+                logger.warning(
+                    f"Couldn't find task dependencies in " f"dag={trim_dict(dag_dict)}"
+                )
             for task_dependency in task_dependencies:
                 task_dependency: OrbiterTaskDependency
                 if task_dependency.task_id not in dag.tasks:
@@ -501,8 +502,8 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
                     "---------\n"
                     f"[RULESET MATCHED] '{self.__class__.__module__}.{self.__class__.__name__}'\n"
                     f"[RULE MATCHED] '{_rule.__name__}'\n"
-                    f"[INPUT] {kwargs if should_show_input else '<Skipping...>'}\n"
-                    f"[RETURN] {result}\n"
+                    f"[INPUT] {trim_dict(kwargs) if should_show_input else '<Skipping...>'}\n"
+                    f"[RETURN] {trim_dict(result)}\n"
                     f"---------"
                 )
                 results.append(result)
