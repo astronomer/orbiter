@@ -174,6 +174,30 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
             f"catchup={self.catchup})"
         )
 
+    # noinspection t
+    def __add__(self, other):
+        if other.tasks:
+            for task in other.tasks.values():
+                self.add_tasks(task)
+        if other.orbiter_conns:
+            for conn in other.orbiter_conns:
+                self.orbiter_conns.add(conn)
+        if other.orbiter_vars:
+            for var in other.orbiter_vars:
+                self.orbiter_vars.add(var)
+        if other.orbiter_env_vars:
+            for env_var in other.orbiter_env_vars:
+                self.orbiter_env_vars.add(env_var)
+        if other.orbiter_includes:
+            for include in other.orbiter_includes:
+                self.orbiter_includes.add(include)
+        if other.model_extra:
+            for key in other.model_extra.keys():
+                self.model_extra[key] = self.model_extra[key] or other.model_extra[key]
+        for key in self.render_attributes:
+            setattr(self, key, getattr(self, key) or getattr(other, key))
+        return self
+
     def _dag_to_ast(self) -> ast.Expr:
         """
         Returns the `DAG(...)` object.
