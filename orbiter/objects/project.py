@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+import re
 from functools import reduce
 from pathlib import Path
 from typing import Dict, Iterable, Set, Literal
@@ -611,8 +613,15 @@ class OrbiterProject:
             logger.debug("No entries for .env")
 
     @validate_call
-    def analyze(self, output_fmt: Literal["json", "csv", "md"] = "md"):
+    def analyze(
+        self, output_fmt: Literal["json", "csv", "md"] = "md", output_file=None
+    ):
         """Print an analysis of the project to the console.
+
+        !!! tip
+
+            Looks for a specific `[task_type=XYZ]` in the Task's `doc_md` property
+            or uses `type(task)` to infer the type of task.
 
         ```pycon
         >>> from orbiter.objects.operators.empty import OrbiterEmptyOperator
@@ -639,13 +648,23 @@ class OrbiterProject:
 
         ```
         """
-        import sys
+        if output_file is None:
+            output_file = sys.stdout
+
+        _task_type = re.compile(r"\[task_type=(?P<task_type>[A-Za-z0-9-_]+)")
+
+        def get_task_type(task):
+            match = _task_type.match(getattr(task, "doc_md", None) or "")
+            match_or_task_type = (
+                match.groupdict().get("task_type") if match else None
+            ) or type(task).__name__
+            return match_or_task_type
 
         dag_analysis = [
             {
                 "file": dag.orbiter_kwargs.get("file_path", dag.file_path),
                 "dag_id": dag.dag_id,
-                "task_types": [type(task).__name__ for task in dag.tasks.values()],
+                "task_types": [get_task_type(task) for task in dag.tasks.values()],
             }
             for dag in self.dags.values()
         ]
@@ -673,12 +692,11 @@ class OrbiterProject:
         if output_fmt == "json":
             import json
 
-            json.dump(file_analysis, sys.stdout)
+            json.dump(file_analysis, output_file, default=str)
         elif output_fmt == "csv":
             import csv
-            import sys
 
-            writer = csv.DictWriter(sys.stdout, fieldnames=file_analysis[0].keys())
+            writer = csv.DictWriter(output_file, fieldnames={""} | totals.keys())
             writer.writeheader()
             writer.writerows(file_analysis)
         elif output_fmt == "md":
@@ -686,7 +704,7 @@ class OrbiterProject:
             from rich.markdown import Markdown
             from tabulate import tabulate
 
-            console = Console()
+            console = Console(file=output_file)
 
             #         DAGs  EmptyOp
             # file_a     1        1
