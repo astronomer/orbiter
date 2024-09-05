@@ -854,7 +854,7 @@
 <h1 id="workflow">Workflow<a class="headerlink" href="#workflow" title="Permanent link">&para;</a></h1>
 <p>Airflow workflows are represented by a
 <a href="https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html">DAG</a>
-which is a Directed Acyclic Graph (of <a href="../tasks">Tasks</a>).</p>
+which is a Directed Acyclic Graph (of <a href="../Tasks/">Tasks</a>).</p>
 <h2 id="diagram">Diagram<a class="headerlink" href="#diagram" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>classDiagram
     direction LR
@@ -1210,31 +1210,7 @@ with its tasks and dependencies.</p>
 
             <details class="quote">
               <summary>Source code in <code>orbiter/objects/dag.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-230">230</a></span>
-<span class="normal"><a href="#__codelineno-0-231">231</a></span>
-<span class="normal"><a href="#__codelineno-0-232">232</a></span>
-<span class="normal"><a href="#__codelineno-0-233">233</a></span>
-<span class="normal"><a href="#__codelineno-0-234">234</a></span>
-<span class="normal"><a href="#__codelineno-0-235">235</a></span>
-<span class="normal"><a href="#__codelineno-0-236">236</a></span>
-<span class="normal"><a href="#__codelineno-0-237">237</a></span>
-<span class="normal"><a href="#__codelineno-0-238">238</a></span>
-<span class="normal"><a href="#__codelineno-0-239">239</a></span>
-<span class="normal"><a href="#__codelineno-0-240">240</a></span>
-<span class="normal"><a href="#__codelineno-0-241">241</a></span>
-<span class="normal"><a href="#__codelineno-0-242">242</a></span>
-<span class="normal"><a href="#__codelineno-0-243">243</a></span>
-<span class="normal"><a href="#__codelineno-0-244">244</a></span>
-<span class="normal"><a href="#__codelineno-0-245">245</a></span>
-<span class="normal"><a href="#__codelineno-0-246">246</a></span>
-<span class="normal"><a href="#__codelineno-0-247">247</a></span>
-<span class="normal"><a href="#__codelineno-0-248">248</a></span>
-<span class="normal"><a href="#__codelineno-0-249">249</a></span>
-<span class="normal"><a href="#__codelineno-0-250">250</a></span>
-<span class="normal"><a href="#__codelineno-0-251">251</a></span>
-<span class="normal"><a href="#__codelineno-0-252">252</a></span>
-<span class="normal"><a href="#__codelineno-0-253">253</a></span>
-<span class="normal"><a href="#__codelineno-0-254">254</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-254">254</a></span>
 <span class="normal"><a href="#__codelineno-0-255">255</a></span>
 <span class="normal"><a href="#__codelineno-0-256">256</a></span>
 <span class="normal"><a href="#__codelineno-0-257">257</a></span>
@@ -1269,66 +1245,90 @@ with its tasks and dependencies.</p>
 <span class="normal"><a href="#__codelineno-0-286">286</a></span>
 <span class="normal"><a href="#__codelineno-0-287">287</a></span>
 <span class="normal"><a href="#__codelineno-0-288">288</a></span>
-<span class="normal"><a href="#__codelineno-0-289">289</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-230" name="__codelineno-0-230"></a><span class="k">def</span> <span class="nf">add_tasks</span><span class="p">(</span>
-<a id="__codelineno-0-231" name="__codelineno-0-231"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-232" name="__codelineno-0-232"></a>    <span class="n">tasks</span><span class="p">:</span> <span class="p">(</span>
-<a id="__codelineno-0-233" name="__codelineno-0-233"></a>        <span class="n">OrbiterOperator</span>
-<a id="__codelineno-0-234" name="__codelineno-0-234"></a>        <span class="o">|</span> <span class="n">OrbiterTaskGroup</span>
-<a id="__codelineno-0-235" name="__codelineno-0-235"></a>        <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OrbiterOperator</span> <span class="o">|</span> <span class="n">OrbiterTaskGroup</span><span class="p">]</span>
-<a id="__codelineno-0-236" name="__codelineno-0-236"></a>    <span class="p">),</span>
-<a id="__codelineno-0-237" name="__codelineno-0-237"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;OrbiterDAG&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-238" name="__codelineno-0-238"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-239" name="__codelineno-0-239"></a><span class="sd">    Add one or more [`OrbiterOperators`][orbiter.objects.task.OrbiterOperator] to the DAG</span>
-<a id="__codelineno-0-240" name="__codelineno-0-240"></a>
-<a id="__codelineno-0-241" name="__codelineno-0-241"></a><span class="sd">    ```pycon</span>
-<a id="__codelineno-0-242" name="__codelineno-0-242"></a><span class="sd">    &gt;&gt;&gt; from orbiter.objects.operators.empty import OrbiterEmptyOperator</span>
-<a id="__codelineno-0-243" name="__codelineno-0-243"></a><span class="sd">    &gt;&gt;&gt; OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks(OrbiterEmptyOperator(task_id=&quot;bar&quot;)).tasks</span>
-<a id="__codelineno-0-244" name="__codelineno-0-244"></a><span class="sd">    {&#39;bar&#39;: bar_task = EmptyOperator(task_id=&#39;bar&#39;)}</span>
-<a id="__codelineno-0-245" name="__codelineno-0-245"></a>
-<a id="__codelineno-0-246" name="__codelineno-0-246"></a><span class="sd">    &gt;&gt;&gt; OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks([OrbiterEmptyOperator(task_id=&quot;bar&quot;)]).tasks</span>
-<a id="__codelineno-0-247" name="__codelineno-0-247"></a><span class="sd">    {&#39;bar&#39;: bar_task = EmptyOperator(task_id=&#39;bar&#39;)}</span>
-<a id="__codelineno-0-248" name="__codelineno-0-248"></a>
-<a id="__codelineno-0-249" name="__codelineno-0-249"></a><span class="sd">    ```</span>
-<a id="__codelineno-0-250" name="__codelineno-0-250"></a>
-<a id="__codelineno-0-251" name="__codelineno-0-251"></a><span class="sd">    !!! tip</span>
-<a id="__codelineno-0-252" name="__codelineno-0-252"></a>
-<a id="__codelineno-0-253" name="__codelineno-0-253"></a><span class="sd">        Validation requires a `OrbiterTaskGroup`, `OrbiterOperator` (or subclass), or list of either to be passed</span>
-<a id="__codelineno-0-254" name="__codelineno-0-254"></a><span class="sd">        ```pycon</span>
-<a id="__codelineno-0-255" name="__codelineno-0-255"></a><span class="sd">        &gt;&gt;&gt; # noinspection PyTypeChecker</span>
-<a id="__codelineno-0-256" name="__codelineno-0-256"></a><span class="sd">        ... OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks(&quot;bar&quot;)</span>
-<a id="__codelineno-0-257" name="__codelineno-0-257"></a><span class="sd">        ... # doctest: +IGNORE_EXCEPTION_DETAIL</span>
-<a id="__codelineno-0-258" name="__codelineno-0-258"></a><span class="sd">        Traceback (most recent call last):</span>
-<a id="__codelineno-0-259" name="__codelineno-0-259"></a><span class="sd">        pydantic_core._pydantic_core.ValidationError: ...</span>
-<a id="__codelineno-0-260" name="__codelineno-0-260"></a><span class="sd">        &gt;&gt;&gt; # noinspection PyTypeChecker</span>
-<a id="__codelineno-0-261" name="__codelineno-0-261"></a><span class="sd">        ... OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks([&quot;bar&quot;])</span>
-<a id="__codelineno-0-262" name="__codelineno-0-262"></a><span class="sd">        ... # doctest: +IGNORE_EXCEPTION_DETAIL</span>
-<a id="__codelineno-0-263" name="__codelineno-0-263"></a><span class="sd">        Traceback (most recent call last):</span>
-<a id="__codelineno-0-264" name="__codelineno-0-264"></a><span class="sd">        pydantic_core._pydantic_core.ValidationError: ...</span>
-<a id="__codelineno-0-265" name="__codelineno-0-265"></a>
-<a id="__codelineno-0-266" name="__codelineno-0-266"></a><span class="sd">        ```</span>
-<a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="sd">    :param tasks: List of [OrbiterOperator][orbiter.objects.task.OrbiterOperator], or OrbiterTaskGroup or subclass</span>
-<a id="__codelineno-0-268" name="__codelineno-0-268"></a><span class="sd">    :type tasks: OrbiterOperator | OrbiterTaskGroup | Iterable[OrbiterOperator | OrbiterTaskGroup]</span>
-<a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="sd">    :return: self</span>
-<a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">    :rtype: OrbiterProject</span>
-<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-272" name="__codelineno-0-272"></a>    <span class="k">if</span> <span class="p">(</span>
-<a id="__codelineno-0-273" name="__codelineno-0-273"></a>        <span class="nb">isinstance</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">OrbiterOperator</span><span class="p">)</span>
-<a id="__codelineno-0-274" name="__codelineno-0-274"></a>        <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">OrbiterTaskGroup</span><span class="p">)</span>
-<a id="__codelineno-0-275" name="__codelineno-0-275"></a>        <span class="ow">or</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">tasks</span><span class="p">),</span> <span class="n">OrbiterOperator</span><span class="p">)</span>
-<a id="__codelineno-0-276" name="__codelineno-0-276"></a>    <span class="p">):</span>
-<a id="__codelineno-0-277" name="__codelineno-0-277"></a>        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">tasks</span><span class="p">]</span>
-<a id="__codelineno-0-278" name="__codelineno-0-278"></a>
-<a id="__codelineno-0-279" name="__codelineno-0-279"></a>    <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
-<a id="__codelineno-0-280" name="__codelineno-0-280"></a>        <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-281" name="__codelineno-0-281"></a>            <span class="n">task_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;task_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span>
-<a id="__codelineno-0-282" name="__codelineno-0-282"></a>                <span class="n">task</span><span class="p">,</span> <span class="s2">&quot;task_group_id&quot;</span>
-<a id="__codelineno-0-283" name="__codelineno-0-283"></a>            <span class="p">)</span>
-<a id="__codelineno-0-284" name="__codelineno-0-284"></a>        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-<a id="__codelineno-0-285" name="__codelineno-0-285"></a>            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-<a id="__codelineno-0-286" name="__codelineno-0-286"></a>                <span class="sa">f</span><span class="s2">&quot;Task </span><span class="si">{</span><span class="n">task</span><span class="si">}</span><span class="s2"> does not have a task_id or task_group_id attribute&quot;</span>
-<a id="__codelineno-0-287" name="__codelineno-0-287"></a>            <span class="p">)</span>
-<a id="__codelineno-0-288" name="__codelineno-0-288"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">task_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span>
-<a id="__codelineno-0-289" name="__codelineno-0-289"></a>    <span class="k">return</span> <span class="bp">self</span>
+<span class="normal"><a href="#__codelineno-0-289">289</a></span>
+<span class="normal"><a href="#__codelineno-0-290">290</a></span>
+<span class="normal"><a href="#__codelineno-0-291">291</a></span>
+<span class="normal"><a href="#__codelineno-0-292">292</a></span>
+<span class="normal"><a href="#__codelineno-0-293">293</a></span>
+<span class="normal"><a href="#__codelineno-0-294">294</a></span>
+<span class="normal"><a href="#__codelineno-0-295">295</a></span>
+<span class="normal"><a href="#__codelineno-0-296">296</a></span>
+<span class="normal"><a href="#__codelineno-0-297">297</a></span>
+<span class="normal"><a href="#__codelineno-0-298">298</a></span>
+<span class="normal"><a href="#__codelineno-0-299">299</a></span>
+<span class="normal"><a href="#__codelineno-0-300">300</a></span>
+<span class="normal"><a href="#__codelineno-0-301">301</a></span>
+<span class="normal"><a href="#__codelineno-0-302">302</a></span>
+<span class="normal"><a href="#__codelineno-0-303">303</a></span>
+<span class="normal"><a href="#__codelineno-0-304">304</a></span>
+<span class="normal"><a href="#__codelineno-0-305">305</a></span>
+<span class="normal"><a href="#__codelineno-0-306">306</a></span>
+<span class="normal"><a href="#__codelineno-0-307">307</a></span>
+<span class="normal"><a href="#__codelineno-0-308">308</a></span>
+<span class="normal"><a href="#__codelineno-0-309">309</a></span>
+<span class="normal"><a href="#__codelineno-0-310">310</a></span>
+<span class="normal"><a href="#__codelineno-0-311">311</a></span>
+<span class="normal"><a href="#__codelineno-0-312">312</a></span>
+<span class="normal"><a href="#__codelineno-0-313">313</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-254" name="__codelineno-0-254"></a><span class="k">def</span> <span class="nf">add_tasks</span><span class="p">(</span>
+<a id="__codelineno-0-255" name="__codelineno-0-255"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-256" name="__codelineno-0-256"></a>    <span class="n">tasks</span><span class="p">:</span> <span class="p">(</span>
+<a id="__codelineno-0-257" name="__codelineno-0-257"></a>        <span class="n">OrbiterOperator</span>
+<a id="__codelineno-0-258" name="__codelineno-0-258"></a>        <span class="o">|</span> <span class="n">OrbiterTaskGroup</span>
+<a id="__codelineno-0-259" name="__codelineno-0-259"></a>        <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OrbiterOperator</span> <span class="o">|</span> <span class="n">OrbiterTaskGroup</span><span class="p">]</span>
+<a id="__codelineno-0-260" name="__codelineno-0-260"></a>    <span class="p">),</span>
+<a id="__codelineno-0-261" name="__codelineno-0-261"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;OrbiterDAG&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-262" name="__codelineno-0-262"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-263" name="__codelineno-0-263"></a><span class="sd">    Add one or more [`OrbiterOperators`][orbiter.objects.task.OrbiterOperator] to the DAG</span>
+<a id="__codelineno-0-264" name="__codelineno-0-264"></a>
+<a id="__codelineno-0-265" name="__codelineno-0-265"></a><span class="sd">    ```pycon</span>
+<a id="__codelineno-0-266" name="__codelineno-0-266"></a><span class="sd">    &gt;&gt;&gt; from orbiter.objects.operators.empty import OrbiterEmptyOperator</span>
+<a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="sd">    &gt;&gt;&gt; OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks(OrbiterEmptyOperator(task_id=&quot;bar&quot;)).tasks</span>
+<a id="__codelineno-0-268" name="__codelineno-0-268"></a><span class="sd">    {&#39;bar&#39;: bar_task = EmptyOperator(task_id=&#39;bar&#39;)}</span>
+<a id="__codelineno-0-269" name="__codelineno-0-269"></a>
+<a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">    &gt;&gt;&gt; OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks([OrbiterEmptyOperator(task_id=&quot;bar&quot;)]).tasks</span>
+<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">    {&#39;bar&#39;: bar_task = EmptyOperator(task_id=&#39;bar&#39;)}</span>
+<a id="__codelineno-0-272" name="__codelineno-0-272"></a>
+<a id="__codelineno-0-273" name="__codelineno-0-273"></a><span class="sd">    ```</span>
+<a id="__codelineno-0-274" name="__codelineno-0-274"></a>
+<a id="__codelineno-0-275" name="__codelineno-0-275"></a><span class="sd">    !!! tip</span>
+<a id="__codelineno-0-276" name="__codelineno-0-276"></a>
+<a id="__codelineno-0-277" name="__codelineno-0-277"></a><span class="sd">        Validation requires a `OrbiterTaskGroup`, `OrbiterOperator` (or subclass), or list of either to be passed</span>
+<a id="__codelineno-0-278" name="__codelineno-0-278"></a><span class="sd">        ```pycon</span>
+<a id="__codelineno-0-279" name="__codelineno-0-279"></a><span class="sd">        &gt;&gt;&gt; # noinspection PyTypeChecker</span>
+<a id="__codelineno-0-280" name="__codelineno-0-280"></a><span class="sd">        ... OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks(&quot;bar&quot;)</span>
+<a id="__codelineno-0-281" name="__codelineno-0-281"></a><span class="sd">        ... # doctest: +IGNORE_EXCEPTION_DETAIL</span>
+<a id="__codelineno-0-282" name="__codelineno-0-282"></a><span class="sd">        Traceback (most recent call last):</span>
+<a id="__codelineno-0-283" name="__codelineno-0-283"></a><span class="sd">        pydantic_core._pydantic_core.ValidationError: ...</span>
+<a id="__codelineno-0-284" name="__codelineno-0-284"></a><span class="sd">        &gt;&gt;&gt; # noinspection PyTypeChecker</span>
+<a id="__codelineno-0-285" name="__codelineno-0-285"></a><span class="sd">        ... OrbiterDAG(file_path=&quot;&quot;, dag_id=&quot;foo&quot;).add_tasks([&quot;bar&quot;])</span>
+<a id="__codelineno-0-286" name="__codelineno-0-286"></a><span class="sd">        ... # doctest: +IGNORE_EXCEPTION_DETAIL</span>
+<a id="__codelineno-0-287" name="__codelineno-0-287"></a><span class="sd">        Traceback (most recent call last):</span>
+<a id="__codelineno-0-288" name="__codelineno-0-288"></a><span class="sd">        pydantic_core._pydantic_core.ValidationError: ...</span>
+<a id="__codelineno-0-289" name="__codelineno-0-289"></a>
+<a id="__codelineno-0-290" name="__codelineno-0-290"></a><span class="sd">        ```</span>
+<a id="__codelineno-0-291" name="__codelineno-0-291"></a><span class="sd">    :param tasks: List of [OrbiterOperator][orbiter.objects.task.OrbiterOperator], or OrbiterTaskGroup or subclass</span>
+<a id="__codelineno-0-292" name="__codelineno-0-292"></a><span class="sd">    :type tasks: OrbiterOperator | OrbiterTaskGroup | Iterable[OrbiterOperator | OrbiterTaskGroup]</span>
+<a id="__codelineno-0-293" name="__codelineno-0-293"></a><span class="sd">    :return: self</span>
+<a id="__codelineno-0-294" name="__codelineno-0-294"></a><span class="sd">    :rtype: OrbiterProject</span>
+<a id="__codelineno-0-295" name="__codelineno-0-295"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-296" name="__codelineno-0-296"></a>    <span class="k">if</span> <span class="p">(</span>
+<a id="__codelineno-0-297" name="__codelineno-0-297"></a>        <span class="nb">isinstance</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">OrbiterOperator</span><span class="p">)</span>
+<a id="__codelineno-0-298" name="__codelineno-0-298"></a>        <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">OrbiterTaskGroup</span><span class="p">)</span>
+<a id="__codelineno-0-299" name="__codelineno-0-299"></a>        <span class="ow">or</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">tasks</span><span class="p">),</span> <span class="n">OrbiterOperator</span><span class="p">)</span>
+<a id="__codelineno-0-300" name="__codelineno-0-300"></a>    <span class="p">):</span>
+<a id="__codelineno-0-301" name="__codelineno-0-301"></a>        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">tasks</span><span class="p">]</span>
+<a id="__codelineno-0-302" name="__codelineno-0-302"></a>
+<a id="__codelineno-0-303" name="__codelineno-0-303"></a>    <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
+<a id="__codelineno-0-304" name="__codelineno-0-304"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-305" name="__codelineno-0-305"></a>            <span class="n">task_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;task_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span>
+<a id="__codelineno-0-306" name="__codelineno-0-306"></a>                <span class="n">task</span><span class="p">,</span> <span class="s2">&quot;task_group_id&quot;</span>
+<a id="__codelineno-0-307" name="__codelineno-0-307"></a>            <span class="p">)</span>
+<a id="__codelineno-0-308" name="__codelineno-0-308"></a>        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+<a id="__codelineno-0-309" name="__codelineno-0-309"></a>            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+<a id="__codelineno-0-310" name="__codelineno-0-310"></a>                <span class="sa">f</span><span class="s2">&quot;Task </span><span class="si">{</span><span class="n">task</span><span class="si">}</span><span class="s2"> does not have a task_id or task_group_id attribute&quot;</span>
+<a id="__codelineno-0-311" name="__codelineno-0-311"></a>            <span class="p">)</span>
+<a id="__codelineno-0-312" name="__codelineno-0-312"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">task_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span>
+<a id="__codelineno-0-313" name="__codelineno-0-313"></a>    <span class="k">return</span> <span class="bp">self</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

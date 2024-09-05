@@ -342,6 +342,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#analyze" class="md-nav__link">
+    <span class="md-ellipsis">
+      analyze
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#install" class="md-nav__link">
     <span class="md-ellipsis">
       install
@@ -852,10 +861,55 @@
 </tr>
 </tbody>
 </table>
+<h3 id="analyze">analyze<a class="headerlink" href="#analyze" title="Permanent link">&para;</a></h3>
+<p>Analyze workflows in an <code>INPUT_DIR</code></p>
+<p>Provide a specific ruleset with the <code>--ruleset</code> flag.</p>
+<p>Run <code>orbiter list-rulesets</code> to see available rulesets.</p>
+<p><code>INPUT_DIR</code> defaults to <code>$CWD/workflow</code>.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>orbiter analyze [OPTIONS] INPUT_DIR
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-r</code>, <code>--ruleset</code></td>
+<td>text</td>
+<td>Qualified name of a TranslationRuleset</td>
+<td>_required</td>
+</tr>
+<tr>
+<td><code>--format</code></td>
+<td>choice (<code>json</code> &#x7C; <code>csv</code> &#x7C; <code>md</code>)</td>
+<td>[optional] format for analysis output</td>
+<td><code>md</code></td>
+</tr>
+<tr>
+<td><code>-o</code>, <code>--output-file</code></td>
+<td>filename</td>
+<td>File to write to, defaults to '-' (stdout)</td>
+<td><code>-</code></td>
+</tr>
+<tr>
+<td><code>--help</code></td>
+<td>boolean</td>
+<td>Show this message and exit.</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
 <h3 id="install">install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h3>
 <p>Install a new Translation Ruleset from a repository</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>orbiter install [OPTIONS]
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>orbiter install [OPTIONS]
 </code></pre></div>
 <p><strong>Options:</strong></p>
 <table>
@@ -891,7 +945,7 @@
 <h3 id="list-rulesets">list-rulesets<a class="headerlink" href="#list-rulesets" title="Permanent link">&para;</a></h3>
 <p>List available Translation Rulesets</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>orbiter list-rulesets [OPTIONS]
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>orbiter list-rulesets [OPTIONS]
 </code></pre></div>
 <p><strong>Options:</strong></p>
 <table>
@@ -920,7 +974,7 @@
 <p><code>OUTPUT_DIR</code> defaults to <code>$CWD/output</code></p>
 <p>Formats output with Ruff (<a href="https://astral.sh/ruff">https://astral.sh/ruff</a>), by default.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>orbiter translate [OPTIONS] INPUT_DIR OUTPUT_DIR
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>orbiter translate [OPTIONS] INPUT_DIR OUTPUT_DIR
 </code></pre></div>
 <p><strong>Options:</strong></p>
 <table>
@@ -955,7 +1009,7 @@
 </table>
 <h2 id="logging">Logging<a class="headerlink" href="#logging" title="Permanent link">&para;</a></h2>
 <p>You can alter the verbosity of the CLI by setting the <code>LOG_LEVEL</code> environment variable. The default is <code>INFO</code>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LOG_LEVEL</span><span class="o">=</span>DEBUG
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LOG_LEVEL</span><span class="o">=</span>DEBUG
 </code></pre></div>
 
 

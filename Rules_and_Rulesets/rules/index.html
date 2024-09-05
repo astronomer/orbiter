@@ -852,7 +852,7 @@
 
 
       <p>A <code>Rule</code> contains a python function that is evaluated and produces something
-(typically an <a href="../objects">Object</a>) or nothing</p>
+(typically an <a href="../../objects/">Object</a>) or nothing</p>
 <p>A <code>Rule</code> can be created from a decorator
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="nd">@rule</span><span class="p">(</span><span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">... </span><span class="k">def</span> <span class="nf">my_rule</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
@@ -869,7 +869,7 @@
 </code></pre></div></p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>If the returned value is an <a href="../../objects">Orbiter Object</a>,
+<p>If the returned value is an <a href="../../objects/index.md">Orbiter Object</a>,
 the passed <code>kwargs</code> are saved in a special <code>orbiter_kwargs</code> property</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">orbiter.objects.dag</span> <span class="kn">import</span> <span class="n">OrbiterDAG</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="nd">@rule</span>
@@ -1012,6 +1012,10 @@ the passed <code>kwargs</code> are saved in a special <code>orbiter_kwargs</code
 
 
       <p>A <code>@dag_rule</code> decorator creates a <a class="autorefs autorefs-internal" href="#orbiter.rules.DAGRule"><code>DAGRule</code></a></p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>A <code>__file</code> key is added to the original input, which is the file path of the input.</p>
+</div>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nd">@dag_rule</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OrbiterDAG</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">if</span> <span class="s1">&#39;id&#39;</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>

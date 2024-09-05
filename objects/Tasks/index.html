@@ -819,7 +819,7 @@
 <p>Airflow <a href="https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/tasks.html">Tasks</a>
 are units of work. An Operator is a pre-defined task with specific functionality.</p>
 <p>Operators can be looked up in the <a href="https://registry.astronomer.io/">Astronomer Registry</a>.</p>
-<p>The easiest way to create an operator in a translation to <a href="./Operators_and_Callbacks/operators">use an existing subclass of <code>OrbiterOperator</code> (e.g. <code>OrbiterBashOperator</code>)</a>.</p>
+<p>The easiest way to create an operator in a translation to <a href="Operators_and_Callbacks/operators/">use an existing subclass of <code>OrbiterOperator</code> (e.g. <code>OrbiterBashOperator</code>)</a>.</p>
 <p>If an <code>OrbiterOperator</code> subclass doesn't exist for your use case, you can:</p>
 <p>1) Utilize <code>OrbiterTask</code>
     <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">orbiter.objects.requirement</span> <span class="kn">import</span> <span class="n">OrbiterRequirement</span>
