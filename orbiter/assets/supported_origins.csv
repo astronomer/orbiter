@@ -7,6 +7,6 @@ Control M,Astronomer,`astronomer-orbiter-translations`,`orbiter_translations.con
 Automic,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.automic.xml_demo.translation_ruleset`,Workflow,Job
 Autosys,Astronomer,`astronomer-orbiter-translations`,WIP,⠀,⠀
 JAMS,Astronomer,`astronomer-orbiter-translations`,WIP,Folder,Job
-SSIS,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.oozie.xml_demo.translation_ruleset`,Pipeline,Component
+SSIS,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.ssis.xml_demo.translation_ruleset`,Pipeline,Component
 Oozie,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.oozie.xml_demo.translation_ruleset`,Workflow,Node
 **& more!**,⠀,⠀,⠀,⠀,⠀
