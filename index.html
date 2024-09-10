@@ -909,36 +909,59 @@ from other systems to an Airflow project.</p>
 </code></pre></div></li>
 <li>
 <p>Add contents to <code>override.py</code>:
-   ```python title="override.py" linenums="1"
-    from orbiter_community_translations.dag_factory import translation_ruleset  # (1)!
-    from orbiter.objects.operators.ssh import OrbiterSSHOperator  # (2)!
-    from orbiter.rules import task_rule  # (3)!</p>
-<p>@task_rule(priority=99)  # (4)!
-def ssh_rule(val: dict):
-    """Demonstration of overriding rulesets, by switching DAG Factory BashOperators to SSHOperators"""
-    if val.pop("operator", "") == "BashOperator":  # (5)!
-        return OrbiterSSHOperator(  # (6)!
-            command=val.pop("bash_command"),
-            doc="Hello World!",
-            **{k: v for k, v in val if k != "dependencies"},
-        )
-    else:
-        return None</p>
-<p>translation_ruleset.task_ruleset.ruleset.append(ssh_rule)  # (7)!
-<code>``
-1. Importing specific translation ruleset, determined via the [Origins](origins.md) page
-2. Importing required [Objects](./objects/index.md)
-3. Importing required [Rule](./Rules_and_Rulesets/index.md) types
-4. Create one or more</code>@rule<code>functions, as required. A higher priority means this rule will be applied first.
-    [</code>@task_rule<code>Reference](./Rules_and_Rulesets/rules.md#orbiter.rules.TaskRule)
-5.</code>Rules<code>have an</code>if/else<code>statement - they must always return a **single** thing or **nothing**
-6. [</code>OrbiterSSHOperator<code>Reference](./objects/Tasks/Operators_and_Callbacks/operators.md#orbiter.objects.operators.ssh.OrbiterSSHOperator)
-7. Append the new [Rule](./Rules_and_Rulesets/index.md)
-   to the [</code>translation_ruleset`](./Rules_and_Rulesets/rulesets.md#orbiter.rules.rulesets.TranslationRuleset)</p>
+    <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">override.py</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-5-1"> 1</a></span>
+<span class="normal"><a href="#__codelineno-5-2"> 2</a></span>
+<span class="normal"><a href="#__codelineno-5-3"> 3</a></span>
+<span class="normal"><a href="#__codelineno-5-4"> 4</a></span>
+<span class="normal"><a href="#__codelineno-5-5"> 5</a></span>
+<span class="normal"><a href="#__codelineno-5-6"> 6</a></span>
+<span class="normal"><a href="#__codelineno-5-7"> 7</a></span>
+<span class="normal"><a href="#__codelineno-5-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-5-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-5-10">10</a></span>
+<span class="normal"><a href="#__codelineno-5-11">11</a></span>
+<span class="normal"><a href="#__codelineno-5-12">12</a></span>
+<span class="normal"><a href="#__codelineno-5-13">13</a></span>
+<span class="normal"><a href="#__codelineno-5-14">14</a></span>
+<span class="normal"><a href="#__codelineno-5-15">15</a></span>
+<span class="normal"><a href="#__codelineno-5-16">16</a></span>
+<span class="normal"><a href="#__codelineno-5-17">17</a></span>
+<span class="normal"><a href="#__codelineno-5-18">18</a></span>
+<span class="normal"><a href="#__codelineno-5-19">19</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="kn">from</span> <span class="nn">orbiter_community_translations.dag_factory</span> <span class="kn">import</span> <span class="n">translation_ruleset</span>  <span class="c1"># (1)!</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2"></a><span class="kn">from</span> <span class="nn">orbiter.objects.operators.ssh</span> <span class="kn">import</span> <span class="n">OrbiterSSHOperator</span>  <span class="c1"># (2)!</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3"></a><span class="kn">from</span> <span class="nn">orbiter.rules</span> <span class="kn">import</span> <span class="n">task_rule</span>  <span class="c1"># (3)!</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5"></a>
+<a id="__codelineno-5-6" name="__codelineno-5-6"></a><span class="nd">@task_rule</span><span class="p">(</span><span class="n">priority</span><span class="o">=</span><span class="mi">99</span><span class="p">)</span>  <span class="c1"># (4)!</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7"></a><span class="k">def</span> <span class="nf">ssh_rule</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Demonstration of overriding rulesets, by switching DAG Factory BashOperators to SSHOperators&quot;&quot;&quot;</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9"></a>    <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;operator&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;BashOperator&quot;</span><span class="p">:</span>  <span class="c1"># (5)!</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10"></a>        <span class="k">return</span> <span class="n">OrbiterSSHOperator</span><span class="p">(</span>  <span class="c1"># (6)!</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11"></a>            <span class="n">command</span><span class="o">=</span><span class="n">val</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;bash_command&quot;</span><span class="p">),</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12"></a>            <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Hello World!&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13"></a>            <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">val</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;dependencies&quot;</span><span class="p">},</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14"></a>        <span class="p">)</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17"></a>
+<a id="__codelineno-5-18" name="__codelineno-5-18"></a>
+<a id="__codelineno-5-19" name="__codelineno-5-19"></a><span class="n">translation_ruleset</span><span class="o">.</span><span class="n">task_ruleset</span><span class="o">.</span><span class="n">ruleset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ssh_rule</span><span class="p">)</span>  <span class="c1"># (7)!</span>
+</code></pre></div></td></tr></table></div></p>
+<ol>
+<li>Importing specific translation ruleset, determined via the <a href="origins/">Origins</a> page</li>
+<li>Importing required <a href="objects/">Objects</a></li>
+<li>Importing required <a href="Rules_and_Rulesets/">Rule</a> types</li>
+<li>Create one or more <code>@rule</code> functions, as required. A higher priority means this rule will be applied first.
+    <a href="Rules_and_Rulesets/rules/#orbiter.rules.TaskRule"><code>@task_rule</code> Reference</a></li>
+<li><code>Rules</code> have an <code>if/else</code> statement - they must always return a <strong>single</strong> thing or <strong>nothing</strong></li>
+<li><a href="objects/Tasks/Operators_and_Callbacks/operators/#orbiter.objects.operators.ssh.OrbiterSSHOperator"><code>OrbiterSSHOperator</code> Reference</a></li>
+<li>Append the new <a href="Rules_and_Rulesets/">Rule</a>
+   to the <a href="Rules_and_Rulesets/rulesets/#orbiter.rules.rulesets.TranslationRuleset"><code>translation_ruleset</code></a></li>
+</ol>
 </li>
 <li>
 <p>Invoke the <code>orbiter</code> CLI, pointing it at your customized ruleset, and writing output to an <code>output/</code> folder:
-    <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>orbiter<span class="w"> </span>translate<span class="w"> </span>workflow/<span class="w"> </span>output/<span class="w"> </span>--ruleset<span class="w"> </span>override.translation_ruleset
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>orbiter<span class="w"> </span>translate<span class="w"> </span>workflow/<span class="w"> </span>output/<span class="w"> </span>--ruleset<span class="w"> </span>override.translation_ruleset
 </code></pre></div></p>
 </li>
 <li>Follow the remaining steps of the <a href="#translate">Translate</a> instructions</li>
