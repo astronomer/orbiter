@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import ast
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import reduce
 from pathlib import Path
 from typing import Annotated, Any, Dict, Iterable, List, Callable
@@ -143,7 +143,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     file_path: str | Path
 
     dag_id: DagId
-    schedule: str | OrbiterTimetable | None = None
+    schedule: str | timedelta | OrbiterTimetable | None = None
     catchup: bool = False
     start_date: DateTime | datetime = DateTime(1970, 1, 1)
     tags: List[str] = None
