@@ -221,7 +221,7 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
 
         # DAG FILTER Ruleset - filter down to keys suspected of being translatable to a DAG, in priority order.
         # Add __file DAG FILTER inputs and outputs, so it's available for both DAG and DAG FILTER rules
-        __file_addition = {"__file": file.relative_to(input_dir)}
+        __file_addition = {"__file": (input_dir / file.relative_to(input_dir))}
         dag_dicts: List[dict] = [
             __file_addition | dag_dict
             for dag_dict in functools.reduce(
