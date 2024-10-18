@@ -129,6 +129,10 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
         return py_with(
             py_object("TaskGroup", group_id=self.task_group_id).value,
             [operator._to_ast() for operator in self.tasks]
-            + [operator._downstream_to_ast() for operator in self.tasks],
+            + [
+                downstream
+                for operator in self.tasks
+                if (downstream := operator._downstream_to_ast())
+            ],
             self.task_group_id,
         )
