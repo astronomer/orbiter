@@ -183,7 +183,7 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
         - [**Load each file**][orbiter.rules.rulesets.TranslationRuleset.loads] and turn it into a Python Dictionary.
     2. **For each file:** Apply the [`TranslationRuleset.dag_filter_ruleset`][orbiter.rules.rulesets.DAGFilterRuleset]
         to filter down to entries that can translate to a DAG, in priority order.
-        The file name is added under a `__file` key.
+        The file name is added under a `__file` key to both input and output dictionaries for the DAG Filter rule.
         - **For each dictionary**: Apply the [`TranslationRuleset.dag_ruleset`][orbiter.rules.rulesets.DAGRuleset],
         to convert the object to an [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG],
         in priority-order, stopping when the first rule returns a match.
@@ -220,14 +220,17 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
         logger.info(f"Translating [File {i}]={file.resolve()}")
 
         # DAG FILTER Ruleset - filter down to keys suspected of being translatable to a DAG, in priority order.
-        dag_dicts: List[dict] = functools.reduce(
-            add,
-            translation_ruleset.dag_filter_ruleset.apply(val=input_dict),
-            [],
-        )
-        # Add __file as a key to each DAG dict
-        dag_dicts = [
-            {"__file": file.relative_to(input_dir)} | dag_dict for dag_dict in dag_dicts
+        # Add __file DAG FILTER inputs and outputs, so it's available for both DAG and DAG FILTER rules
+        __file_addition = {"__file": file.relative_to(input_dir)}
+        dag_dicts: List[dict] = [
+            __file_addition | dag_dict
+            for dag_dict in functools.reduce(
+                add,
+                translation_ruleset.dag_filter_ruleset.apply(
+                    val=input_dict | __file_addition
+                ),
+                [],
+            )
         ]
         logger.debug(f"Found {len(dag_dicts)} DAG candidates in {file.resolve()}")
         for dag_dict in dag_dicts:
