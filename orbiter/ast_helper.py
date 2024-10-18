@@ -35,14 +35,14 @@ def py_bitshift(
     )
 
 
-def py_assigned_object(name: str, obj: str, **kwargs) -> ast.Assign:
+def py_assigned_object(ast_name: str, obj: str, **kwargs) -> ast.Assign:
     """
-    >>> render_ast(py_assigned_object("foo", "Bar", baz="bop"))
+    >>> render_ast(py_assigned_object("foo","Bar",baz="bop"))
     "foo = Bar(baz='bop')"
     """
     return ast.Assign(
         lineno=0,
-        targets=[ast.Name(id=name)],
+        targets=[ast.Name(id=ast_name)],
         value=ast.Call(
             func=ast.Name(id=obj),
             args=[],
