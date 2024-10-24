@@ -82,7 +82,7 @@ To extend or customize an existing ruleset, you can easily modify it with simple
         └── ...
     ```
 3. Add contents to `override.py`:
-   ```python title="override.py" linenums="1"
+    ```python title="override.py" linenums="1"
     -8<- "tests/resources/override/override.py"
     ```
     1. Importing specific translation ruleset, determined via the [Origins](origins.md) page
