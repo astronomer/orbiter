@@ -10,4 +10,5 @@ Jenkins,Astronomer,`astronomer-orbiter-translations`,WIP,⠀,⠀
 JAMS,Astronomer,`astronomer-orbiter-translations`,WIP,Folder,Job
 SSIS,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.ssis.xml_demo.translation_ruleset`,Pipeline,Component
 Oozie,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.oozie.xml_demo.translation_ruleset`,Workflow,Node
+⠀,Astronomer,`astronomer-orbiter-translations`,`orbiter_translations.oozie.xml_base.translation_ruleset`,⠀,⠀
 **& more!**,⠀,⠀,⠀,⠀,⠀
