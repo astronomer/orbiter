@@ -334,7 +334,7 @@ def cannot_map_rule(val: dict) -> OrbiterOperator | None:
     )
 
 
-EMPTY_RULE = Rule(rule=lambda _: None, priority=0)
+EMPTY_RULE = Rule(rule=lambda val: None, priority=0)
 """Empty rule, for testing"""
 
 

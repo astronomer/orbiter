@@ -21,7 +21,7 @@ class OrbiterTimetable(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
 
     __mermaid__ = """
     --8<-- [start:mermaid-props]
-    imports: List[OrbiterRequirements]
+    imports: List[OrbiterRequirement]
     orbiter_includes: Set[OrbiterIncludes]
     **kwargs: dict
     --8<-- [end:mermaid-props]

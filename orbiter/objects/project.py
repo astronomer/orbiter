@@ -66,7 +66,7 @@ class OrbiterProject:
     :type includes: Dict[str, OrbiterInclude]
     :param pools: A dictionary of [OrbiterPools][orbiter.objects.pool.OrbiterPool]
     :type pools: Dict[str, OrbiterPool]
-    :param requirements: A set of [OrbiterRequirements][orbiter.objects.requirement.OrbiterRequirement]
+    :param requirements: A set of [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement]
     :type requirements: Set[OrbiterRequirement]
     :param variables: A dictionary of [OrbiterVariables][orbiter.objects.variable.OrbiterVariable]
     :type variables: Dict[str, OrbiterVariable]
@@ -107,8 +107,8 @@ class OrbiterProject:
 
     def __eq__(self, other) -> bool:
         return all(
-            [str(self.dags[d]) == str(other.dags[d]) for d in self.dags]
-            + [str(self.dags[d]) == str(other.dags[d]) for d in other.dags]
+            [str(self.dags[d]) == str(other.dags.get(d, "")) for d in self.dags]
+            + [str(self.dags.get(d, "")) == str(other.dags[d]) for d in other.dags]
             + [self.requirements == other.requirements]
             + [self.pools == other.pools]
             + [self.connections == other.connections]
@@ -171,7 +171,7 @@ class OrbiterProject:
     # noinspection t
     def add_dags(self, dags: OrbiterDAG | Iterable[OrbiterDAG]) -> "OrbiterProject":
         """Add [OrbiterDAGs][orbiter.objects.dag.OrbiterDAG]
-        (and any [OrbiterRequirements][orbiter.objects.requirement.OrbiterRequirement],
+        (and any [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement],
         [OrbiterConns][orbiter.objects.connection.OrbiterConnection],
         [OrbiterVars][orbiter.objects.variable.OrbiterVariable],
         [OrbiterPools][orbiter.objects.pool.OrbiterPool],
@@ -214,12 +214,12 @@ class OrbiterProject:
         ... ))
         ... # doctest: +NORMALIZE_WHITESPACE
         OrbiterProject(dags=[foo],
-        requirements=[OrbiterRequirements(names=[DAG], package=apache-airflow, module=airflow, sys_package=None),
-        OrbiterRequirements(names=[BashOperator], package=apache-airflow, module=airflow.operators.bash, sys_package=None),
-        OrbiterRequirements(names=[send_smtp_notification], package=apache-airflow-providers-smtp, module=airflow.providers.smtp.notifications.smtp, sys_package=None),
-        OrbiterRequirements(names=[TaskGroup], package=apache-airflow, module=airflow.utils.task_group, sys_package=None),
-        OrbiterRequirements(names=[MultiCronTimetable], package=croniter, module=multi_cron_timetable, sys_package=None),
-        OrbiterRequirements(names=[DateTime,Timezone], package=pendulum, module=pendulum, sys_package=None)],
+        requirements=[OrbiterRequirement(names=[DAG], package=apache-airflow, module=airflow, sys_package=None),
+        OrbiterRequirement(names=[BashOperator], package=apache-airflow, module=airflow.operators.bash, sys_package=None),
+        OrbiterRequirement(names=[send_smtp_notification], package=apache-airflow-providers-smtp, module=airflow.providers.smtp.notifications.smtp, sys_package=None),
+        OrbiterRequirement(names=[TaskGroup], package=apache-airflow, module=airflow.utils.task_group, sys_package=None),
+        OrbiterRequirement(names=[MultiCronTimetable], package=croniter, module=multi_cron_timetable, sys_package=None),
+        OrbiterRequirement(names=[DateTime,Timezone], package=pendulum, module=pendulum, sys_package=None)],
         pools=['foo'],
         connections=['SMTP', 'foo'],
         variables=['foo'],
@@ -421,19 +421,19 @@ class OrbiterProject:
         return self
 
     def add_requirements(self, requirements: OrbiterRequirement | Iterable[OrbiterRequirement]) -> "OrbiterProject":
-        """Add [OrbiterRequirements][orbiter.objects.requirement.OrbiterRequirement] to the Project
+        """Add [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement] to the Project
         or override an existing requirement with new properties
 
         ```pycon
         >>> OrbiterProject().add_requirements(
         ...    OrbiterRequirement(package="apache-airflow", names=['foo'], module='bar'),
         ... ).requirements
-        {OrbiterRequirements(names=[foo], package=apache-airflow, module=bar, sys_package=None)}
+        {OrbiterRequirement(names=[foo], package=apache-airflow, module=bar, sys_package=None)}
 
         >>> OrbiterProject().add_requirements(
         ...    [OrbiterRequirement(package="apache-airflow", names=['foo'], module='bar')],
         ... ).requirements
-        {OrbiterRequirements(names=[foo], package=apache-airflow, module=bar, sys_package=None)}
+        {OrbiterRequirement(names=[foo], package=apache-airflow, module=bar, sys_package=None)}
 
         ```
 
@@ -453,7 +453,7 @@ class OrbiterProject:
             pydantic_core._pydantic_core.ValidationError: ...
 
             ```
-        :param requirements: List of [OrbiterRequirements][orbiter.objects.requirement.OrbiterRequirement]
+        :param requirements: List of [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement]
         :type requirements: List[OrbiterRequirement] | OrbiterRequirement
         :return: self
         :rtype: OrbiterProject

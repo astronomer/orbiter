@@ -28,7 +28,7 @@ class OrbiterSmtpNotifierCallback(OrbiterCallback, extra="allow"):
 
     ```pycon
     >>> [_import] = OrbiterSmtpNotifierCallback(to="foo@test.com").imports; _import
-    OrbiterRequirements(names=[send_smtp_notification], package=apache-airflow-providers-smtp, module=airflow.providers.smtp.notifications.smtp, sys_package=None)
+    OrbiterRequirement(names=[send_smtp_notification], package=apache-airflow-providers-smtp, module=airflow.providers.smtp.notifications.smtp, sys_package=None)
 
     >>> OrbiterSmtpNotifierCallback(to="foo@test.com", from_email="bar@test.com", subject="Hello", html_content="World")
     send_smtp_notification(to='foo@test.com', from_email='bar@test.com', smtp_conn_id='SMTP', subject='Hello', html_content='World')

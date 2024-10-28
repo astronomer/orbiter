@@ -56,7 +56,7 @@ class OrbiterRequirement(OrbiterASTBase, BaseModel, extra="forbid"):
 
     def __repr__(self):
         return (
-            f"OrbiterRequirements("
+            f"OrbiterRequirement("
             f"names=[{','.join(sorted(self.names))}], "
             f"package={self.package}, "
             f"module={self.module}, "

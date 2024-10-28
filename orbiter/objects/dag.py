@@ -65,7 +65,7 @@ def _get_imports_recursively(
     ...     ]
     ... )
     ... # doctest: +ELLIPSIS
-    [OrbiterRequirements(...names=[bar]...names=[baz]...names=[foo]...names=[qux]...]
+    [OrbiterRequirement(...names=[bar]...names=[baz]...names=[foo]...names=[qux]...]
 
     """
     imports = set()
