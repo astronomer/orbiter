@@ -23,9 +23,7 @@ def test_dag_render():
     # noinspection PyProtectedMember
     actual = render_ast(
         OrbiterDAG(dag_id="dag_id", file_path="")
-        .add_tasks(
-            OrbiterBashOperator(task_id="task_id", bash_command="echo 'hello world'")
-        )
+        .add_tasks(OrbiterBashOperator(task_id="task_id", bash_command="echo 'hello world'"))
         ._to_ast()
     )
     assert actual == expected_basic_dag
@@ -36,10 +34,7 @@ def test_dag_render_task_group():
     actual = render_ast(
         OrbiterDAG(dag_id="dag_id", file_path="")
         .add_tasks(
-            OrbiterTaskGroup(
-                task_group_id="foo",
-                tasks=[OrbiterBashOperator(task_id="bar", bash_command="bar")],
-            )
+            OrbiterTaskGroup(task_group_id="foo").add_tasks(OrbiterBashOperator(task_id="bar", bash_command="bar"))
         )
         ._to_ast()
     )
