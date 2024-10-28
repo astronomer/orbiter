@@ -74,9 +74,7 @@ class OrbiterSmtpNotifierCallback(OrbiterCallback, extra="allow"):
     to: str | Iterable[str]
     from_email: str | None = None
     smtp_conn_id: str | None = "SMTP"
-    orbiter_conns: Set[OrbiterConnection] | None = {
-        OrbiterConnection(conn_id="SMTP", conn_type="smtp")
-    }
+    orbiter_conns: Set[OrbiterConnection] | None = {OrbiterConnection(conn_id="SMTP", conn_type="smtp")}
     subject: str | None = None
     html_content: str | None = None
     cc: str | Iterable[str] | None = None

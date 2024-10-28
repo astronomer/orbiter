@@ -242,9 +242,7 @@ class OrbiterMultiCronTimetable(OrbiterTimetable):
         )
     ]
     orbiter_includes: Set["OrbiterInclude"] = {
-        OrbiterInclude(
-            filepath="plugins/multi_cron_timetable.py", contents=TIMETABLE_CONTENTS
-        )
+        OrbiterInclude(filepath="plugins/multi_cron_timetable.py", contents=TIMETABLE_CONTENTS)
     }
     render_attributes: RenderAttributes = [
         "cron_defs",

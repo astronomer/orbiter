@@ -75,6 +75,4 @@ class OrbiterEmailOperator(OrbiterOperator):
     html_content: str
     files: list | None = []
     conn_id: str | None = "SMTP"
-    orbiter_conns: Set[OrbiterConnection] | None = {
-        OrbiterConnection(conn_id="SMTP", conn_type="smtp")
-    }
+    orbiter_conns: Set[OrbiterConnection] | None = {OrbiterConnection(conn_id="SMTP", conn_type="smtp")}

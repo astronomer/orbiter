@@ -5,9 +5,7 @@ from abc import ABC, abstractmethod
 from typing import List, Callable
 
 
-def py_bitshift(
-    left: str | List[str], right: str | List[str], is_downstream: bool = True
-):
+def py_bitshift(left: str | List[str], right: str | List[str], is_downstream: bool = True):
     """
     >>> render_ast(py_bitshift("foo", "bar", is_downstream=False))
     'foo << bar'
@@ -18,26 +16,14 @@ def py_bitshift(
     >>> render_ast(py_bitshift(["foo", "bar"], "baz"))
     '[foo, bar] >> baz'
     """
-    left = (
-        ast.Name(id=left)
-        if isinstance(left, str)
-        else ast.List(elts=[ast.Name(id=elt) for elt in left])
-    )
-    right = (
-        ast.Name(id=right)
-        if isinstance(right, str)
-        else ast.List(elts=[ast.Name(id=elt) for elt in right])
-    )
-    return ast.Expr(
-        value=ast.BinOp(
-            left=left, op=ast.RShift() if is_downstream else ast.LShift(), right=right
-        )
-    )
+    left = ast.Name(id=left) if isinstance(left, str) else ast.List(elts=[ast.Name(id=elt) for elt in left])
+    right = ast.Name(id=right) if isinstance(right, str) else ast.List(elts=[ast.Name(id=elt) for elt in right])
+    return ast.Expr(value=ast.BinOp(left=left, op=ast.RShift() if is_downstream else ast.LShift(), right=right))
 
 
 def py_assigned_object(ast_name: str, obj: str, **kwargs) -> ast.Assign:
     """
-    >>> render_ast(py_assigned_object("foo","Bar",baz="bop"))
+    >>> render_ast(py_assigned_object("foo", "Bar", baz="bop"))
     "foo = Bar(baz='bop')"
     """
     return ast.Assign(
@@ -49,11 +35,7 @@ def py_assigned_object(ast_name: str, obj: str, **kwargs) -> ast.Assign:
             keywords=[
                 ast.keyword(
                     arg=arg,
-                    value=(
-                        ast.Constant(value=value)
-                        if not isinstance(value, ast.AST)
-                        else value
-                    ),
+                    value=(ast.Constant(value=value) if not isinstance(value, ast.AST) else value),
                 )
                 for arg, value in kwargs.items()
             ],
@@ -70,10 +52,7 @@ def py_object(name: str, **kwargs) -> ast.Expr:
         value=ast.Call(
             func=ast.Name(id=name),
             args=[],
-            keywords=[
-                ast.keyword(arg=arg, value=ast.Constant(value=value))
-                for arg, value in kwargs.items()
-            ],
+            keywords=[ast.keyword(arg=arg, value=ast.Constant(value=value)) for arg, value in kwargs.items()],
         )
     )
 
@@ -86,9 +65,7 @@ def py_root(*args) -> ast.Module:
     return ast.Module(body=args, type_ignores=[])
 
 
-def py_import(
-    names: List[str], module: str = None
-) -> ast.ImportFrom | ast.Import | list:
+def py_import(names: List[str], module: str = None) -> ast.ImportFrom | ast.Import | list:
     """
     :param module: e.g. `airflow.operators.bash` for `from airflow.operators.bash import BashOperator`
     :param names: e.g. `BashOperator` for `from airflow.operators.bash import BashOperator`
@@ -100,28 +77,31 @@ def py_import(
     'import json'
     """
     if module is not None:
-        return ast.ImportFrom(
-            module=module, names=[ast.alias(name=name) for name in names], level=0
-        )
+        return ast.ImportFrom(module=module, names=[ast.alias(name=name) for name in names], level=0)
     elif module is None and names:
         return ast.Import(names=[ast.alias(name=name) for name in names], level=0)
     else:
         return []
 
 
-def py_with(
-    item: ast.expr, body: List[ast.stmt], assignment: str | None = None
-) -> ast.With:
+def py_with(item: ast.expr, body: List[ast.stmt], assignment: str | None = None) -> ast.With:
     # noinspection PyTypeChecker
     """
     >>> render_ast(py_with(py_object("Bar"), [ast.Pass()]))
     'with Bar():\\n    pass'
     >>> render_ast(
-    ...   py_with(py_object("DAG", dag_id="foo").value, [py_object("Operator", task_id="foo")])
+    ...     py_with(
+    ...         py_object("DAG", dag_id="foo").value,
+    ...         [py_object("Operator", task_id="foo")],
+    ...     )
     ... )
     "with DAG(dag_id='foo'):\\n    Operator(task_id='foo')"
     >>> render_ast(
-    ...   py_with(py_object("DAG", dag_id="foo").value, [py_object("Operator", task_id="foo")], "dag")
+    ...     py_with(
+    ...         py_object("DAG", dag_id="foo").value,
+    ...         [py_object("Operator", task_id="foo")],
+    ...         "dag",
+    ...     )
     ... )
     "with DAG(dag_id='foo') as dag:\\n    Operator(task_id='foo')"
     """
@@ -142,7 +122,7 @@ def py_with(
 def py_function(c: Callable):
     """
     >>> def foo(a, b):
-    ...    print(a + b)
+    ...     print(a + b)
     >>> render_ast(py_function(foo))
     'def foo(a, b):\\n    print(a + b)'
     """

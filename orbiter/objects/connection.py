@@ -35,7 +35,7 @@ class OrbiterConnection(BaseModel, AirflowSettingsRender, extra="allow"):
         from orbiter.objects import conn_id
 
         OrbiterTask(
-            ... ,
+            ...,
             **conn_id("my_conn_id", conn_type="mysql"),
         )
         ```
@@ -63,8 +63,4 @@ class OrbiterConnection(BaseModel, AirflowSettingsRender, extra="allow"):
         return hash(f"{self.model_dump_json()}")
 
     def __repr__(self):
-        return (
-            "OrbiterConnection("
-            + ", ".join(f"{k}={v}" for k, v in self.model_dump().items())
-            + ")"
-        )
+        return "OrbiterConnection(" + ", ".join(f"{k}={v}" for k, v in self.model_dump().items()) + ")"

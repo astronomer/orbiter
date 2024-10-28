@@ -64,9 +64,7 @@ class OrbiterRequirement(OrbiterASTBase, BaseModel, extra="forbid"):
         )
 
     def __hash__(self):
-        return hash(
-            f"{self.package}{self.module}{''.join(self.names)}{self.sys_package}"
-        )
+        return hash(f"{self.package}{self.module}{''.join(self.names)}{self.sys_package}")
 
     def _to_ast(self) -> ast.stmt | ast.Module:
         """Render to `from ... import`

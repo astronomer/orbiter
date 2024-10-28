@@ -17,9 +17,7 @@ def test_project_render(tmpdir):
     # noinspection PyArgumentList
     project = OrbiterProject().add_dags(
         dags=[
-            OrbiterDAG(
-                dag_id="foo", file_path="foo.py", schedule=None, doc_md="foo"
-            ).add_tasks(
+            OrbiterDAG(dag_id="foo", file_path="foo.py", schedule=None, doc_md="foo").add_tasks(
                 tasks=[
                     OrbiterTask(
                         task_id="foo",
@@ -27,14 +25,10 @@ def test_project_render(tmpdir):
                         pool="foo",
                         pool_slots=1,
                         trigger_rule="one_success",
-                        orbiter_pool=OrbiterPool(
-                            name="foo", description="foo", slots=1
-                        ),
+                        orbiter_pool=OrbiterPool(name="foo", description="foo", slots=1),
                         orbiter_vars={OrbiterVariable(key="foo", value="bar")},
                         orbiter_env_vars={OrbiterEnvVar(key="foo", value="bar")},
-                        orbiter_conns={
-                            OrbiterConnection(conn_id="foo", host="bar", password="baz")
-                        },
+                        orbiter_conns={OrbiterConnection(conn_id="foo", host="bar", password="baz")},
                         orbiter_kwargs={"SOME_INPUT": "FOOBAR"},
                         imports=[
                             OrbiterRequirement(
@@ -71,9 +65,7 @@ def test_project_render(tmpdir):
                         "conn_type": "generic",
                     }
                 ],
-                "pools": [
-                    {"pool_description": "foo", "pool_name": "foo", "pool_slot": 1}
-                ],
+                "pools": [{"pool_description": "foo", "pool_name": "foo", "pool_slot": 1}],
                 "variables": [{"variable_name": "foo", "variable_value": "bar"}],
             }
         }

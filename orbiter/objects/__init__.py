@@ -63,9 +63,7 @@ def conn_id(conn_id: str, prefix: str = "", conn_type: str = "generic") -> dict:
 
     Usage:
     ```python
-    OrbiterBashOperator(
-        **conn_id("my_conn_id")
-    )
+    OrbiterBashOperator(**conn_id("my_conn_id"))
     ```
     :param conn_id: The connection id
     :type conn_id: str
@@ -80,11 +78,7 @@ def conn_id(conn_id: str, prefix: str = "", conn_type: str = "generic") -> dict:
 
     return {
         f"{prefix + '_' if prefix else ''}conn_id": conn_id,
-        "orbiter_conns": {
-            OrbiterConnection(
-                conn_id=conn_id, **({"conn_type": conn_type} if conn_type else {})
-            )
-        },
+        "orbiter_conns": {OrbiterConnection(conn_id=conn_id, **({"conn_type": conn_type} if conn_type else {}))},
     }
 
 
@@ -93,9 +87,7 @@ def pool(name: str) -> dict:
 
     Usage:
     ```python
-    OrbiterBashOperator(
-        **pool("my_pool")
-    )
+    OrbiterBashOperator(**pool("my_pool"))
     ```
     :param name: The pool name
     :type name: str

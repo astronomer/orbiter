@@ -72,9 +72,7 @@ def task_add_downstream(
     if isinstance(task_id, OrbiterTaskDependency):
         task_dependency = task_id
         if task_dependency.task_id != self.task_id:
-            raise ValueError(
-                f"task_dependency={task_dependency} has a different task_id than {self.task_id}"
-            )
+            raise ValueError(f"task_dependency={task_dependency} has a different task_id than {self.task_id}")
         # do normal parsing logic, but with these downstream items
         task_id = task_dependency.downstream
 
@@ -213,9 +211,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     --8<-- [end:mermaid-op-props]
     """
 
-    def add_downstream(
-        self, task_id: str | List[str] | OrbiterTaskDependency
-    ) -> "OrbiterOperator":
+    def add_downstream(self, task_id: str | List[str] | OrbiterTaskDependency) -> "OrbiterOperator":
         return task_add_downstream(self, task_id)
 
     def _downstream_to_ast(self) -> List[ast.stmt]:
@@ -308,28 +304,17 @@ class OrbiterTask(OrbiterOperator, extra="allow"):
             if "operator" in name.lower() or "sensor" in name.lower()
         ]
         if len(operator_names) != 1:
-            raise ValueError(
-                f"Expected exactly one operator name, got {operator_names}"
-            )
+            raise ValueError(f"Expected exactly one operator name, got {operator_names}")
         [operator] = operator_names
 
         self_as_ast = py_assigned_object(
             to_task_id(self.task_id, ORBITER_TASK_SUFFIX),
             operator,
-            **{
-                k: prop(k)
-                for k in ["task_id"] + sorted(self.__pydantic_extra__.keys())
-                if k and getattr(self, k)
-            },
+            **{k: prop(k) for k in ["task_id"] + sorted(self.__pydantic_extra__.keys()) if k and getattr(self, k)},
         )
-        callable_props = [
-            k
-            for k in self.__pydantic_extra__.keys()
-            if isinstance(getattr(self, k), Callable)
-        ]
+        callable_props = [k for k in self.__pydantic_extra__.keys() if isinstance(getattr(self, k), Callable)]
         return (
-            [py_function(getattr(self, prop)) for prop in callable_props]
-            + [self_as_ast]
+            [py_function(getattr(self, prop)) for prop in callable_props] + [self_as_ast]
             if len(callable_props)
             else self_as_ast
         )
@@ -354,8 +339,4 @@ def to_task_id(task_id: str, assignment_suffix: str = "") -> str:
     :type assignment_suffix: str
     """
     task_id = clean_value(task_id)
-    return task_id + (
-        assignment_suffix
-        if task_id[-len(assignment_suffix) :] != assignment_suffix
-        else ""
-    )
+    return task_id + (assignment_suffix if task_id[-len(assignment_suffix) :] != assignment_suffix else "")

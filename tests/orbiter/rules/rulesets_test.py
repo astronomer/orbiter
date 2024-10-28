@@ -30,13 +30,11 @@ def test__get_files_with_extension(project_root):
     )
     expected = [
         (
-            project_root
-            / "tests/resources/test_get_files_with_extension/foo/bar/three.yaml",
+            project_root / "tests/resources/test_get_files_with_extension/foo/bar/three.yaml",
             {"three": "baz"},
         ),
         (
-            project_root
-            / "tests/resources/test_get_files_with_extension/foo/bar/two.yml",
+            project_root / "tests/resources/test_get_files_with_extension/foo/bar/two.yml",
             {"two": "bar"},
         ),
         (

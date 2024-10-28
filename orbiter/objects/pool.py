@@ -28,7 +28,7 @@ class OrbiterPool(BaseModel, AirflowSettingsRender, extra="forbid"):
         from orbiter.objects import pool
 
         OrbiterTask(
-            ... ,
+            ...,
             **pool("my_pool"),
         )
         ```
