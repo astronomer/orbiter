@@ -56,7 +56,7 @@ qualname_validator = re.compile(qualname_validator_regex)
 
 
 def validate_translate_fn(
-    translate_fn: str | Callable[["TranslationRuleset", Path], OrbiterProject]
+    translate_fn: str | Callable[["TranslationRuleset", Path], OrbiterProject],
 ) -> str | Callable[["TranslationRuleset", Path], OrbiterProject]:
     """
     ```pycon
@@ -142,9 +142,7 @@ def _add_task_deduped(_task, _tasks, n=""):
     elif hasattr(_task, "task_group_id"):
         _id = "task_group_id"
     else:
-        raise TypeError(
-            "Attempting to add a task without a `task_id` or `task_group_id` attribute"
-        )
+        raise TypeError("Attempting to add a task without a `task_id` or `task_group_id` attribute")
 
     old_task_id = getattr(_task, _id)
     new_task_id = old_task_id + n
@@ -162,6 +160,58 @@ def _add_task_deduped(_task, _tasks, n=""):
         except ValueError:
             n = "1"
         _add_task_deduped(_task, _tasks, n)
+
+
+def _get_parent_for_task_dependency(
+    task_dependency: OrbiterTaskDependency, this: OrbiterDAG | OrbiterTaskGroup | Any
+) -> OrbiterDAG | OrbiterTaskGroup | None:
+    """Look through any children in the `.tasks` property for a matching task_id, recursing into anything that contains
+    `.tasks`. Return the parent object that contains the task_id, or None if it's not found.
+
+    ```pycon
+    >>> from orbiter.objects.operators.empty import OrbiterEmptyOperator
+    >>> _get_parent_for_task_dependency(
+    ...     OrbiterTaskDependency(task_id="bar", downstream="baz"),
+    ...     OrbiterDAG(dag_id="foo", file_path='', tasks={"bar": OrbiterEmptyOperator(task_id="bar")})
+    ... ).dag_id  # returns the dag
+    'foo'
+    >>> _get_parent_for_task_dependency(
+    ...     OrbiterTaskDependency(task_id="bar", downstream="qux"),
+    ...     OrbiterDAG(dag_id="foo", file_path='', tasks={
+    ...         "bar": OrbiterTaskGroup(task_group_id="bar", tasks={"bop": OrbiterEmptyOperator(task_id="bop")})
+    ...     })
+    ... ).dag_id  # returns the parent dag, even if a task group is the target
+    'foo'
+    >>> _get_parent_for_task_dependency(
+    ...     OrbiterTaskDependency(task_id="baz", downstream="qux"),
+    ...     OrbiterDAG(dag_id="foo", file_path='', tasks={
+    ...         "bar": OrbiterTaskGroup(task_group_id="bar", tasks={"baz": OrbiterEmptyOperator(task_id="baz")})
+    ...     })
+    ... ).task_group_id  # returns a child task group, if it contains the task
+    'bar'
+    >>> _get_parent_for_task_dependency(
+    ...     OrbiterTaskDependency(task_id="baz", downstream="qux"),
+    ...     OrbiterTaskGroup(task_group_id="foo", tasks={
+    ...         "bar": OrbiterTaskGroup(task_group_id="bar", tasks={"baz": OrbiterEmptyOperator(task_id="baz")})
+    ...     })
+    ... ).task_group_id  # returns a nested task group that contains the task
+    'bar'
+    >>> _get_parent_for_task_dependency(
+    ...     OrbiterTaskDependency(task_id="qux", downstream="qop"),
+    ...     OrbiterDAG(dag_id="foo", file_path='', tasks={
+    ...         "bar": OrbiterTaskGroup(task_group_id="bar", tasks={"baz": OrbiterEmptyOperator(task_id="baz")})
+    ...     })
+    ... ) # returns nothing if the task was never found
+
+    ```
+    """
+    if tasks := getattr(this, "tasks", []):
+        for task in tasks.values() if isinstance(tasks, dict) else tasks:
+            if getattr(task, "task_id", "") == task_dependency.task_id:
+                return this
+            elif isinstance(task, OrbiterTaskGroup):
+                return _get_parent_for_task_dependency(task_dependency, task)
+    return None
 
 
 # noinspection t
@@ -214,9 +264,7 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     # Create an initial OrbiterProject
     project = OrbiterProject()
 
-    for i, (file, input_dict) in enumerate(
-        translation_ruleset.get_files_with_extension(input_dir)
-    ):
+    for i, (file, input_dict) in enumerate(translation_ruleset.get_files_with_extension(input_dir)):
         logger.info(f"Translating [File {i}]={file.resolve()}")
 
         # DAG FILTER Ruleset - filter down to keys suspected of being translatable to a DAG, in priority order.
@@ -226,9 +274,7 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
             __file_addition | dag_dict
             for dag_dict in functools.reduce(
                 add,
-                translation_ruleset.dag_filter_ruleset.apply(
-                    val=input_dict | __file_addition
-                ),
+                translation_ruleset.dag_filter_ruleset.apply(val=input_dict | __file_addition),
                 [],
             )
         ]
@@ -254,18 +300,12 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
                 translation_ruleset.task_filter_ruleset.apply(val=dag_dict),
                 [],
             )
-            logger.debug(
-                f"Found {len(task_dicts)} Task candidates in {dag.dag_id} in {file.resolve()}"
-            )
+            logger.debug(f"Found {len(task_dicts)} Task candidates in {dag.dag_id} in {file.resolve()}")
             for task_dict in task_dicts:
                 # TASK Ruleset one -> one
-                task: OrbiterOperator = translation_ruleset.task_ruleset.apply(
-                    val=task_dict, take_first=True
-                )
+                task: OrbiterOperator = translation_ruleset.task_ruleset.apply(val=task_dict, take_first=True)
                 if task is None:
-                    logger.warning(
-                        f"Couldn't extract task from expected task_dict={task_dict}"
-                    )
+                    logger.warning(f"Couldn't extract task from expected task_dict={task_dict}")
                     continue
 
                 _add_task_deduped(task, tasks)
@@ -274,22 +314,17 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
 
             # Dag-Level TASK DEPENDENCY Ruleset
             task_dependencies: List[OrbiterTaskDependency] = (
-                list(chain(*translation_ruleset.task_dependency_ruleset.apply(val=dag)))
-                or []
+                list(chain(*translation_ruleset.task_dependency_ruleset.apply(val=dag))) or []
             )
             if not len(task_dependencies):
-                logger.warning(
-                    f"Couldn't find task dependencies in " f"dag={trim_dict(dag_dict)}"
-                )
+                logger.warning(f"Couldn't find task dependencies in " f"dag={trim_dict(dag_dict)}")
             for task_dependency in task_dependencies:
                 task_dependency: OrbiterTaskDependency
-                if task_dependency.task_id not in dag.tasks:
-                    logger.warning(
-                        f"Couldn't find task_id={task_dependency.task_id} in tasks={tasks} for dag_id={dag.dag_id}"
-                    )
-                    continue
+                if parent := _get_parent_for_task_dependency(task_dependency, dag):
+                    parent.tasks[task_dependency.task_id].add_downstream(task_dependency)
                 else:
-                    dag.tasks[task_dependency.task_id].add_downstream(task_dependency)
+                    logger.warning(f"Couldn't find task_id={task_dependency.task_id} in tasks for dag_id={dag.dag_id}")
+                    continue
 
             logger.debug(f"Adding DAG {dag.dag_id} to project")
             project.add_dags(dag)
@@ -300,9 +335,7 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     return project
 
 
-def fake_translate(
-    translation_ruleset: TranslationRuleset, input_dir: Path
-) -> OrbiterProject:
+def fake_translate(translation_ruleset: TranslationRuleset, input_dir: Path) -> OrbiterProject:
     """Fake translate function, for testing"""
     _ = (translation_ruleset, input_dir)
     return OrbiterProject()
@@ -400,8 +433,7 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         return [
             results[0] if take_first else results
             for item in input_val
-            if (results := self.apply(take_first=False, val=item)) is not None
-            and len(results)
+            if (results := self.apply(take_first=False, val=item)) is not None and len(results)
         ]
 
     def _sorted(self) -> List[Rule]:
@@ -495,15 +527,12 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         :raises RuntimeError: if the Rule raises an exception
         """
         if not len(kwargs):
-            raise RuntimeError(
-                "No values provided! Supply at least one key=val pair as kwargs!"
-            )
+            raise RuntimeError("No values provided! Supply at least one key=val pair as kwargs!")
         results = []
         for _rule in self._sorted():
             result = _rule(**kwargs)
             should_show_input = "val" in kwargs and not (
-                isinstance(kwargs["val"], OrbiterProject)
-                or isinstance(kwargs["val"], OrbiterDAG)
+                isinstance(kwargs["val"], OrbiterProject) or isinstance(kwargs["val"], OrbiterDAG)
             )
             if result is not None:
                 logger.debug(
@@ -523,9 +552,7 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
 class DAGFilterRuleset(Ruleset):
     """Ruleset of [`DAGFilterRule`][orbiter.rules.DAGFilterRule]"""
 
-    ruleset: List[
-        DAGFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict
-    ]
+    ruleset: List[DAGFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict]
 
 
 class DAGRuleset(Ruleset):
@@ -537,31 +564,19 @@ class DAGRuleset(Ruleset):
 class TaskFilterRuleset(Ruleset):
     """Ruleset of [`TaskFilterRule`][orbiter.rules.TaskFilterRule]"""
 
-    ruleset: List[
-        TaskFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict
-    ]
+    ruleset: List[TaskFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict]
 
 
 class TaskRuleset(Ruleset):
     """Ruleset of [`TaskRule`][orbiter.rules.TaskRule]"""
 
-    ruleset: List[
-        TaskRule
-        | Rule
-        | Callable[[dict], OrbiterOperator | OrbiterTaskGroup | None]
-        | dict
-    ]
+    ruleset: List[TaskRule | Rule | Callable[[dict], OrbiterOperator | OrbiterTaskGroup | None] | dict]
 
 
 class TaskDependencyRuleset(Ruleset):
     """Ruleset of [`TaskDependencyRule`][orbiter.rules.TaskDependencyRule]"""
 
-    ruleset: List[
-        TaskDependencyRule
-        | Rule
-        | Callable[[OrbiterDAG], List[OrbiterTaskDependency] | None]
-        | dict
-    ]
+    ruleset: List[TaskDependencyRule | Rule | Callable[[OrbiterDAG], List[OrbiterTaskDependency] | None] | dict]
 
 
 class PostProcessingRuleset(Ruleset):
@@ -656,17 +671,13 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
         :rtype: dict
         """
         for file_type in self.file_type:
-            if file.suffix.lower() in {
-                f".{ext.lower()}" for ext in file_type.extension
-            }:
+            if file.suffix.lower() in {f".{ext.lower()}" for ext in file_type.extension}:
                 try:
                     return file_type.load_fn(file.read_text())
                 except Exception as e:
                     logger.error(f"Error loading file={file}! Skipping!\n{e}")
                     continue
-        raise TypeError(
-            f"Invalid file_type={file.suffix}, does not match file_type={self.file_type}"
-        )
+        raise TypeError(f"Invalid file_type={file.suffix}, does not match file_type={self.file_type}")
 
     @validate_call
     def dumps(self, input_dict: dict, ext: str | None = None) -> str:
@@ -694,11 +705,7 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
         :return: Generator item of (Path, dict) for each file found
         :rtype: Generator[Path, dict]
         """
-        for directory, _, files in (
-            input_dir.walk()
-            if hasattr(input_dir, "walk")
-            else _backport_walk(input_dir)
-        ):
+        for directory, _, files in input_dir.walk() if hasattr(input_dir, "walk") else _backport_walk(input_dir):
             logger.debug(f"Checking directory={directory}")
             for file in files:
                 file = directory / file
@@ -729,11 +736,7 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
         """
         with TemporaryDirectory() as tempdir:
             file = Path(tempdir) / f"{uuid.uuid4()}.{self.get_ext()}"
-            file.write_text(
-                self.dumps(input_value)
-                if isinstance(input_value, dict)
-                else input_value
-            )
+            file.write_text(self.dumps(input_value) if isinstance(input_value, dict) else input_value)
             return self.translate_fn(translation_ruleset=self, input_dir=file.parent)
 
 
@@ -752,8 +755,4 @@ EMPTY_TRANSLATION_RULESET = TranslationRuleset(
 if __name__ == "__main__":
     import doctest
 
-    doctest.testmod(
-        optionflags=doctest.ELLIPSIS
-        | doctest.NORMALIZE_WHITESPACE
-        | doctest.IGNORE_EXCEPTION_DETAIL
-    )
+    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)
