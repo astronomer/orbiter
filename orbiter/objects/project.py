@@ -554,6 +554,7 @@ class OrbiterProject:
             for include in self.includes.values():
                 include_path = output_dir / include.filepath
                 logger.info(f"Writing {include_path}")
+                include_path.parent.mkdir(parents=True, exist_ok=True)
                 include_path.write_text(include.render())
         else:
             logger.debug("No files to include")
