@@ -314,6 +314,38 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
     # noinspection PyProtectedMember
     def _to_ast(self) -> List[ast.stmt]:
+        """
+        Renders the DAG to an AST, including imports, tasks, and task dependencies
+
+        ```pycon
+        >>> from orbiter.objects.task_group import OrbiterTaskGroup
+        >>> from orbiter.objects.operators.bash import OrbiterBashOperator
+        >>> from orbiter.ast_helper import render_ast
+        >>> # noinspection PyProtectedMember
+        ... OrbiterDAG(dag_id="foo", file_path="").add_tasks([
+        ...     OrbiterBashOperator(task_id="a", bash_command="a").add_downstream("b"),
+        ...     OrbiterTaskGroup(task_group_id="b").add_tasks([
+        ...         OrbiterBashOperator(task_id="c", bash_command="c").add_downstream("d"),
+        ...         OrbiterBashOperator(task_id="d", bash_command="d")
+        ...     ]).add_downstream("e"),
+        ...     OrbiterBashOperator(task_id="e", bash_command="e")
+        ... ])  # doctest: +NORMALIZE_WHITESPACE
+        from airflow import DAG
+        from airflow.operators.bash import BashOperator
+        from airflow.utils.task_group import TaskGroup
+        from pendulum import DateTime, Timezone
+        with DAG(dag_id='foo', schedule=None, start_date=DateTime(1970, 1, 1, 0, 0, 0), catchup=False):
+            a_task = BashOperator(task_id='a', bash_command='a')
+            with TaskGroup(group_id='b') as b:
+                c_task = BashOperator(task_id='c', bash_command='c')
+                d_task = BashOperator(task_id='d', bash_command='d')
+                c_task >> d_task
+            e_task = BashOperator(task_id='e', bash_command='e')
+            a_task >> b_task
+            b >> e_task
+
+        """
+
         def dedupe_callable(ast_collection):
             items = []
             for item in ast_collection:
@@ -369,3 +401,9 @@ OrbiterDAG.add_tasks = validate_call()(OrbiterDAG.add_tasks)
 @validate_call
 def to_dag_id(dag_id: str) -> str:
     return clean_value(dag_id)
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)

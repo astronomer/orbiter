@@ -120,6 +120,22 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
             )
 
     def _to_ast(self) -> ast.stmt:
+        """
+        ```pycon
+        >>> from orbiter.objects.operators.bash import OrbiterBashOperator
+        >>> from orbiter.ast_helper import render_ast
+        >>> # noinspection PyProtectedMember
+        ... OrbiterTaskGroup(task_group_id="foo").add_tasks([
+        ...     OrbiterBashOperator(task_id="a", bash_command="a").add_downstream("b"),
+        ...     OrbiterBashOperator(task_id="b", bash_command="b")
+        ... ])  # doctest: +NORMALIZE_WHITESPACE
+        with TaskGroup(group_id='foo') as foo:
+            a_task = BashOperator(task_id='a', bash_command='a')
+            b_task = BashOperator(task_id='b', bash_command='b')
+            a_task >> b_task
+
+        ```
+        """
         # noinspection PyProtectedMember
         return py_with(
             py_object("TaskGroup", group_id=self.task_group_id).value,
@@ -131,3 +147,8 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
 
 # https://github.com/pydantic/pydantic/issues/8790
 OrbiterTaskGroup.add_tasks = validate_call()(OrbiterTaskGroup.add_tasks)
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)
