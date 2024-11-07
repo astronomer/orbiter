@@ -163,7 +163,7 @@ def _add_task_deduped(_task, _tasks, n=""):
 
 
 def _get_parent_for_task_dependency(
-    task_dependency: OrbiterTaskDependency, this: OrbiterDAG | OrbiterTaskGroup | Any
+    task_dependency: OrbiterTaskDependency, this: OrbiterDAG | OrbiterTaskGroup
 ) -> OrbiterDAG | OrbiterTaskGroup | None:
     """Look through any children in the `.tasks` property for a matching task_id, recursing into anything that contains
     `.tasks`. Return the parent object that contains the task_id, or None if it's not found.
@@ -185,32 +185,36 @@ def _get_parent_for_task_dependency(
     >>> _get_parent_for_task_dependency(
     ...     OrbiterTaskDependency(task_id="baz", downstream="qux"),
     ...     OrbiterDAG(dag_id="foo", file_path='', tasks={
-    ...         "bar": OrbiterTaskGroup(task_group_id="bar", tasks={"baz": OrbiterEmptyOperator(task_id="baz")})
+    ...         "bar": OrbiterTaskGroup(task_group_id="bar").add_tasks(OrbiterEmptyOperator(task_id="baz"))
     ...     })
     ... ).task_group_id  # returns a child task group, if it contains the task
     'bar'
     >>> _get_parent_for_task_dependency(
-    ...     OrbiterTaskDependency(task_id="baz", downstream="qux"),
-    ...     OrbiterTaskGroup(task_group_id="foo", tasks={
-    ...         "bar": OrbiterTaskGroup(task_group_id="bar", tasks={"baz": OrbiterEmptyOperator(task_id="baz")})
-    ...     })
+    ...     OrbiterTaskDependency(task_id="bonk", downstream="end"),
+    ...     OrbiterTaskGroup(task_group_id="foo").add_tasks([
+    ...         OrbiterTaskGroup(task_group_id="bar").add_tasks(OrbiterEmptyOperator(task_id="baz")),
+    ...         OrbiterTaskGroup(task_group_id="qux").add_tasks(OrbiterEmptyOperator(task_id="bonk"))
+    ...     ])
     ... ).task_group_id  # returns a nested task group that contains the task
-    'bar'
+    'qux'
     >>> _get_parent_for_task_dependency(
     ...     OrbiterTaskDependency(task_id="qux", downstream="qop"),
     ...     OrbiterDAG(dag_id="foo", file_path='', tasks={
-    ...         "bar": OrbiterTaskGroup(task_group_id="bar", tasks={"baz": OrbiterEmptyOperator(task_id="baz")})
+    ...         "bar": OrbiterTaskGroup(task_group_id="bar").add_tasks(OrbiterEmptyOperator(task_id="baz"))
     ...     })
     ... ) # returns nothing if the task was never found
 
     ```
     """
-    if tasks := getattr(this, "tasks", []):
-        for task in tasks.values() if isinstance(tasks, dict) else tasks:
-            if getattr(task, "task_id", "") == task_dependency.task_id:
-                return this
-            elif isinstance(task, OrbiterTaskGroup):
-                return _get_parent_for_task_dependency(task_dependency, task)
+    for task in getattr(this, "tasks", {}).values():
+        found = None
+        if getattr(task, "task_id", "") == task_dependency.task_id:
+            found = this
+        elif isinstance(task, OrbiterTaskGroup):
+            if _found := _get_parent_for_task_dependency(task_dependency, task):
+                found = _found
+        if found:
+            return found
     return None
 
 
@@ -317,7 +321,7 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
                 list(chain(*translation_ruleset.task_dependency_ruleset.apply(val=dag))) or []
             )
             if not len(task_dependencies):
-                logger.warning(f"Couldn't find task dependencies in " f"dag={trim_dict(dag_dict)}")
+                logger.warning(f"Couldn't find task dependencies in dag={trim_dict(dag_dict)}")
             for task_dependency in task_dependencies:
                 task_dependency: OrbiterTaskDependency
                 if parent := _get_parent_for_task_dependency(task_dependency, dag):

@@ -232,7 +232,11 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     def _to_ast(self) -> ast.stmt:
         def prop(k):
             attr = getattr(self, k, None) or getattr(self.model_extra, k, None)
-            return ast.Name(id=attr.__name__) if isinstance(attr, Callable) else attr
+            if isinstance(attr, Callable):
+                return ast.Name(id=attr.__name__)
+            elif "_callable" in k and isinstance(attr, str):
+                return ast.Name(id=attr)
+            return attr
 
         # foo = Bar(x=x,y=y, z=z)
         return py_assigned_object(
