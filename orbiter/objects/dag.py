@@ -4,7 +4,7 @@ import ast
 from datetime import datetime, timedelta
 from functools import reduce
 from pathlib import Path
-from typing import Annotated, Any, Dict, Iterable, List, Callable
+from typing import Annotated, Any, Dict, Iterable, List, Callable, Union
 
 from pendulum import DateTime
 from pydantic import AfterValidator, validate_call
@@ -45,16 +45,27 @@ def _get_imports_recursively(
     >>> from orbiter.objects.task import OrbiterTask
     >>> from orbiter.objects.task_group import OrbiterTaskGroup
     >>> from orbiter.objects.callbacks import OrbiterCallback
-    >>> _get_imports_recursively([
-    ...     OrbiterTask(task_id="foo", imports=[OrbiterRequirement(names=['foo'])]),
-    ...     OrbiterTaskGroup(task_group_id="bar", imports=[OrbiterRequirement(names=['bar'])], tasks=[
-    ...         OrbiterTask(task_id="baz", imports=[OrbiterRequirement(names=['baz'])],
-    ...             on_failure_callback=OrbiterCallback(imports=[OrbiterRequirement(names=['qux'])], function='qux')
-    ...        )
-    ...     ])
-    ... ])
+    >>> _get_imports_recursively(
+    ...     [
+    ...         OrbiterTask(task_id="foo", imports=[OrbiterRequirement(names=["foo"])]),
+    ...         OrbiterTaskGroup(
+    ...             task_group_id="bar",
+    ...             imports=[OrbiterRequirement(names=["bar"])],
+    ...             tasks={
+    ...                 "baz": OrbiterTask(
+    ...                     task_id="baz",
+    ...                     imports=[OrbiterRequirement(names=["baz"])],
+    ...                     on_failure_callback=OrbiterCallback(
+    ...                         imports=[OrbiterRequirement(names=["qux"])],
+    ...                         function="qux",
+    ...                     ),
+    ...                 )
+    ...             },
+    ...         ),
+    ...     ]
+    ... )
     ... # doctest: +ELLIPSIS
-    [OrbiterRequirements(...names=[bar]...names=[baz]...names=[foo]...names=[qux]...]
+    [OrbiterRequirement(...names=[bar]...names=[baz]...names=[foo]...names=[qux]...]
 
     """
     imports = set()
@@ -65,9 +76,7 @@ def _get_imports_recursively(
         def reduce_imports_from_callback(old, item):
             try:
                 # Look for on_failure_callback
-                task_props = (getattr(task, "model_extra", {}) or {}) | (
-                    getattr(task, "__dict__", {}) or {}
-                )
+                task_props = (getattr(task, "model_extra", {}) or {}) | (getattr(task, "__dict__", {}) or {})
                 callback = task_props.get(item)
                 # get imports from callback, merge them all
                 return old | set(getattr(callback, "imports"))
@@ -77,8 +86,61 @@ def _get_imports_recursively(
         imports |= reduce(reduce_imports_from_callback, CALLBACK_KEYS, set())
         if hasattr(task, "tasks"):
             # descend, for a task group
-            imports |= set(_get_imports_recursively(task.tasks))
+            imports |= set(_get_imports_recursively(task.tasks.values()))
     return list(sorted(imports, key=str))
+
+
+def _add_tasks(
+    self,
+    tasks: (OrbiterOperator | OrbiterTaskGroup | Iterable[OrbiterOperator | OrbiterTaskGroup]),
+) -> "OrbiterDAG" | OrbiterTaskGroup:
+    """Add one or more [`OrbiterOperators`][orbiter.objects.task.OrbiterOperator] to the DAG or Task Group
+
+    ```pycon
+    >>> from orbiter.objects.operators.empty import OrbiterEmptyOperator
+    >>> OrbiterDAG(file_path="", dag_id="foo").add_tasks(OrbiterEmptyOperator(task_id="bar")).tasks
+    {'bar': bar_task = EmptyOperator(task_id='bar')}
+
+    >>> OrbiterDAG(file_path="", dag_id="foo").add_tasks([OrbiterEmptyOperator(task_id="bar")]).tasks
+    {'bar': bar_task = EmptyOperator(task_id='bar')}
+
+    ```
+
+    !!! tip
+
+        Validation requires a `OrbiterTaskGroup`, `OrbiterOperator` (or subclass), or list of either to be passed
+        ```pycon
+        >>> # noinspection PyTypeChecker
+        ... OrbiterDAG(file_path="", dag_id="foo").add_tasks("bar")
+        ... # doctest: +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        AttributeError: ...
+        >>> # noinspection PyTypeChecker
+        ... OrbiterDAG(file_path="", dag_id="foo").add_tasks(["bar"])
+        ... # doctest: +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        AttributeError: ...
+
+        ```
+    :param tasks: List of [OrbiterOperator][orbiter.objects.task.OrbiterOperator], or OrbiterTaskGroup or subclass
+    :type tasks: OrbiterOperator | OrbiterTaskGroup | Iterable[OrbiterOperator | OrbiterTaskGroup]
+    :return: self
+    :rtype: OrbiterProject
+    """
+    if (
+        isinstance(tasks, OrbiterOperator)
+        or isinstance(tasks, OrbiterTaskGroup)
+        or issubclass(type(tasks), OrbiterOperator)
+    ):
+        tasks = [tasks]
+
+    for task in tasks:
+        try:
+            task_id = getattr(task, "task_id", None) or getattr(task, "task_group_id")
+        except AttributeError:
+            raise AttributeError(f"Task {task} does not have a task_id or task_group_id attribute")
+        self.tasks[task_id] = task
+    return self
 
 
 class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
@@ -136,9 +198,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
     imports: ImportList = [
         OrbiterRequirement(package="apache-airflow", module="airflow", names=["DAG"]),
-        OrbiterRequirement(
-            package="pendulum", module="pendulum", names=["DateTime", "Timezone"]
-        ),
+        OrbiterRequirement(package="pendulum", module="pendulum", names=["DateTime", "Timezone"]),
     ]
     file_path: str | Path
 
@@ -151,7 +211,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     params: Dict[str, Any] = dict()
     doc_md: str | None = None
 
-    tasks: Dict[str, OrbiterOperator | OrbiterTaskGroup] = dict()
+    tasks: Dict[str, Union[OrbiterOperator, OrbiterTaskGroup]] = dict()
 
     nullable_attributes: List[str] = ["catchup", "schedule"]
     render_attributes: List[str] = [
@@ -198,6 +258,9 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
             setattr(self, key, getattr(self, key) or getattr(other, key))
         return self
 
+    def add_tasks(self, tasks) -> OrbiterDAG:
+        return _add_tasks(self, tasks)
+
     def _dag_to_ast(self) -> ast.Expr:
         """
         Returns the `DAG(...)` object.
@@ -235,9 +298,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
         index_map = {v: i for i, v in enumerate(self.render_attributes)}
         rendered_params = {
-            k: prop(k)
-            for k in self.render_attributes
-            if getattr(self, k) or k in self.nullable_attributes
+            k: prop(k) for k in self.render_attributes if getattr(self, k) or k in self.nullable_attributes
         }
         extra_params = {k: prop(k) for k in (self.model_extra.keys() or [])}
         return py_object(
@@ -251,69 +312,40 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
             **extra_params,
         )
 
-    def add_tasks(
-        self,
-        tasks: (
-            OrbiterOperator
-            | OrbiterTaskGroup
-            | Iterable[OrbiterOperator | OrbiterTaskGroup]
-        ),
-    ) -> "OrbiterDAG":
-        """
-        Add one or more [`OrbiterOperators`][orbiter.objects.task.OrbiterOperator] to the DAG
-
-        ```pycon
-        >>> from orbiter.objects.operators.empty import OrbiterEmptyOperator
-        >>> OrbiterDAG(file_path="", dag_id="foo").add_tasks(OrbiterEmptyOperator(task_id="bar")).tasks
-        {'bar': bar_task = EmptyOperator(task_id='bar')}
-
-        >>> OrbiterDAG(file_path="", dag_id="foo").add_tasks([OrbiterEmptyOperator(task_id="bar")]).tasks
-        {'bar': bar_task = EmptyOperator(task_id='bar')}
-
-        ```
-
-        !!! tip
-
-            Validation requires a `OrbiterTaskGroup`, `OrbiterOperator` (or subclass), or list of either to be passed
-            ```pycon
-            >>> # noinspection PyTypeChecker
-            ... OrbiterDAG(file_path="", dag_id="foo").add_tasks("bar")
-            ... # doctest: +IGNORE_EXCEPTION_DETAIL
-            Traceback (most recent call last):
-            pydantic_core._pydantic_core.ValidationError: ...
-            >>> # noinspection PyTypeChecker
-            ... OrbiterDAG(file_path="", dag_id="foo").add_tasks(["bar"])
-            ... # doctest: +IGNORE_EXCEPTION_DETAIL
-            Traceback (most recent call last):
-            pydantic_core._pydantic_core.ValidationError: ...
-
-            ```
-        :param tasks: List of [OrbiterOperator][orbiter.objects.task.OrbiterOperator], or OrbiterTaskGroup or subclass
-        :type tasks: OrbiterOperator | OrbiterTaskGroup | Iterable[OrbiterOperator | OrbiterTaskGroup]
-        :return: self
-        :rtype: OrbiterProject
-        """
-        if (
-            isinstance(tasks, OrbiterOperator)
-            or isinstance(tasks, OrbiterTaskGroup)
-            or issubclass(type(tasks), OrbiterOperator)
-        ):
-            tasks = [tasks]
-
-        for task in tasks:
-            try:
-                task_id = getattr(task, "task_id", None) or getattr(
-                    task, "task_group_id"
-                )
-            except AttributeError:
-                raise AttributeError(
-                    f"Task {task} does not have a task_id or task_group_id attribute"
-                )
-            self.tasks[task_id] = task
-        return self
-
     # noinspection PyProtectedMember
     def _to_ast(self) -> List[ast.stmt]:
+        """
+        Renders the DAG to an AST, including imports, tasks, and task dependencies
+
+        ```pycon
+        >>> from orbiter.objects.task_group import OrbiterTaskGroup
+        >>> from orbiter.objects.operators.bash import OrbiterBashOperator
+        >>> from orbiter.ast_helper import render_ast
+        >>> # noinspection PyProtectedMember
+        ... OrbiterDAG(dag_id="foo", file_path="").add_tasks([
+        ...     OrbiterBashOperator(task_id="a", bash_command="a").add_downstream("b"),
+        ...     OrbiterTaskGroup(task_group_id="b").add_tasks([
+        ...         OrbiterBashOperator(task_id="c", bash_command="c").add_downstream("d"),
+        ...         OrbiterBashOperator(task_id="d", bash_command="d")
+        ...     ]).add_downstream("e"),
+        ...     OrbiterBashOperator(task_id="e", bash_command="e")
+        ... ])  # doctest: +NORMALIZE_WHITESPACE
+        from airflow import DAG
+        from airflow.operators.bash import BashOperator
+        from airflow.utils.task_group import TaskGroup
+        from pendulum import DateTime, Timezone
+        with DAG(dag_id='foo', schedule=None, start_date=DateTime(1970, 1, 1, 0, 0, 0), catchup=False):
+            a_task = BashOperator(task_id='a', bash_command='a')
+            with TaskGroup(group_id='b') as b:
+                c_task = BashOperator(task_id='c', bash_command='c')
+                d_task = BashOperator(task_id='d', bash_command='d')
+                c_task >> d_task
+            e_task = BashOperator(task_id='e', bash_command='e')
+            a_task >> b_task
+            b >> e_task
+
+        """
+
         def dedupe_callable(ast_collection):
             items = []
             for item in ast_collection:
@@ -335,15 +367,10 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         pre_imports = list(
             set(self.imports)
             | set(_get_imports_recursively(self.tasks.values()))
-            | (
-                set(self.schedule.imports)
-                if isinstance(self.schedule, OrbiterTimetable)
-                else set()
-            )
+            | (set(self.schedule.imports) if isinstance(self.schedule, OrbiterTimetable) else set())
             | reduce(
                 # Look for e.g. on_failure_callback in model_extra, get imports, merge them all
-                lambda old, item: old
-                | set(getattr(self.model_extra.get(item, {}), "imports", set())),
+                lambda old, item: old | set(getattr(self.model_extra.get(item, {}), "imports", set())),
                 CALLBACK_KEYS,
                 set(),
             )
@@ -352,21 +379,15 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         imports = [i._to_ast() for i in sorted(pre_imports)]
 
         # foo = BashOperator(...)
-        task_definitions = list(
-            dedupe_callable([task._to_ast() for task in self.tasks.values()])
-        )
+        task_definitions = list(dedupe_callable([task._to_ast() for task in self.tasks.values()]))
 
         # foo >> bar
         task_dependencies = [
-            task._downstream_to_ast()
-            for task in sorted(self.tasks.values())
-            if task._downstream_to_ast()
+            task._downstream_to_ast() for task in sorted(self.tasks.values()) if task._downstream_to_ast()
         ]
 
         # with DAG(...) as dag:
-        with_dag = py_with(
-            self._dag_to_ast().value, body=task_definitions + task_dependencies
-        )
+        with_dag = py_with(self._dag_to_ast().value, body=task_definitions + task_dependencies)
         return [
             *imports,
             with_dag,
@@ -380,3 +401,9 @@ OrbiterDAG.add_tasks = validate_call()(OrbiterDAG.add_tasks)
 @validate_call
 def to_dag_id(dag_id: str) -> str:
     return clean_value(dag_id)
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)

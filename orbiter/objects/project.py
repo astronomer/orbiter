@@ -66,7 +66,7 @@ class OrbiterProject:
     :type includes: Dict[str, OrbiterInclude]
     :param pools: A dictionary of [OrbiterPools][orbiter.objects.pool.OrbiterPool]
     :type pools: Dict[str, OrbiterPool]
-    :param requirements: A set of [OrbiterRequirements][orbiter.objects.requirement.OrbiterRequirement]
+    :param requirements: A set of [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement]
     :type requirements: Set[OrbiterRequirement]
     :param variables: A dictionary of [OrbiterVariables][orbiter.objects.variable.OrbiterVariable]
     :type variables: Dict[str, OrbiterVariable]
@@ -107,8 +107,8 @@ class OrbiterProject:
 
     def __eq__(self, other) -> bool:
         return all(
-            [str(self.dags[d]) == str(other.dags[d]) for d in self.dags]
-            + [str(self.dags[d]) == str(other.dags[d]) for d in other.dags]
+            [str(self.dags[d]) == str(other.dags.get(d, "")) for d in self.dags]
+            + [str(self.dags.get(d, "")) == str(other.dags[d]) for d in other.dags]
             + [self.requirements == other.requirements]
             + [self.pools == other.pools]
             + [self.connections == other.connections]
@@ -127,9 +127,7 @@ class OrbiterProject:
             f"env_vars={sorted(self.env_vars)})"
         )
 
-    def add_connections(
-        self, connections: OrbiterConnection | Iterable[OrbiterConnection]
-    ) -> "OrbiterProject":
+    def add_connections(self, connections: OrbiterConnection | Iterable[OrbiterConnection]) -> "OrbiterProject":
         """Add [`OrbiterConnections`][orbiter.objects.connection.OrbiterConnection] to the Project
         or override an existing connection with new properties
 
@@ -166,16 +164,14 @@ class OrbiterProject:
         :return: self
         :rtype: OrbiterProject
         """  # noqa: E501
-        for connection in (
-            [connections] if isinstance(connections, OrbiterConnection) else connections
-        ):
+        for connection in [connections] if isinstance(connections, OrbiterConnection) else connections:
             self.connections[connection.conn_id] = connection
         return self
 
     # noinspection t
     def add_dags(self, dags: OrbiterDAG | Iterable[OrbiterDAG]) -> "OrbiterProject":
         """Add [OrbiterDAGs][orbiter.objects.dag.OrbiterDAG]
-        (and any [OrbiterRequirements][orbiter.objects.requirement.OrbiterRequirement],
+        (and any [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement],
         [OrbiterConns][orbiter.objects.connection.OrbiterConnection],
         [OrbiterVars][orbiter.objects.variable.OrbiterVariable],
         [OrbiterPools][orbiter.objects.pool.OrbiterPool],
@@ -201,8 +197,8 @@ class OrbiterProject:
         ...     orbiter_env_vars={OrbiterEnvVar(key="foo", value="bar")},
         ...     orbiter_includes={OrbiterInclude(filepath='foo.txt', contents="Hello, World!")},
         ...     schedule=OrbiterMultiCronTimetable(cron_defs=["0 */5 * * *", "0 */3 * * *"]),
-        ...     tasks={'foo': OrbiterTaskGroup(task_group_id="foo",
-        ...         tasks=[OrbiterBashOperator(
+        ...     ).add_tasks(
+        ...         OrbiterTaskGroup(task_group_id="foo").add_tasks(OrbiterBashOperator(
         ...             task_id='foo', bash_command='echo "Hello, World!"',
         ...             orbiter_pool=OrbiterPool(name='foo', slots=1),
         ...             orbiter_vars={OrbiterVariable(key='foo', value='bar')},
@@ -213,17 +209,17 @@ class OrbiterProject:
         ...                 smtp_conn_id="SMTP",
         ...                 orbiter_conns={OrbiterConnection(conn_id="SMTP", conn_type="smtp")}
         ...             )
-        ...         )]
-        ...     )}
+        ...         )
+        ...     )
         ... ))
         ... # doctest: +NORMALIZE_WHITESPACE
         OrbiterProject(dags=[foo],
-        requirements=[OrbiterRequirements(names=[DAG], package=apache-airflow, module=airflow, sys_package=None),
-        OrbiterRequirements(names=[BashOperator], package=apache-airflow, module=airflow.operators.bash, sys_package=None),
-        OrbiterRequirements(names=[send_smtp_notification], package=apache-airflow-providers-smtp, module=airflow.providers.smtp.notifications.smtp, sys_package=None),
-        OrbiterRequirements(names=[TaskGroup], package=apache-airflow, module=airflow.utils.task_group, sys_package=None),
-        OrbiterRequirements(names=[MultiCronTimetable], package=croniter, module=multi_cron_timetable, sys_package=None),
-        OrbiterRequirements(names=[DateTime,Timezone], package=pendulum, module=pendulum, sys_package=None)],
+        requirements=[OrbiterRequirement(names=[DAG], package=apache-airflow, module=airflow, sys_package=None),
+        OrbiterRequirement(names=[BashOperator], package=apache-airflow, module=airflow.operators.bash, sys_package=None),
+        OrbiterRequirement(names=[send_smtp_notification], package=apache-airflow-providers-smtp, module=airflow.providers.smtp.notifications.smtp, sys_package=None),
+        OrbiterRequirement(names=[TaskGroup], package=apache-airflow, module=airflow.utils.task_group, sys_package=None),
+        OrbiterRequirement(names=[MultiCronTimetable], package=croniter, module=multi_cron_timetable, sys_package=None),
+        OrbiterRequirement(names=[DateTime,Timezone], package=pendulum, module=pendulum, sys_package=None)],
         pools=['foo'],
         connections=['SMTP', 'foo'],
         variables=['foo'],
@@ -256,13 +252,7 @@ class OrbiterProject:
 
         # noinspection t
         def _add_recursively(
-            things: Iterable[
-                OrbiterOperator
-                | OrbiterTaskGroup
-                | OrbiterCallback
-                | OrbiterTimetable
-                | OrbiterDAG
-            ],
+            things: Iterable[OrbiterOperator | OrbiterTaskGroup | OrbiterCallback | OrbiterTimetable | OrbiterDAG],
         ):
             for thing in things:
                 if isinstance(thing, str):
@@ -273,24 +263,19 @@ class OrbiterProject:
                     self.add_connections(conns)
                 if hasattr(thing, "orbiter_vars") and (variables := thing.orbiter_vars):
                     self.add_variables(variables)
-                if hasattr(thing, "orbiter_env_vars") and (
-                    env_vars := thing.orbiter_env_vars
-                ):
+                if hasattr(thing, "orbiter_env_vars") and (env_vars := thing.orbiter_env_vars):
                     self.add_env_vars(env_vars)
-                if hasattr(thing, "orbiter_includes") and (
-                    includes := thing.orbiter_includes
-                ):
+                if hasattr(thing, "orbiter_includes") and (includes := thing.orbiter_includes):
                     self.add_includes(includes)
                 if hasattr(thing, "imports") and (imports := thing.imports):
                     self.add_requirements(imports)
                 if isinstance(thing, OrbiterTaskGroup) and (tasks := thing.tasks):
-                    _add_recursively(tasks)
+                    _add_recursively(tasks.values())
                 if hasattr(thing, "__dict__") or hasattr(thing, "model_extra"):
                     # If it's a pydantic model or dict, check its properties for more things to add
                     _add_recursively(
                         (
-                            (getattr(thing, "__dict__", {}) or dict())
-                            | (getattr(thing, "model_extra", {}) or dict())
+                            (getattr(thing, "__dict__", {}) or dict()) | (getattr(thing, "model_extra", {}) or dict())
                         ).values()
                     )
 
@@ -310,9 +295,7 @@ class OrbiterProject:
             _add_recursively([dag])
         return self
 
-    def add_env_vars(
-        self, env_vars: OrbiterEnvVar | Iterable[OrbiterEnvVar]
-    ) -> "OrbiterProject":
+    def add_env_vars(self, env_vars: OrbiterEnvVar | Iterable[OrbiterEnvVar]) -> "OrbiterProject":
         """
         Add [OrbiterEnvVars][orbiter.objects.env_var.OrbiterEnvVar] to the Project
         or override an existing env var with new properties
@@ -353,9 +336,7 @@ class OrbiterProject:
             self.env_vars[env_var.key] = env_var
         return self
 
-    def add_includes(
-        self, includes: OrbiterInclude | Iterable[OrbiterInclude]
-    ) -> "OrbiterProject":
+    def add_includes(self, includes: OrbiterInclude | Iterable[OrbiterInclude]) -> "OrbiterProject":
         """Add [OrbiterIncludes][orbiter.objects.include.OrbiterInclude] to the Project
         or override an existing [OrbiterInclude][orbiter.objects.include.OrbiterInclude] with new properties
 
@@ -439,22 +420,20 @@ class OrbiterProject:
                 self.pools[pool.name] = pool
         return self
 
-    def add_requirements(
-        self, requirements: OrbiterRequirement | Iterable[OrbiterRequirement]
-    ) -> "OrbiterProject":
-        """Add [OrbiterRequirements][orbiter.objects.requirement.OrbiterRequirement] to the Project
+    def add_requirements(self, requirements: OrbiterRequirement | Iterable[OrbiterRequirement]) -> "OrbiterProject":
+        """Add [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement] to the Project
         or override an existing requirement with new properties
 
         ```pycon
         >>> OrbiterProject().add_requirements(
         ...    OrbiterRequirement(package="apache-airflow", names=['foo'], module='bar'),
         ... ).requirements
-        {OrbiterRequirements(names=[foo], package=apache-airflow, module=bar, sys_package=None)}
+        {OrbiterRequirement(names=[foo], package=apache-airflow, module=bar, sys_package=None)}
 
         >>> OrbiterProject().add_requirements(
         ...    [OrbiterRequirement(package="apache-airflow", names=['foo'], module='bar')],
         ... ).requirements
-        {OrbiterRequirements(names=[foo], package=apache-airflow, module=bar, sys_package=None)}
+        {OrbiterRequirement(names=[foo], package=apache-airflow, module=bar, sys_package=None)}
 
         ```
 
@@ -474,22 +453,16 @@ class OrbiterProject:
             pydantic_core._pydantic_core.ValidationError: ...
 
             ```
-        :param requirements: List of [OrbiterRequirements][orbiter.objects.requirement.OrbiterRequirement]
+        :param requirements: List of [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement]
         :type requirements: List[OrbiterRequirement] | OrbiterRequirement
         :return: self
         :rtype: OrbiterProject
         """
-        for requirement in (
-            [requirements]
-            if isinstance(requirements, OrbiterRequirement)
-            else requirements
-        ):
+        for requirement in [requirements] if isinstance(requirements, OrbiterRequirement) else requirements:
             self.requirements.add(requirement)
         return self
 
-    def add_variables(
-        self, variables: OrbiterVariable | Iterable[OrbiterVariable]
-    ) -> "OrbiterProject":
+    def add_variables(self, variables: OrbiterVariable | Iterable[OrbiterVariable]) -> "OrbiterProject":
         """Add [OrbiterVariables][orbiter.objects.variable.OrbiterVariable] to the Project
         or override an existing variable with new properties
 
@@ -523,9 +496,7 @@ class OrbiterProject:
         :return: self
         :rtype: OrbiterProject
         """
-        for variable in (
-            [variables] if isinstance(variables, OrbiterVariable) else variables
-        ):
+        for variable in [variables] if isinstance(variables, OrbiterVariable) else variables:
             self.variables[variable.key] = variable
         return self
 
@@ -549,11 +520,7 @@ class OrbiterProject:
         if len([1 for r in self.requirements if r.package]):
             requirements = output_dir / "requirements.txt"
             logger.info(f"Writing {requirements}")
-            requirements.write_text(
-                "\n".join(
-                    sorted(set(r.package for r in self.requirements if r.package))
-                )
-            )
+            requirements.write_text("\n".join(sorted(set(r.package for r in self.requirements if r.package))))
         else:
             logger.debug("No python packages to write, skipping requirements.txt...")
 
@@ -561,13 +528,7 @@ class OrbiterProject:
         if len([1 for r in self.requirements if r.sys_package]):
             packages = output_dir / "packages.txt"
             logger.info(f"Writing {packages}")
-            packages.write_text(
-                "\n".join(
-                    sorted(
-                        set(r.sys_package for r in self.requirements if r.sys_package)
-                    )
-                )
-            )
+            packages.write_text("\n".join(sorted(set(r.sys_package for r in self.requirements if r.sys_package))))
         else:
             logger.debug("No system packages to write, skipping packages.txt...")
 
@@ -579,27 +540,21 @@ class OrbiterProject:
                 {
                     "airflow": {
                         "pools": [pool.render() for pool in self.pools.values()],
-                        "variables": [
-                            variable.render() for variable in self.variables.values()
-                        ],
-                        "connections": [
-                            connection.render()
-                            for connection in self.connections.values()
-                        ],
+                        "variables": [variable.render() for variable in self.variables.values()],
+                        "connections": [connection.render() for connection in self.connections.values()],
                     }
                 },
                 airflow_settings.open("w"),
             )
         else:
-            logger.debug(
-                "No Pools, Variables, or Connections to write. Skipping airflow_settings.yaml..."
-            )
+            logger.debug("No Pools, Variables, or Connections to write. Skipping airflow_settings.yaml...")
 
         # /include
         if len(self.includes):
             for include in self.includes.values():
                 include_path = output_dir / include.filepath
                 logger.info(f"Writing {include_path}")
+                include_path.parent.mkdir(parents=True, exist_ok=True)
                 include_path.write_text(include.render())
         else:
             logger.debug("No files to include")
@@ -613,9 +568,7 @@ class OrbiterProject:
             logger.debug("No entries for .env")
 
     @validate_call
-    def analyze(
-        self, output_fmt: Literal["json", "csv", "md"] = "md", output_file=None
-    ):
+    def analyze(self, output_fmt: Literal["json", "csv", "md"] = "md", output_file=None):
         """Print an analysis of the project to the console.
 
         !!! tip
@@ -655,9 +608,7 @@ class OrbiterProject:
 
         def get_task_type(task):
             match = _task_type.match(getattr(task, "doc_md", None) or "")
-            match_or_task_type = (
-                match.groupdict().get("task_type") if match else None
-            ) or type(task).__name__
+            match_or_task_type = (match.groupdict().get("task_type") if match else None) or type(task).__name__
             return match_or_task_type
 
         dag_analysis = [
@@ -736,8 +687,4 @@ OrbiterProject.add_variables = validate_call()(OrbiterProject.add_variables)
 if __name__ == "__main__":
     import doctest
 
-    doctest.testmod(
-        optionflags=doctest.ELLIPSIS
-        | doctest.NORMALIZE_WHITESPACE
-        | doctest.IGNORE_EXCEPTION_DETAIL
-    )
+    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)

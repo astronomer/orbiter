@@ -34,9 +34,7 @@ def formatter(r):
     return (
         "<lvl>"
         + (  # add [time] WARN, etc. if it's not INFO
-            "[{time:HH:mm:ss}|{level}] "
-            if r["level"].no != logging.INFO
-            else "[{time:HH:mm:ss}] "
+            "[{time:HH:mm:ss}|{level}] " if r["level"].no != logging.INFO else "[{time:HH:mm:ss}] "
         )
         + "{message}</>\n{exception}"  # add exception, if there is one
     )
@@ -86,9 +84,7 @@ def import_ruleset(ruleset: str) -> TranslationRuleset:
     logger.debug(f"Importing ruleset: {ruleset}")
     (_, translation_ruleset) = import_from_qualname(ruleset)
     if not isinstance(translation_ruleset, TranslationRuleset):
-        raise RuntimeError(
-            f"translation_ruleset={translation_ruleset} is not a TranslationRuleset"
-        )
+        raise RuntimeError(f"translation_ruleset={translation_ruleset} is not a TranslationRuleset")
     return translation_ruleset
 
 
@@ -115,20 +111,14 @@ def run_ruff_formatter(output_dir: Path):
         changed_files = " ".join(
             (
                 file
-                for file in git.Repo(output_dir)
-                .git.diff(output_dir, name_only=True)
-                .split("\n")
+                for file in git.Repo(output_dir).git.diff(output_dir, name_only=True).split("\n")
                 if file.endswith(".py")
             )
         )
     except ImportError:
-        logger.debug(
-            "Unable to acquire list of changed files in output directory, reformatting output directory..."
-        )
+        logger.debug("Unable to acquire list of changed files in output directory, reformatting output directory...")
     except Exception:
-        logger.debug(
-            "Unable to acquire list of changed files in output directory, reformatting output directory..."
-        )
+        logger.debug("Unable to acquire list of changed files in output directory, reformatting output directory...")
 
     output = run(
         f"ruff check --select E,F,UP,B,SIM,I --ignore E501 --fix {changed_files}",
@@ -205,9 +195,9 @@ def translate(
 
     translation_ruleset = import_ruleset(ruleset)
     try:
-        translation_ruleset.translate_fn(
-            translation_ruleset=translation_ruleset, input_dir=input_dir
-        ).render(output_dir)
+        translation_ruleset.translate_fn(translation_ruleset=translation_ruleset, input_dir=input_dir).render(
+            output_dir
+        )
     except RuntimeError as e:
         logger.error(f"Error encountered during translation: {e}")
         raise click.Abort()
@@ -252,9 +242,9 @@ def analyze(
         output_file = output_file.open("w", newline="")
     translation_ruleset = import_ruleset(ruleset)
     try:
-        translation_ruleset.translate_fn(
-            translation_ruleset=translation_ruleset, input_dir=input_dir
-        ).analyze(_format, output_file)
+        translation_ruleset.translate_fn(translation_ruleset=translation_ruleset, input_dir=input_dir).analyze(
+            _format, output_file
+        )
     except RuntimeError as e:
         logger.exception(f"Error encountered during translation: {e}")
         raise click.Abort()
@@ -266,9 +256,7 @@ def _pip_install(repo: str, key: str):
     _exec += f"=={TRANSLATION_VERSION}" if TRANSLATION_VERSION != "latest" else ""
     if repo == "astronomer-orbiter-translations":
         if not key:
-            raise ValueError(
-                "License key is required for 'astronomer-orbiter-translations'!"
-            )
+            raise ValueError("License key is required for 'astronomer-orbiter-translations'!")
         extra = f' --index-url "https://license:{key}@api.keygen.sh/v1/accounts/{KG_ACCOUNT_ID}/engines/pypi/simple"'
         _exec = f"{_exec}{extra}"
     logger.debug(_exec.replace(key or "<nothing>", "****"))
@@ -287,8 +275,7 @@ def _get_keygen_pyz(key):
         latest_orbiter_translations_pyz_id = next(
             artifact["id"]
             for artifact in r.json().get("data", [])
-            if artifact.get("attributes", {}).get("filename")
-            == "orbiter_translations.pyz"
+            if artifact.get("attributes", {}).get("filename") == "orbiter_translations.pyz"
         )
     except StopIteration:
         raise ValueError("No Artifact found with filename='orbiter_translations.pyz'")
@@ -321,9 +308,7 @@ def _add_pyz():
     logger.debug(f"Adding current directory {os.getcwd()} to sys.path")
     sys.path.insert(0, os.getcwd())
 
-    local_pyz = [
-        str(_path.resolve()) for _path in Path(".").iterdir() if _path.suffix == ".pyz"
-    ]
+    local_pyz = [str(_path.resolve()) for _path in Path(".").iterdir() if _path.suffix == ".pyz"]
     logger.debug(f"Adding local .pyz files {local_pyz} to sys.path")
     sys.path += local_pyz
 
@@ -332,9 +317,7 @@ def _bin_install(repo: str, key: str):
     """If we are running via a PyInstaller binary, we need to download a .pyz"""
     if "astronomer-orbiter-translations" in repo:
         if not key:
-            raise ValueError(
-                "License key is required for 'astronomer-orbiter-translations'!"
-            )
+            raise ValueError("License key is required for 'astronomer-orbiter-translations'!")
         _get_keygen_pyz(key)
     else:
         _get_gh_pyz()
@@ -348,9 +331,7 @@ def _bin_install(repo: str, key: str):
 @click.option(
     "-r",
     "--repo",
-    type=click.Choice(
-        ["astronomer-orbiter-translations", "orbiter-community-translations"]
-    ),
+    type=click.Choice(["astronomer-orbiter-translations", "orbiter-community-translations"]),
     required=False,
     allow_from_autoenv=True,
     show_envvar=True,
@@ -367,10 +348,7 @@ def _bin_install(repo: str, key: str):
     show_envvar=True,
 )
 def install(
-    repo: (
-        Literal["astronomer-orbiter-translations", "orbiter-community-translations"]
-        | None
-    ),
+    repo: (Literal["astronomer-orbiter-translations", "orbiter-community-translations"] | None),
     key: str | None,
 ):
     """Install a new Translation Ruleset from a repository"""
@@ -392,9 +370,7 @@ def install(
         ) == "Other":
             repo = None
             while not repo:
-                repo = Prompt.ask(
-                    "Package Name or Repository URL (e.g. git+https://github.com/my/repo.git )"
-                )
+                repo = Prompt.ask("Package Name or Repository URL (e.g. git+https://github.com/my/repo.git )")
 
     if RUNNING_AS_BINARY:
         _bin_install(repo, key)
@@ -408,13 +384,7 @@ def list_rulesets():
     console = Console()
 
     table = tabulate(
-        list(
-            DictReader(
-                pkgutil.get_data("orbiter.assets", "supported_origins.csv")
-                .decode()
-                .splitlines()
-            )
-        ),
+        list(DictReader(pkgutil.get_data("orbiter.assets", "supported_origins.csv").decode().splitlines())),
         headers="keys",
         tablefmt="pipe",
         # https://github.com/Textualize/rich/issues/3027

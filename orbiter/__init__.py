@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any, Tuple
 
-__version__ = "1.2.3"
+__version__ = "1.3.0"
 
 version = __version__
 
@@ -44,16 +44,14 @@ def import_from_qualname(qualname) -> Tuple[str, Any]:
     """Import a function or module from a qualified name
     :param qualname: The qualified name of the function or module to import (e.g. a.b.d.MyOperator or json)
     :return Tuple[str, Any]: The name of the function or module, and the function or module itself
-    >>> import_from_qualname('json.loads')
+    >>> import_from_qualname("json.loads")
     ('loads', <function loads at ...>)
-    >>> import_from_qualname('json')
+    >>> import_from_qualname("json")
     ('json', <module 'json' from '...'>)
     """
     from importlib import import_module
 
-    [module, name] = (
-        qualname.rsplit(".", 1) if "." in qualname else [qualname, qualname]
-    )
+    [module, name] = qualname.rsplit(".", 1) if "." in qualname else [qualname, qualname]
     imported_module = import_module(module)
     return (
         name,
@@ -64,8 +62,4 @@ def import_from_qualname(qualname) -> Tuple[str, Any]:
 if __name__ == "__main__":
     import doctest
 
-    doctest.testmod(
-        optionflags=doctest.ELLIPSIS
-        | doctest.NORMALIZE_WHITESPACE
-        | doctest.IGNORE_EXCEPTION_DETAIL
-    )
+    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)

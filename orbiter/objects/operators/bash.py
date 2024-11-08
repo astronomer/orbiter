@@ -45,8 +45,6 @@ class OrbiterBashOperator(OrbiterOperator):
     ]
     operator: str = "BashOperator"
     # noinspection Pydantic
-    render_attributes: RenderAttributes = OrbiterOperator.render_attributes + [
-        "bash_command"
-    ]
+    render_attributes: RenderAttributes = OrbiterOperator.render_attributes + ["bash_command"]
 
     bash_command: str

@@ -83,15 +83,7 @@ def trim_dict(v):
 
 def rule(
     func=None, *, priority=None
-) -> (
-    Rule
-    | "DAGFilterRule"
-    | "DAGRule"
-    | "TaskFilterRule"
-    | "TaskRule"
-    | "TaskDependencyRule"
-    | "PostProcessingRule"
-):
+) -> Rule | "DAGFilterRule" | "DAGRule" | "TaskFilterRule" | "TaskRule" | "TaskDependencyRule" | "PostProcessingRule":
     if func is None:
         return functools.partial(rule, priority=priority)
 
@@ -210,7 +202,7 @@ class DAGRule(Rule):
     ```python
     @dag_rule
     def foo(val: dict) -> OrbiterDAG | None:
-        if 'id' in val:
+        if "id" in val:
             return OrbiterDAG(dag_id=val["id"], file_path=f"{val["id"]}.py")
         else:
             return None
@@ -242,6 +234,7 @@ class TaskFilterRule(Rule):
     :return: A list of dictionaries of possible tasks or `None`
     :rtype: List[dict] | None
     """
+
     rule: Callable[[dict], Collection[dict] | None]
 
 
@@ -255,8 +248,10 @@ class TaskRule(Rule):
     ```python
     @task_rule
     def foo(val: dict) -> OrbiterOperator | OrbiterTaskGroup:
-        if 'id' in val and 'command' in val:
-            return OrbiterBashOperator(task_id=val['id'], bash_command=val['command'])
+        if "id" in val and "command" in val:
+            return OrbiterBashOperator(
+                task_id=val["id"], bash_command=val["command"]
+            )
         else:
             return None
     ```
@@ -267,6 +262,7 @@ class TaskRule(Rule):
         or [`OrbiterTaskGroup`][orbiter.objects.task_group.OrbiterTaskGroup] or `None`
     :rtype: OrbiterOperator | OrbiterTaskGroup | None
     """
+
     rule: Callable[[dict], OrbiterOperator | OrbiterTaskGroup | None]
 
 
@@ -291,6 +287,7 @@ class TaskDependencyRule(Rule):
     :return: A list of [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency] or `None`
     :rtype: List[OrbiterTaskDependency] | None
     """
+
     rule: Callable[[OrbiterDAG], List[OrbiterTaskDependency] | None]
 
 
@@ -315,6 +312,7 @@ class PostProcessingRule(Rule):
     :return: `None`
     :rtype: None
     """
+
     rule: Callable[[OrbiterProject], None]
 
 
@@ -336,15 +334,11 @@ def cannot_map_rule(val: dict) -> OrbiterOperator | None:
     )
 
 
-EMPTY_RULE = Rule(rule=lambda _: None, priority=0)
+EMPTY_RULE = Rule(rule=lambda val: None, priority=0)
 """Empty rule, for testing"""
 
 
 if __name__ == "__main__":
     import doctest
 
-    doctest.testmod(
-        optionflags=doctest.ELLIPSIS
-        | doctest.NORMALIZE_WHITESPACE
-        | doctest.IGNORE_EXCEPTION_DETAIL
-    )
+    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)

@@ -184,8 +184,4 @@ class FileTypeYAML(FileType):
 if __name__ == "__main__":
     import doctest
 
-    doctest.testmod(
-        optionflags=doctest.ELLIPSIS
-        | doctest.NORMALIZE_WHITESPACE
-        | doctest.IGNORE_EXCEPTION_DETAIL
-    )
+    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)

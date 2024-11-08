@@ -21,7 +21,7 @@ class OrbiterTimetable(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
 
     __mermaid__ = """
     --8<-- [start:mermaid-props]
-    imports: List[OrbiterRequirements]
+    imports: List[OrbiterRequirement]
     orbiter_includes: Set[OrbiterIncludes]
     **kwargs: dict
     --8<-- [end:mermaid-props]
@@ -31,24 +31,13 @@ class OrbiterTimetable(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
 
     def _to_ast(self) -> ast.stmt | ast.Module:
         # Figure out which timetable we are talking about
-        timetable_names = [
-            name
-            for _import in self.imports
-            for name in _import.names
-            if "timetable" in name.lower()
-        ]
+        timetable_names = [name for _import in self.imports for name in _import.names if "timetable" in name.lower()]
         if len(timetable_names) != 1:
-            raise ValueError(
-                f"Expected exactly one Timetable name, got {timetable_names}"
-            )
+            raise ValueError(f"Expected exactly one Timetable name, got {timetable_names}")
         [timetable] = timetable_names
 
         return py_object(
             timetable,
-            **{
-                k: getattr(self, k)
-                for k in self.render_attributes
-                if k and getattr(self, k)
-            },
+            **{k: getattr(self, k) for k in self.render_attributes if k and getattr(self, k)},
             **{k: getattr(self, k) for k in (self.model_extra.keys() or [])},
         )

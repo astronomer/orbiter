@@ -128,12 +128,12 @@ skips = [
     "B604",  # subprocess shell=True - using intentionally
 ]
 
-[tool.black]
-# https://github.com/psf/black
-color = true
-
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 80
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
