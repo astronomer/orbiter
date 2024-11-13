@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, Set
+from typing import Set, Sequence
 
 from orbiter.objects.connection import OrbiterConnection
 
@@ -29,14 +29,15 @@ class OrbiterSmtpNotifierCallback(OrbiterCallback, extra="allow"):
     ```pycon
     >>> [_import] = OrbiterSmtpNotifierCallback(to="foo@test.com").imports; _import
     OrbiterRequirement(names=[send_smtp_notification], package=apache-airflow-providers-smtp, module=airflow.providers.smtp.notifications.smtp, sys_package=None)
-
     >>> OrbiterSmtpNotifierCallback(to="foo@test.com", from_email="bar@test.com", subject="Hello", html_content="World")
     send_smtp_notification(to='foo@test.com', from_email='bar@test.com', smtp_conn_id='SMTP', subject='Hello', html_content='World')
+    >>> OrbiterSmtpNotifierCallback(to=["foo@test.com", "baz@test.com"], from_email="bar@test.com", subject="Hello", html_content="World")
+    send_smtp_notification(to=['foo@test.com', 'baz@test.com'], from_email='bar@test.com', smtp_conn_id='SMTP', subject='Hello', html_content='World')
 
     ```
 
     :param to: The email address to send to
-    :type to: str | Iterable[str]
+    :type to: str | Sequence[str]
     :param from_email: The email address to send from
     :type from_email: str, optional
     :param smtp_conn_id: The connection id to use (Note: use the `**conn_id(...)` utility function). Defaults to "SMTP"
@@ -46,7 +47,7 @@ class OrbiterSmtpNotifierCallback(OrbiterCallback, extra="allow"):
     :param html_content: The content of the email
     :type html_content: str, optional
     :param cc: The email address to cc
-    :type cc: str | Iterable[str], optional
+    :type cc: str | Sequence[str], optional
     :param **kwargs
     :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """  # noqa: E501
@@ -58,7 +59,7 @@ class OrbiterSmtpNotifierCallback(OrbiterCallback, extra="allow"):
     smtp_conn_id: str
     subject: str
     html_content: str
-    cc: str | Iterable[str]
+    cc: str | Sequence[str]
     --8<-- [end:mermaid-props]
     """
 
@@ -71,13 +72,13 @@ class OrbiterSmtpNotifierCallback(OrbiterCallback, extra="allow"):
     ]
     function: str = "send_smtp_notification"
 
-    to: str | Iterable[str]
+    to: str | Sequence[str]
     from_email: str | None = None
     smtp_conn_id: str | None = "SMTP"
     orbiter_conns: Set[OrbiterConnection] | None = {OrbiterConnection(conn_id="SMTP", conn_type="smtp")}
     subject: str | None = None
     html_content: str | None = None
-    cc: str | Iterable[str] | None = None
+    cc: str | Sequence[str] | None = None
 
     render_attributes: RenderAttributes = [
         "to",
