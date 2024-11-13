@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any, Tuple
 
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 
 version = __version__
 

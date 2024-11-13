@@ -39,6 +39,9 @@ jobs:
             orbiter-*
           name: binary-${{ matrix.os }}
           retention-days: 5
+      - run: just deploy-docs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   gh_release:
     needs: build
