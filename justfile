@@ -51,7 +51,7 @@ build-docs: clean
 
 # Deploy documentation to GitHub pages (GHA does this automatically)
 deploy-docs UPSTREAM="origin": clean
-    mkdocs gh-deploy -r {{UPSTREAM}}
+    mkdocs gh-deploy -r {{UPSTREAM}} --force
 
 # Remove temporary or build folders
 clean:

@@ -40,6 +40,7 @@ jobs:
           name: binary-${{ matrix.os }}
           retention-days: 5
       - run: just deploy-docs
+        if: matrix.os == 'ubuntu-20.04'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
