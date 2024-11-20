@@ -237,7 +237,7 @@ class OrbiterMultiCronTimetable(OrbiterTimetable):
     imports: ImportList = [
         OrbiterRequirement(
             package="croniter",
-            module="multi_cron_timetable",
+            module="plugins.multi_cron_timetable",
             names=["MultiCronTimetable"],
         )
     ]
