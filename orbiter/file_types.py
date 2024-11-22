@@ -12,6 +12,8 @@ from pydantic import (
 )
 from pydantic.v1 import validator
 
+from jilutil.jil_parser import JilParser
+
 
 class FileType(BaseModel, ABC, arbitrary_types_allowed=True):
     """**Abstract Base** File Type
@@ -179,6 +181,26 @@ class FileTypeYAML(FileType):
     extension: ClassVar[Set[str]] = {"YAML", "YML"}
     load_fn: ClassVar[Callable[[str], dict]] = yaml.safe_load
     dump_fn: ClassVar[Callable[[dict], str]] = yaml.safe_dump
+
+
+def dump_jil(_: dict) -> str:
+    raise NotImplementedError("JIL dumping is not implemented yet.")
+
+
+class FileTypeJIL(FileType):
+    """JIL File Type
+
+    :param extension: JIL
+    :type extension: Set[str]
+    :param load_fn: custom JIL loading function
+    :type load_fn: Callable[[str], dict]
+    :param dump_fn: custom JIL dumping function
+    :type dump_fn: Callable[[dict], str]
+    """
+
+    extension: ClassVar[Set[str]] = {"JIL"}
+    load_fn: ClassVar[Callable[[str], dict]] = JilParser(None).parse_jobs_from_str
+    dump_fn: ClassVar[Callable[[dict], str]] = dump_jil
 
 
 if __name__ == "__main__":
