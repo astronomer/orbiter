@@ -62,7 +62,7 @@ dependencies = [
 
     # for parsing JIL - fork
     # original @ https://github.com/mscribellito/jilutil
-    "jilutil @ https://github.com/astronomer/jilutil/archive/refs/heads/master.zip",
+    "jilutil",
 
     # to render timezone-aware DAGs
     "pendulum",
