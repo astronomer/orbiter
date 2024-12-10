@@ -148,7 +148,7 @@ docstring-code-line-length = 80
 [tool.pytest.ini_options]
 pythonpath = ["."]
 norecursedirs = [
-    "*output*", "*dags/", "*dags/*", "*override*", '*artifacts*',
+    "*output*", "*dags/", "*dags/*", "*override*", '*artifacts*', "*assets*",
     "venv", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__"
 ]
 testpaths = ["orbiter", "tests"]
