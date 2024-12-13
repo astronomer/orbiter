@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -397,6 +398,101 @@ def list_rulesets():
             style="magenta",
         )
     )
+
+
+@orbiter.command(
+    help="Write Translation module documentation as HTML. Translations must already be installed with `orbiter install`"
+)
+@click.option(
+    *RULESET_ARGS,
+    multiple=True,
+    required=True,
+    prompt="Translation module to document? (e.g. `orbiter_translation.oozie.xml_demo`)",
+    help="Translation module to document (e.g `orbiter_translation.oozie.xml_demo`), can be supplied multiple times",
+)
+@click.option(
+    "--output-file",
+    "-o",
+    type=click.File(mode="w", atomic=True, lazy=True),
+    default="translation_ruleset.html",
+    help="HTML file to write to. Defaults to `translation_ruleset.html`. Use `-` to write to stdout",
+    show_default=True,
+)
+def document(ruleset: list[str], output_file):
+    from mkdocs.commands import build
+    from mkdocs.config.defaults import MkDocsConfig
+    import tempfile
+    import htmlark
+    from io import StringIO
+
+    index_md = """# Documentation\n"""
+    for rs in ruleset:
+        # remove .translation_ruleset, if it's the end of the input
+        rs = re.sub(r"\.translation_ruleset$", "", rs)
+        index_md += f"::: {rs}\n"
+
+    with tempfile.TemporaryDirectory() as tmpdir_read, tempfile.TemporaryDirectory() as tmpdir_write:
+        logger.debug(f"Writing index.md to {tmpdir_read}")
+        (Path(tmpdir_read) / "index.md").write_text(index_md)
+
+        with StringIO(f"""
+site_name: Translation Documentation
+docs_dir: {tmpdir_read}
+site_dir: {tmpdir_write}
+theme:
+  name: material
+  palette:
+    scheme: slate
+  features:
+    - toc.integrate
+    - content.code.copy
+markdown_extensions:
+  - pymdownx.magiclink
+  - pymdownx.superfences:
+  - pymdownx.saneheaders
+  - pymdownx.highlight:
+      use_pygments: true
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - admonition
+  - pymdownx.details
+plugins:
+- mkdocstrings:
+    handlers:
+      python:
+        options:
+          docstring_style: sphinx
+          show_root_heading: true
+          separate_signature: true
+          show_signature_annotations: true
+          signature_crossrefs: true
+          unwrap_annotated: true
+          show_object_full_path: true
+          show_symbol_type_toc: true
+          show_symbol_type_heading: true
+          show_if_no_docstring: true
+          merge_init_into_class: true
+          summary: true
+          group_by_category: true
+          show_bases: false
+""") as f:
+            # Copypaste from mkdocs.commands.build
+            logger.info("Building documentation...")
+            logger.debug("Injecting mkdocs config directly...")
+            cfg = MkDocsConfig(config_file_path=None)
+            cfg.load_file(f)
+            cfg.load_dict({})
+            cfg.validate()
+            cfg.plugins.on_startup(command="build", dirty=False)
+            logger.debug(f"Building mkdocs to {tmpdir_write}/ ...")
+            try:
+                build.build(cfg, dirty=False)
+            finally:
+                cfg.plugins.on_shutdown()
+
+            # Use htmlark to convert the page to a single HTML file with css/js/etc included inline
+            logger.info(f"Writing documentation to {output_file.name}...")
+            output_file.write(htmlark.convert_page(f"{tmpdir_write}/index.html", ignore_errors=True))
 
 
 if __name__ == "__main__":
