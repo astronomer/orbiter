@@ -95,15 +95,20 @@ docker-build-binary:
     just build-binary
     EOF
 
-docker-run-binary REPO='orbiter-community-translations' RULESET='orbiter_translations.oozie.xml_demo.translation_ruleset':
+docker-run-binary REPO='orbiter-community-translations'  DEMO="https://raw.githubusercontent.com/astronomer/orbiter-community-translations/refs/heads/main/tests/control_m/demo/workflow/demo.xml" RULESET='orbiter_translations.control_m.xml_demo.translation_ruleset' PLATFORM="linux/amd64":
     #!/usr/bin/env bash
     set -euxo pipefail
-    cat <<"EOF" | docker run --platform linux/amd64 -v `pwd`:/data -w /data -i ubuntu /bin/bash
+    cat <<"EOF" | docker run --platform {{PLATFORM}} -v `pwd`:/data -w /data -i ubuntu /bin/bash
+    echo "[SETUP]" && \
     echo "setting up certificates for https" && \
     apt update && apt install -y ca-certificates && update-ca-certificates --fresh && \
     echo "sourcing .env" && \
     set -a && source .env && set +a && \
     chmod +x ./orbiter-linux-x86_64 && \
+    echo "downloading {{DEMO}}" && \
+    mkdir -p workflow && pushd workflow && \
+    curl -ssLO {{DEMO}} && popd && \
+    echo "[INSTALL]" && \
     echo "[ORBITER LIST-RULESETS]" && \
     ./orbiter-linux-x86_64 list-rulesets && \
     mkdir -p workflow && \
@@ -111,14 +116,25 @@ docker-run-binary REPO='orbiter-community-translations' RULESET='orbiter_transla
     LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 install --repo={{REPO}} && \
     echo "[ORBITER TRANSLATE]" && \
     LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 translate workflow/ output/ --ruleset {{RULESET}}
+    echo "[ORBITER DOCUMENT]" && \
+    LOG_LEVEL=DEBUG orbiter document --ruleset {{RULESET}} && \
+    head translation_ruleset.html
     EOF
 
-docker-run-python REPO='orbiter-community-translations' RULESET='orbiter_translations.oozie.xml_demo.translation_ruleset':
+docker-run-python REPO='orbiter-community-translations' DEMO="https://raw.githubusercontent.com/astronomer/orbiter-community-translations/refs/heads/main/tests/control_m/demo/workflow/demo.xml" RULESET='orbiter_translations.control_m.xml_demo.translation_ruleset' PLATFORM="linux/amd64":
     #!/usr/bin/env bash
     set -euxo pipefail
-    cat <<"EOF" | docker run --platform linux/amd64 -v `pwd`:/data -w /data -i python /bin/bash
+    cat <<"EOF" | docker run --platform {{PLATFORM}} -v `pwd`:/data -w /data -i python /bin/bash
+    echo "[SETUP]" && \
     echo "sourcing .env" && \
     set -a && source .env && set +a && \
+    echo "installing cargo (pendulum needs rust)" && \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+    export PATH="$HOME/.cargo/bin:$PATH" && \
+    echo "downloading {{DEMO}}" && \
+    mkdir -p workflow && pushd workflow && \
+    curl -ssLO {{DEMO}} && popd && \
+    echo "[INSTALL]" && \
     echo "installing orbiter" && \
     pip install '.'
     echo "[ORBITER LIST-RULESETS]" && \
@@ -127,5 +143,8 @@ docker-run-python REPO='orbiter-community-translations' RULESET='orbiter_transla
     echo "[ORBITER INSTALL]" && \
     LOG_LEVEL=DEBUG orbiter install --repo={{REPO}} && \
     echo "[ORBITER TRANSLATE]" && \
-    LOG_LEVEL=DEBUG orbiter translate workflow/ output/ --ruleset {{RULESET}}
+    LOG_LEVEL=DEBUG orbiter translate workflow/ output/ --ruleset {{RULESET}} && \
+    echo "[ORBITER DOCUMENT]" && \
+    LOG_LEVEL=DEBUG orbiter document --ruleset {{RULESET}} && \
+    head translation_ruleset.html
     EOF
