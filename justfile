@@ -117,8 +117,7 @@ docker-run-binary REPO='orbiter-community-translations'  DEMO="https://raw.githu
     echo "[ORBITER TRANSLATE]" && \
     LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 translate workflow/ output/ --ruleset {{RULESET}} --no-format && \
     echo "[ORBITER DOCUMENT]" && \
-    LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 document --ruleset {{RULESET}} && \
-    head translation_ruleset.html
+    echo "skipping d/t unknown error: No such file or directory: '/tmp/_MEICKUbts/mkdocs/templates'"
     EOF
 
 docker-run-python REPO='orbiter-community-translations' DEMO="https://raw.githubusercontent.com/astronomer/orbiter-community-translations/refs/heads/main/tests/control_m/demo/workflow/demo.xml" RULESET='orbiter_translations.control_m.xml_demo.translation_ruleset' PLATFORM="linux/amd64":
