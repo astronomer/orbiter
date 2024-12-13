@@ -27,7 +27,6 @@ description = "Astronomer Orbiter can take your legacy workloads and land them s
 readme = "README.md"
 authors = [
     { name = "Fritz Davenport", email = "fritz@astronomer.io" },
-    { name = "CETA Team", email = "ceta@astronomer.io" },
     { name = "Astronomer", email = "humans@astronomer.io" },
 ]
 license = { file = "LICENSE" }
@@ -79,6 +78,13 @@ dependencies = [
 
     # backport
     "eval_type_backport; python_version < '3.10'",
+
+    # for 'document' command
+    "mkdocs",
+    "mkdocs-material",
+    "pygments",
+    "mkdocstrings-python",
+    "htmlark"
 ]
 
 [project.optional-dependencies]

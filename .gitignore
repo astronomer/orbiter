@@ -21,3 +21,4 @@ workflow
 *.pyz
 orbiter-*
 .python-version
+translation_ruleset.html
