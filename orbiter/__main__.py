@@ -122,7 +122,7 @@ def run_ruff_formatter(output_dir: Path):
         logger.debug("Unable to acquire list of changed files in output directory, reformatting output directory...")
 
     output = run(
-        f"ruff check --select E,F,UP,B,SIM,I --ignore E501 --fix {changed_files}",
+        f"ruff check --select E,F,UP,B,SIM,I --ignore E501,SIM117,SIM101 --fix {changed_files}",
         shell=True,
         text=True,
         capture_output=True,

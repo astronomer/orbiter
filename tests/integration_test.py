@@ -8,5 +8,6 @@ def test_integration():
 
     output = run("just docker-run-binary", shell=True, capture_output=True, text=True)
     assert "Available Origins" in output.stdout
-    assert "Adding local .pyz files ['/data/orbiter_community_translations.pyz'] to sys.path" in output.stdout
-    assert "Finding files with extension=['.xml'] in /data/workflow" in output.stdout
+    assert "Adding local .pyz files ['/data/orbiter_translations.pyz.pyz'] to sys.path" in output.stdout
+    assert "Translating [File 0]=/data/workflow/demo.xml" in output.stdout
+    assert "Writing /data/output/dags" in output.stdout
