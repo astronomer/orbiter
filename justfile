@@ -101,7 +101,7 @@ docker-run-binary REPO='orbiter-community-translations'  DEMO="https://raw.githu
     cat <<"EOF" | docker run --platform {{PLATFORM}} -v `pwd`:/data -w /data -i ubuntu /bin/bash
     echo "[SETUP]" && \
     echo "setting up certificates for https" && \
-    apt update && apt install -y ca-certificates && update-ca-certificates --fresh && \
+    apt update && apt install -y curl ca-certificates && update-ca-certificates --fresh && \
     echo "sourcing .env" && \
     set -a && source .env && set +a && \
     chmod +x ./orbiter-linux-x86_64 && \
@@ -115,9 +115,9 @@ docker-run-binary REPO='orbiter-community-translations'  DEMO="https://raw.githu
     echo "[ORBITER INSTALL]" && \
     LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 install --repo={{REPO}} && \
     echo "[ORBITER TRANSLATE]" && \
-    LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 translate workflow/ output/ --ruleset {{RULESET}}
+    LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 translate workflow/ output/ --ruleset {{RULESET}} --no-format && \
     echo "[ORBITER DOCUMENT]" && \
-    LOG_LEVEL=DEBUG orbiter document --ruleset {{RULESET}} && \
+    LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 document --ruleset {{RULESET}} && \
     head translation_ruleset.html
     EOF
 
