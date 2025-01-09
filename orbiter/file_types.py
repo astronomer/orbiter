@@ -7,6 +7,7 @@ from typing import Callable, Set, ClassVar, Any
 
 import xmltodict
 import yaml
+from loguru import logger
 from pydantic import (
     BaseModel,
 )
@@ -100,6 +101,8 @@ def xmltodict_parse(input_str: str) -> Any:
     {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz', 'bar': [{'bop': None}]}]}]}
     >>> xmltodict_parse("<a foo='bar'><foo bar='baz'></foo><foo bing='bop'></foo></a>")
     {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz'}, {'@bing': 'bop'}]}]}
+    >>> xmltodict_parse("<a>&lt;?xml version=&apos;1.0&apos; encoding=&apos;UTF-16&apos;?&gt;&lt;Properties version=&apos;1.1&apos;&gt;&lt;/Properties&gt;</a>")
+    {'a': {'Properties': [{'@version': '1.1'}]}}
 
     ```
     :param input_str: The XML string to parse
@@ -107,6 +110,14 @@ def xmltodict_parse(input_str: str) -> Any:
     :return: The parsed XML
     :rtype: dict
     """
+
+    def _fix_escaped_xml(v):
+        try:
+            parsed_unescaped_xml = xmltodict.parse(v)
+            _fix(parsed_unescaped_xml)
+            return parsed_unescaped_xml
+        except Exception as e:
+            logger.debug(f"Error parsing escaped XML: {e}")
 
     # noinspection t
     def _fix(d):
@@ -123,6 +134,8 @@ def xmltodict_parse(input_str: str) -> Any:
                         _fix(v)
                     else:
                         _fix(v)
+                if isinstance(v, str) and (v.startswith("<?xml") or v.startswith("<?XML")):
+                    d[k] = _fix_escaped_xml(v)
         # if it's a list, descend to fix
         if isinstance(d, list):
             for v in d:
