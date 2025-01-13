@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from orbiter.objects import ImportList, OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator, RenderAttributes
 
@@ -26,7 +28,7 @@ class OrbiterSQLExecuteQueryOperator(OrbiterOperator):
     :param conn_id: The SQL connection to utilize.  (Note: use the `**conn_id(...)` utility function)
     :type conn_id: str
     :param sql: The SQL to execute
-    :type sql: str
+    :type sql: str | list[str]
     :param **kwargs: Extra arguments to pass to the operator
     :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """  # noqa: E501
@@ -36,7 +38,7 @@ class OrbiterSQLExecuteQueryOperator(OrbiterOperator):
     operator = "SQLExecuteQueryOperator"
     task_id: str
     conn_id: str
-    sql: str
+    sql: str | list[str]
     --8<-- [end:mermaid-props]
     """
 
@@ -49,7 +51,7 @@ class OrbiterSQLExecuteQueryOperator(OrbiterOperator):
     ]
     operator: str = "SQLExecuteQueryOperator"
     conn_id: str
-    sql: str
+    sql: str | list[str]
 
     # noinspection Pydantic
     render_attributes: RenderAttributes = OrbiterOperator.render_attributes + [
