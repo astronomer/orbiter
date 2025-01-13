@@ -1,0 +1,1226 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://astronomer.github.io/orbiter/Rules_and_Rulesets/">
+      
+      
+        <link rel="prev" href="../origins/">
+      
+      
+        <link rel="next" href="rules/">
+      
+      
+      <link rel="icon" href="../orbiter.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
+    
+    
+      
+        <title>Overview - Orbiter</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.6f8fc17f.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_markdown_exec_pyodide.css">
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../style.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#overview" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Orbiter" class="md-header__button md-logo" aria-label="Orbiter" data-md-component="logo">
+      
+  <img src="../orbiter.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Orbiter
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Overview
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/astronomer/orbiter" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Orbiter" class="md-nav__button md-logo" aria-label="Orbiter" data-md-component="logo">
+      
+  <img src="../orbiter.svg" alt="logo">
+
+    </a>
+    Orbiter
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/astronomer/orbiter" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CLI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../origins/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Origins
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Rules and Rulesets
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Rules and Rulesets
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#orbiter.rules.rulesets.translate" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;translate
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rules/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Rules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rulesets/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Translation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="template/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Template
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Objects
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Objects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../objects/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../objects/project/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../objects/workflow/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Workflow
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Tasks
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            Tasks
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../objects/Tasks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4_2" id="__nav_5_4_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Operators and Callbacks
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_5_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            Operators and Callbacks
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../objects/Tasks/Operators_and_Callbacks/callbacks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Callbacks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../objects/Tasks/Operators_and_Callbacks/operators/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Operators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/astronomer/orbiter/edit/main/docs/Rules_and_Rulesets/index.md" title="Edit this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+
+    <div class="doc doc-contents first">
+
+        <p>The brain of the Orbiter framework is in it's <a class="autorefs autorefs-internal" href="rules/#orbiter.rules.Rule"><code>Rules</code></a>
+and the <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.Ruleset"><code>Rulesets</code></a> that contain them.</p>
+<ul>
+<li>A <a class="autorefs autorefs-internal" href="rules/#orbiter.rules.Rule"><code>Rule</code></a> is a python function that is evaluated and produces <strong>something</strong>
+(typically an <a href="../objects/">Object</a>) or <strong>nothing</strong></li>
+<li>A <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.Ruleset"><code>Ruleset</code></a> is a collection of <a class="autorefs autorefs-internal" href="rules/#orbiter.rules.Rule"><code>Rules</code></a> that are
+    evaluated in priority order</li>
+<li>A <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.TranslationRuleset"><code>TranslationRuleset</code></a>
+    is a collection of <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.Ruleset"><code>Rulesets</code></a>,
+    relating to an <a href="../origins/">Origin</a> and <a class="autorefs autorefs-internal" href="rulesets/#orbiter.file_types.FileType"><code>FileType</code></a>,
+    with a <a class="autorefs autorefs-internal" href="#orbiter.rules.rulesets.translate"><code>translate_fn</code></a> which determines how to apply the rulesets.</li>
+</ul>
+<p>Different <a class="autorefs autorefs-internal" href="rules/#orbiter.rules.Rule"><code>Rules</code></a> are applied in different scenarios, such as:</p>
+<ul>
+<li>converting input to an Airflow DAG (<a class="autorefs autorefs-internal" href="rules/#orbiter.rules.DAGRule"><code>@dag_rule</code></a>),</li>
+<li>converting input to a specific Airflow Operator (<a class="autorefs autorefs-internal" href="rules/#orbiter.rules.TaskRule"><code>@task_rule</code></a>),</li>
+<li>filtering entries from the input data
+(<a class="autorefs autorefs-internal" href="rules/#orbiter.rules.DAGFilterRule"><code>@dag_filter_rule</code></a>, <a class="autorefs autorefs-internal" href="rules/#orbiter.rules.TaskFilterRule"><code>@task_filter_rule</code></a>).</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>To map the following input
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my_task&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;echo &#39;hi&#39;&quot;</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">}</span>
+</code></pre></div></p>
+<p>to an Airflow
+<a href="https://registry.astronomer.io/providers/apache-airflow/versions/latest/modules/BashOperator">BashOperator</a>,
+a <a class="autorefs autorefs-internal" href="rules/#orbiter.rules.Rule"><code>Rule</code></a> could parse it as follows:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nd">@task_rule</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">my_rule</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="k">if</span> <span class="s1">&#39;command&#39;</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="k">return</span> <span class="n">OrbiterBashOperator</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span> <span class="n">bash_command</span><span class="o">=</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;command&#39;</span><span class="p">])</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div>
+<p>This returns a
+<a class="autorefs autorefs-internal" href="../objects/Tasks/Operators_and_Callbacks/operators/#orbiter.objects.operators.bash.OrbiterBashOperator"><code>OrbiterBashOperator</code></a>, which will become an Airflow
+<a href="https://registry.astronomer.io/providers/apache-airflow/versions/latest/modules/BashOperator">BashOperator</a>
+when the translation completes.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="orbiter.rules.rulesets.translate" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">orbiter.rules.rulesets.translate</span>
+
+
+<a href="#orbiter.rules.rulesets.translate" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">translate</span><span class="p">(</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">translation_ruleset</span><span class="p">,</span> <span class="n">input_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="orbiter.objects.project.OrbiterProject" href="../objects/project/#orbiter.objects.project.OrbiterProject">OrbiterProject</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents first">
+
+        <p>Orbiter expects a folder containing text files which may have a structure like:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span><span class="nt">&quot;&lt;workflow name&gt;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...&lt;work</span><span class="kc">fl</span><span class="err">ow</span><span class="w"> </span><span class="err">proper</span><span class="kc">t</span><span class="err">ies&gt;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;&lt;task name&gt;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...&lt;</span><span class="kc">tas</span><span class="err">k</span><span class="w"> </span><span class="err">proper</span><span class="kc">t</span><span class="err">ies&gt;</span><span class="p">}</span><span class="w"> </span><span class="p">}}</span>
+</code></pre></div></p>
+<p>The standard translation function performs the following steps:</p>
+<p><img alt="Diagram of Orbiter Translation" src="../orbiter_diagram.png" /></p>
+<ol>
+<li><a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.TranslationRuleset.get_files_with_extension"><strong>Find all files</strong></a> with the expected
+    <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.TranslationRuleset"><code>TranslationRuleset.file_type</code></a>
+    (<code>.json</code>, <code>.xml</code>, <code>.yaml</code>, etc.) in the input folder.<ul>
+<li><a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.TranslationRuleset.loads"><strong>Load each file</strong></a> and turn it into a Python Dictionary.</li>
+</ul>
+</li>
+<li><strong>For each file:</strong> Apply the <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.DAGFilterRuleset"><code>TranslationRuleset.dag_filter_ruleset</code></a>
+    to filter down to entries that can translate to a DAG, in priority order.
+    The file name is added under a <code>__file</code> key to both input and output dictionaries for the DAG Filter rule.<ul>
+<li><strong>For each dictionary</strong>: Apply the <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.DAGRuleset"><code>TranslationRuleset.dag_ruleset</code></a>,
+to convert the object to an <a class="autorefs autorefs-internal" href="../objects/workflow/#orbiter.objects.dag.OrbiterDAG"><code>OrbiterDAG</code></a>,
+in priority-order, stopping when the first rule returns a match.
+If no rule returns a match, the entry is filtered.</li>
+</ul>
+</li>
+<li>Apply the <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.TaskFilterRuleset"><code>TranslationRuleset.task_filter_ruleset</code></a>
+    to filter down to entries in the DAG that can translate to a Task, in priority-order.<ul>
+<li><strong>For each:</strong> Apply the <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.TaskRuleset"><code>TranslationRuleset.task_ruleset</code></a>,
+    to convert the object to a specific Task, in priority-order, stopping when the first rule returns a match.
+    If no rule returns a match, the entry is filtered.</li>
+</ul>
+</li>
+<li>After the DAG and Tasks are mapped, the
+    <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.TaskDependencyRuleset"><code>TranslationRuleset.task_dependency_ruleset</code></a>
+    is applied in priority-order, stopping when the first rule returns a match,
+    to create a list of
+    <a class="autorefs autorefs-internal" href="../objects/Tasks/#orbiter.objects.task.OrbiterTaskDependency"><code>OrbiterTaskDependency</code></a>,
+    which are then added to each task in the
+    <a class="autorefs autorefs-internal" href="../objects/workflow/#orbiter.objects.dag.OrbiterDAG"><code>OrbiterDAG</code></a></li>
+<li>Apply the <a class="autorefs autorefs-internal" href="rulesets/#orbiter.rules.rulesets.PostProcessingRuleset"><code>TranslationRuleset.post_processing_ruleset</code></a>,
+    against the <a class="autorefs autorefs-internal" href="../objects/project/#orbiter.objects.project.OrbiterProject"><code>OrbiterProject</code></a>, which can make modifications after all
+    other rules have been applied.</li>
+<li>After translation - the <a class="autorefs autorefs-internal" href="../objects/project/#orbiter.objects.project.OrbiterProject"><code>OrbiterProject</code></a>
+    is rendered to the output folder.</li>
+</ol>
+
+            <details class="quote">
+              <summary>Source code in <code>orbiter/rules/rulesets.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-222">222</a></span>
+<span class="normal"><a href="#__codelineno-0-223">223</a></span>
+<span class="normal"><a href="#__codelineno-0-224">224</a></span>
+<span class="normal"><a href="#__codelineno-0-225">225</a></span>
+<span class="normal"><a href="#__codelineno-0-226">226</a></span>
+<span class="normal"><a href="#__codelineno-0-227">227</a></span>
+<span class="normal"><a href="#__codelineno-0-228">228</a></span>
+<span class="normal"><a href="#__codelineno-0-229">229</a></span>
+<span class="normal"><a href="#__codelineno-0-230">230</a></span>
+<span class="normal"><a href="#__codelineno-0-231">231</a></span>
+<span class="normal"><a href="#__codelineno-0-232">232</a></span>
+<span class="normal"><a href="#__codelineno-0-233">233</a></span>
+<span class="normal"><a href="#__codelineno-0-234">234</a></span>
+<span class="normal"><a href="#__codelineno-0-235">235</a></span>
+<span class="normal"><a href="#__codelineno-0-236">236</a></span>
+<span class="normal"><a href="#__codelineno-0-237">237</a></span>
+<span class="normal"><a href="#__codelineno-0-238">238</a></span>
+<span class="normal"><a href="#__codelineno-0-239">239</a></span>
+<span class="normal"><a href="#__codelineno-0-240">240</a></span>
+<span class="normal"><a href="#__codelineno-0-241">241</a></span>
+<span class="normal"><a href="#__codelineno-0-242">242</a></span>
+<span class="normal"><a href="#__codelineno-0-243">243</a></span>
+<span class="normal"><a href="#__codelineno-0-244">244</a></span>
+<span class="normal"><a href="#__codelineno-0-245">245</a></span>
+<span class="normal"><a href="#__codelineno-0-246">246</a></span>
+<span class="normal"><a href="#__codelineno-0-247">247</a></span>
+<span class="normal"><a href="#__codelineno-0-248">248</a></span>
+<span class="normal"><a href="#__codelineno-0-249">249</a></span>
+<span class="normal"><a href="#__codelineno-0-250">250</a></span>
+<span class="normal"><a href="#__codelineno-0-251">251</a></span>
+<span class="normal"><a href="#__codelineno-0-252">252</a></span>
+<span class="normal"><a href="#__codelineno-0-253">253</a></span>
+<span class="normal"><a href="#__codelineno-0-254">254</a></span>
+<span class="normal"><a href="#__codelineno-0-255">255</a></span>
+<span class="normal"><a href="#__codelineno-0-256">256</a></span>
+<span class="normal"><a href="#__codelineno-0-257">257</a></span>
+<span class="normal"><a href="#__codelineno-0-258">258</a></span>
+<span class="normal"><a href="#__codelineno-0-259">259</a></span>
+<span class="normal"><a href="#__codelineno-0-260">260</a></span>
+<span class="normal"><a href="#__codelineno-0-261">261</a></span>
+<span class="normal"><a href="#__codelineno-0-262">262</a></span>
+<span class="normal"><a href="#__codelineno-0-263">263</a></span>
+<span class="normal"><a href="#__codelineno-0-264">264</a></span>
+<span class="normal"><a href="#__codelineno-0-265">265</a></span>
+<span class="normal"><a href="#__codelineno-0-266">266</a></span>
+<span class="normal"><a href="#__codelineno-0-267">267</a></span>
+<span class="normal"><a href="#__codelineno-0-268">268</a></span>
+<span class="normal"><a href="#__codelineno-0-269">269</a></span>
+<span class="normal"><a href="#__codelineno-0-270">270</a></span>
+<span class="normal"><a href="#__codelineno-0-271">271</a></span>
+<span class="normal"><a href="#__codelineno-0-272">272</a></span>
+<span class="normal"><a href="#__codelineno-0-273">273</a></span>
+<span class="normal"><a href="#__codelineno-0-274">274</a></span>
+<span class="normal"><a href="#__codelineno-0-275">275</a></span>
+<span class="normal"><a href="#__codelineno-0-276">276</a></span>
+<span class="normal"><a href="#__codelineno-0-277">277</a></span>
+<span class="normal"><a href="#__codelineno-0-278">278</a></span>
+<span class="normal"><a href="#__codelineno-0-279">279</a></span>
+<span class="normal"><a href="#__codelineno-0-280">280</a></span>
+<span class="normal"><a href="#__codelineno-0-281">281</a></span>
+<span class="normal"><a href="#__codelineno-0-282">282</a></span>
+<span class="normal"><a href="#__codelineno-0-283">283</a></span>
+<span class="normal"><a href="#__codelineno-0-284">284</a></span>
+<span class="normal"><a href="#__codelineno-0-285">285</a></span>
+<span class="normal"><a href="#__codelineno-0-286">286</a></span>
+<span class="normal"><a href="#__codelineno-0-287">287</a></span>
+<span class="normal"><a href="#__codelineno-0-288">288</a></span>
+<span class="normal"><a href="#__codelineno-0-289">289</a></span>
+<span class="normal"><a href="#__codelineno-0-290">290</a></span>
+<span class="normal"><a href="#__codelineno-0-291">291</a></span>
+<span class="normal"><a href="#__codelineno-0-292">292</a></span>
+<span class="normal"><a href="#__codelineno-0-293">293</a></span>
+<span class="normal"><a href="#__codelineno-0-294">294</a></span>
+<span class="normal"><a href="#__codelineno-0-295">295</a></span>
+<span class="normal"><a href="#__codelineno-0-296">296</a></span>
+<span class="normal"><a href="#__codelineno-0-297">297</a></span>
+<span class="normal"><a href="#__codelineno-0-298">298</a></span>
+<span class="normal"><a href="#__codelineno-0-299">299</a></span>
+<span class="normal"><a href="#__codelineno-0-300">300</a></span>
+<span class="normal"><a href="#__codelineno-0-301">301</a></span>
+<span class="normal"><a href="#__codelineno-0-302">302</a></span>
+<span class="normal"><a href="#__codelineno-0-303">303</a></span>
+<span class="normal"><a href="#__codelineno-0-304">304</a></span>
+<span class="normal"><a href="#__codelineno-0-305">305</a></span>
+<span class="normal"><a href="#__codelineno-0-306">306</a></span>
+<span class="normal"><a href="#__codelineno-0-307">307</a></span>
+<span class="normal"><a href="#__codelineno-0-308">308</a></span>
+<span class="normal"><a href="#__codelineno-0-309">309</a></span>
+<span class="normal"><a href="#__codelineno-0-310">310</a></span>
+<span class="normal"><a href="#__codelineno-0-311">311</a></span>
+<span class="normal"><a href="#__codelineno-0-312">312</a></span>
+<span class="normal"><a href="#__codelineno-0-313">313</a></span>
+<span class="normal"><a href="#__codelineno-0-314">314</a></span>
+<span class="normal"><a href="#__codelineno-0-315">315</a></span>
+<span class="normal"><a href="#__codelineno-0-316">316</a></span>
+<span class="normal"><a href="#__codelineno-0-317">317</a></span>
+<span class="normal"><a href="#__codelineno-0-318">318</a></span>
+<span class="normal"><a href="#__codelineno-0-319">319</a></span>
+<span class="normal"><a href="#__codelineno-0-320">320</a></span>
+<span class="normal"><a href="#__codelineno-0-321">321</a></span>
+<span class="normal"><a href="#__codelineno-0-322">322</a></span>
+<span class="normal"><a href="#__codelineno-0-323">323</a></span>
+<span class="normal"><a href="#__codelineno-0-324">324</a></span>
+<span class="normal"><a href="#__codelineno-0-325">325</a></span>
+<span class="normal"><a href="#__codelineno-0-326">326</a></span>
+<span class="normal"><a href="#__codelineno-0-327">327</a></span>
+<span class="normal"><a href="#__codelineno-0-328">328</a></span>
+<span class="normal"><a href="#__codelineno-0-329">329</a></span>
+<span class="normal"><a href="#__codelineno-0-330">330</a></span>
+<span class="normal"><a href="#__codelineno-0-331">331</a></span>
+<span class="normal"><a href="#__codelineno-0-332">332</a></span>
+<span class="normal"><a href="#__codelineno-0-333">333</a></span>
+<span class="normal"><a href="#__codelineno-0-334">334</a></span>
+<span class="normal"><a href="#__codelineno-0-335">335</a></span>
+<span class="normal"><a href="#__codelineno-0-336">336</a></span>
+<span class="normal"><a href="#__codelineno-0-337">337</a></span>
+<span class="normal"><a href="#__codelineno-0-338">338</a></span>
+<span class="normal"><a href="#__codelineno-0-339">339</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-222" name="__codelineno-0-222"></a><span class="nd">@validate_call</span>
+<a id="__codelineno-0-223" name="__codelineno-0-223"></a><span class="k">def</span><span class="w"> </span><span class="nf">translate</span><span class="p">(</span><span class="n">translation_ruleset</span><span class="p">,</span> <span class="n">input_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OrbiterProject</span><span class="p">:</span>
+<a id="__codelineno-0-224" name="__codelineno-0-224"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-225" name="__codelineno-0-225"></a><span class="sd">    Orbiter expects a folder containing text files which may have a structure like:</span>
+<a id="__codelineno-0-226" name="__codelineno-0-226"></a><span class="sd">    ```json</span>
+<a id="__codelineno-0-227" name="__codelineno-0-227"></a><span class="sd">    {&quot;&lt;workflow name&gt;&quot;: { ...&lt;workflow properties&gt;, &quot;&lt;task name&gt;&quot;: { ...&lt;task properties&gt;} }}</span>
+<a id="__codelineno-0-228" name="__codelineno-0-228"></a><span class="sd">    ```</span>
+<a id="__codelineno-0-229" name="__codelineno-0-229"></a>
+<a id="__codelineno-0-230" name="__codelineno-0-230"></a><span class="sd">    The standard translation function performs the following steps:</span>
+<a id="__codelineno-0-231" name="__codelineno-0-231"></a>
+<a id="__codelineno-0-232" name="__codelineno-0-232"></a><span class="sd">    ![Diagram of Orbiter Translation](../orbiter_diagram.png)</span>
+<a id="__codelineno-0-233" name="__codelineno-0-233"></a>
+<a id="__codelineno-0-234" name="__codelineno-0-234"></a><span class="sd">    1. [**Find all files**][orbiter.rules.rulesets.TranslationRuleset.get_files_with_extension] with the expected</span>
+<a id="__codelineno-0-235" name="__codelineno-0-235"></a><span class="sd">        [`TranslationRuleset.file_type`][orbiter.rules.rulesets.TranslationRuleset]</span>
+<a id="__codelineno-0-236" name="__codelineno-0-236"></a><span class="sd">        (`.json`, `.xml`, `.yaml`, etc.) in the input folder.</span>
+<a id="__codelineno-0-237" name="__codelineno-0-237"></a><span class="sd">        - [**Load each file**][orbiter.rules.rulesets.TranslationRuleset.loads] and turn it into a Python Dictionary.</span>
+<a id="__codelineno-0-238" name="__codelineno-0-238"></a><span class="sd">    2. **For each file:** Apply the [`TranslationRuleset.dag_filter_ruleset`][orbiter.rules.rulesets.DAGFilterRuleset]</span>
+<a id="__codelineno-0-239" name="__codelineno-0-239"></a><span class="sd">        to filter down to entries that can translate to a DAG, in priority order.</span>
+<a id="__codelineno-0-240" name="__codelineno-0-240"></a><span class="sd">        The file name is added under a `__file` key to both input and output dictionaries for the DAG Filter rule.</span>
+<a id="__codelineno-0-241" name="__codelineno-0-241"></a><span class="sd">        - **For each dictionary**: Apply the [`TranslationRuleset.dag_ruleset`][orbiter.rules.rulesets.DAGRuleset],</span>
+<a id="__codelineno-0-242" name="__codelineno-0-242"></a><span class="sd">        to convert the object to an [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG],</span>
+<a id="__codelineno-0-243" name="__codelineno-0-243"></a><span class="sd">        in priority-order, stopping when the first rule returns a match.</span>
+<a id="__codelineno-0-244" name="__codelineno-0-244"></a><span class="sd">        If no rule returns a match, the entry is filtered.</span>
+<a id="__codelineno-0-245" name="__codelineno-0-245"></a><span class="sd">    3. Apply the [`TranslationRuleset.task_filter_ruleset`][orbiter.rules.rulesets.TaskFilterRuleset]</span>
+<a id="__codelineno-0-246" name="__codelineno-0-246"></a><span class="sd">        to filter down to entries in the DAG that can translate to a Task, in priority-order.</span>
+<a id="__codelineno-0-247" name="__codelineno-0-247"></a><span class="sd">        - **For each:** Apply the [`TranslationRuleset.task_ruleset`][orbiter.rules.rulesets.TaskRuleset],</span>
+<a id="__codelineno-0-248" name="__codelineno-0-248"></a><span class="sd">            to convert the object to a specific Task, in priority-order, stopping when the first rule returns a match.</span>
+<a id="__codelineno-0-249" name="__codelineno-0-249"></a><span class="sd">            If no rule returns a match, the entry is filtered.</span>
+<a id="__codelineno-0-250" name="__codelineno-0-250"></a><span class="sd">    4. After the DAG and Tasks are mapped, the</span>
+<a id="__codelineno-0-251" name="__codelineno-0-251"></a><span class="sd">        [`TranslationRuleset.task_dependency_ruleset`][orbiter.rules.rulesets.TaskDependencyRuleset]</span>
+<a id="__codelineno-0-252" name="__codelineno-0-252"></a><span class="sd">        is applied in priority-order, stopping when the first rule returns a match,</span>
+<a id="__codelineno-0-253" name="__codelineno-0-253"></a><span class="sd">        to create a list of</span>
+<a id="__codelineno-0-254" name="__codelineno-0-254"></a><span class="sd">        [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency],</span>
+<a id="__codelineno-0-255" name="__codelineno-0-255"></a><span class="sd">        which are then added to each task in the</span>
+<a id="__codelineno-0-256" name="__codelineno-0-256"></a><span class="sd">        [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG]</span>
+<a id="__codelineno-0-257" name="__codelineno-0-257"></a><span class="sd">    5. Apply the [`TranslationRuleset.post_processing_ruleset`][orbiter.rules.rulesets.PostProcessingRuleset],</span>
+<a id="__codelineno-0-258" name="__codelineno-0-258"></a><span class="sd">        against the [`OrbiterProject`][orbiter.objects.project.OrbiterProject], which can make modifications after all</span>
+<a id="__codelineno-0-259" name="__codelineno-0-259"></a><span class="sd">        other rules have been applied.</span>
+<a id="__codelineno-0-260" name="__codelineno-0-260"></a><span class="sd">    6. After translation - the [`OrbiterProject`][orbiter.objects.project.OrbiterProject]</span>
+<a id="__codelineno-0-261" name="__codelineno-0-261"></a><span class="sd">        is rendered to the output folder.</span>
+<a id="__codelineno-0-262" name="__codelineno-0-262"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-263" name="__codelineno-0-263"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">translation_ruleset</span><span class="p">,</span> <span class="n">TranslationRuleset</span><span class="p">):</span>
+<a id="__codelineno-0-264" name="__codelineno-0-264"></a>        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+<a id="__codelineno-0-265" name="__codelineno-0-265"></a>            <span class="sa">f</span><span class="s2">&quot;Error! type(translation_ruleset)==</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">translation_ruleset</span><span class="p">)</span><span class="si">}</span><span class="s2">!=TranslationRuleset! Exiting!&quot;</span>
+<a id="__codelineno-0-266" name="__codelineno-0-266"></a>        <span class="p">)</span>
+<a id="__codelineno-0-267" name="__codelineno-0-267"></a>
+<a id="__codelineno-0-268" name="__codelineno-0-268"></a>    <span class="c1"># Create an initial OrbiterProject</span>
+<a id="__codelineno-0-269" name="__codelineno-0-269"></a>    <span class="n">project</span> <span class="o">=</span> <span class="n">OrbiterProject</span><span class="p">()</span>
+<a id="__codelineno-0-270" name="__codelineno-0-270"></a>
+<a id="__codelineno-0-271" name="__codelineno-0-271"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">input_dict</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">translation_ruleset</span><span class="o">.</span><span class="n">get_files_with_extension</span><span class="p">(</span><span class="n">input_dir</span><span class="p">)):</span>
+<a id="__codelineno-0-272" name="__codelineno-0-272"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Translating [File </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]=</span><span class="si">{</span><span class="n">file</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-273" name="__codelineno-0-273"></a>
+<a id="__codelineno-0-274" name="__codelineno-0-274"></a>        <span class="c1"># DAG FILTER Ruleset - filter down to keys suspected of being translatable to a DAG, in priority order.</span>
+<a id="__codelineno-0-275" name="__codelineno-0-275"></a>        <span class="c1"># Add __file DAG FILTER inputs and outputs, so it&#39;s available for both DAG and DAG FILTER rules</span>
+<a id="__codelineno-0-276" name="__codelineno-0-276"></a>        <span class="n">__file_addition</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;__file&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">file</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">input_dir</span><span class="p">))}</span>
+<a id="__codelineno-0-277" name="__codelineno-0-277"></a>        <span class="n">dag_dicts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-0-278" name="__codelineno-0-278"></a>            <span class="n">__file_addition</span> <span class="o">|</span> <span class="n">dag_dict</span>
+<a id="__codelineno-0-279" name="__codelineno-0-279"></a>            <span class="k">for</span> <span class="n">dag_dict</span> <span class="ow">in</span> <span class="n">functools</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span>
+<a id="__codelineno-0-280" name="__codelineno-0-280"></a>                <span class="n">add</span><span class="p">,</span>
+<a id="__codelineno-0-281" name="__codelineno-0-281"></a>                <span class="n">translation_ruleset</span><span class="o">.</span><span class="n">dag_filter_ruleset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">val</span><span class="o">=</span><span class="n">input_dict</span> <span class="o">|</span> <span class="n">__file_addition</span><span class="p">),</span>
+<a id="__codelineno-0-282" name="__codelineno-0-282"></a>                <span class="p">[],</span>
+<a id="__codelineno-0-283" name="__codelineno-0-283"></a>            <span class="p">)</span>
+<a id="__codelineno-0-284" name="__codelineno-0-284"></a>        <span class="p">]</span>
+<a id="__codelineno-0-285" name="__codelineno-0-285"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dag_dicts</span><span class="p">)</span><span class="si">}</span><span class="s2"> DAG candidates in </span><span class="si">{</span><span class="n">file</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-286" name="__codelineno-0-286"></a>        <span class="k">for</span> <span class="n">dag_dict</span> <span class="ow">in</span> <span class="n">dag_dicts</span><span class="p">:</span>
+<a id="__codelineno-0-287" name="__codelineno-0-287"></a>            <span class="c1"># DAG Ruleset - convert the object to an `OrbiterDAG` via `dag_ruleset`,</span>
+<a id="__codelineno-0-288" name="__codelineno-0-288"></a>            <span class="c1">#         in priority-order, stopping when the first rule returns a match</span>
+<a id="__codelineno-0-289" name="__codelineno-0-289"></a>            <span class="n">dag</span><span class="p">:</span> <span class="n">OrbiterDAG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">translation_ruleset</span><span class="o">.</span><span class="n">dag_ruleset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+<a id="__codelineno-0-290" name="__codelineno-0-290"></a>                <span class="n">val</span><span class="o">=</span><span class="n">dag_dict</span><span class="p">,</span>
+<a id="__codelineno-0-291" name="__codelineno-0-291"></a>                <span class="n">take_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-292" name="__codelineno-0-292"></a>            <span class="p">)</span>
+<a id="__codelineno-0-293" name="__codelineno-0-293"></a>            <span class="k">if</span> <span class="n">dag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-294" name="__codelineno-0-294"></a>                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+<a id="__codelineno-0-295" name="__codelineno-0-295"></a>                    <span class="sa">f</span><span class="s2">&quot;Couldn&#39;t extract DAG from dag_dict=</span><span class="si">{</span><span class="n">dag_dict</span><span class="si">}</span><span class="s2"> with dag_ruleset=</span><span class="si">{</span><span class="n">translation_ruleset</span><span class="o">.</span><span class="n">dag_ruleset</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-0-296" name="__codelineno-0-296"></a>                <span class="p">)</span>
+<a id="__codelineno-0-297" name="__codelineno-0-297"></a>                <span class="k">continue</span>
+<a id="__codelineno-0-298" name="__codelineno-0-298"></a>            <span class="n">dag</span><span class="o">.</span><span class="n">orbiter_kwargs</span><span class="p">[</span><span class="s2">&quot;file_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">input_dir</span><span class="p">)</span>
+<a id="__codelineno-0-299" name="__codelineno-0-299"></a>
+<a id="__codelineno-0-300" name="__codelineno-0-300"></a>            <span class="n">tasks</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-0-301" name="__codelineno-0-301"></a>            <span class="c1"># TASK FILTER Ruleset - Many entries in dag_dict -&gt; Many task_dict</span>
+<a id="__codelineno-0-302" name="__codelineno-0-302"></a>            <span class="n">task_dicts</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span>
+<a id="__codelineno-0-303" name="__codelineno-0-303"></a>                <span class="n">add</span><span class="p">,</span>
+<a id="__codelineno-0-304" name="__codelineno-0-304"></a>                <span class="n">translation_ruleset</span><span class="o">.</span><span class="n">task_filter_ruleset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">val</span><span class="o">=</span><span class="n">dag_dict</span><span class="p">),</span>
+<a id="__codelineno-0-305" name="__codelineno-0-305"></a>                <span class="p">[],</span>
+<a id="__codelineno-0-306" name="__codelineno-0-306"></a>            <span class="p">)</span>
+<a id="__codelineno-0-307" name="__codelineno-0-307"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">task_dicts</span><span class="p">)</span><span class="si">}</span><span class="s2"> Task candidates in </span><span class="si">{</span><span class="n">dag</span><span class="o">.</span><span class="n">dag_id</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">file</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-308" name="__codelineno-0-308"></a>            <span class="k">for</span> <span class="n">task_dict</span> <span class="ow">in</span> <span class="n">task_dicts</span><span class="p">:</span>
+<a id="__codelineno-0-309" name="__codelineno-0-309"></a>                <span class="c1"># TASK Ruleset one -&gt; one</span>
+<a id="__codelineno-0-310" name="__codelineno-0-310"></a>                <span class="n">task</span><span class="p">:</span> <span class="n">OrbiterOperator</span> <span class="o">=</span> <span class="n">translation_ruleset</span><span class="o">.</span><span class="n">task_ruleset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">val</span><span class="o">=</span><span class="n">task_dict</span><span class="p">,</span> <span class="n">take_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-311" name="__codelineno-0-311"></a>                <span class="k">if</span> <span class="n">task</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-312" name="__codelineno-0-312"></a>                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Couldn&#39;t extract task from expected task_dict=</span><span class="si">{</span><span class="n">task_dict</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-313" name="__codelineno-0-313"></a>                    <span class="k">continue</span>
+<a id="__codelineno-0-314" name="__codelineno-0-314"></a>
+<a id="__codelineno-0-315" name="__codelineno-0-315"></a>                <span class="n">_add_task_deduped</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">tasks</span><span class="p">)</span>
+<a id="__codelineno-0-316" name="__codelineno-0-316"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Adding </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span><span class="si">}</span><span class="s2"> tasks to DAG </span><span class="si">{</span><span class="n">dag</span><span class="o">.</span><span class="n">dag_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-317" name="__codelineno-0-317"></a>            <span class="n">dag</span><span class="o">.</span><span class="n">add_tasks</span><span class="p">(</span><span class="n">tasks</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<a id="__codelineno-0-318" name="__codelineno-0-318"></a>
+<a id="__codelineno-0-319" name="__codelineno-0-319"></a>            <span class="c1"># Dag-Level TASK DEPENDENCY Ruleset</span>
+<a id="__codelineno-0-320" name="__codelineno-0-320"></a>            <span class="n">task_dependencies</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">OrbiterTaskDependency</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-0-321" name="__codelineno-0-321"></a>                <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">translation_ruleset</span><span class="o">.</span><span class="n">task_dependency_ruleset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">val</span><span class="o">=</span><span class="n">dag</span><span class="p">)))</span> <span class="ow">or</span> <span class="p">[]</span>
+<a id="__codelineno-0-322" name="__codelineno-0-322"></a>            <span class="p">)</span>
+<a id="__codelineno-0-323" name="__codelineno-0-323"></a>            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">task_dependencies</span><span class="p">):</span>
+<a id="__codelineno-0-324" name="__codelineno-0-324"></a>                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Couldn&#39;t find task dependencies in dag=</span><span class="si">{</span><span class="n">trim_dict</span><span class="p">(</span><span class="n">dag_dict</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-325" name="__codelineno-0-325"></a>            <span class="k">for</span> <span class="n">task_dependency</span> <span class="ow">in</span> <span class="n">task_dependencies</span><span class="p">:</span>
+<a id="__codelineno-0-326" name="__codelineno-0-326"></a>                <span class="n">task_dependency</span><span class="p">:</span> <span class="n">OrbiterTaskDependency</span>
+<a id="__codelineno-0-327" name="__codelineno-0-327"></a>                <span class="k">if</span> <span class="n">parent</span> <span class="o">:=</span> <span class="n">_get_parent_for_task_dependency</span><span class="p">(</span><span class="n">task_dependency</span><span class="p">,</span> <span class="n">dag</span><span class="p">):</span>
+<a id="__codelineno-0-328" name="__codelineno-0-328"></a>                    <span class="n">parent</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">task_dependency</span><span class="o">.</span><span class="n">task_id</span><span class="p">]</span><span class="o">.</span><span class="n">add_downstream</span><span class="p">(</span><span class="n">task_dependency</span><span class="p">)</span>
+<a id="__codelineno-0-329" name="__codelineno-0-329"></a>                <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-330" name="__codelineno-0-330"></a>                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Couldn&#39;t find task_id=</span><span class="si">{</span><span class="n">task_dependency</span><span class="o">.</span><span class="n">task_id</span><span class="si">}</span><span class="s2"> in tasks for dag_id=</span><span class="si">{</span><span class="n">dag</span><span class="o">.</span><span class="n">dag_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-331" name="__codelineno-0-331"></a>                    <span class="k">continue</span>
+<a id="__codelineno-0-332" name="__codelineno-0-332"></a>
+<a id="__codelineno-0-333" name="__codelineno-0-333"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Adding DAG </span><span class="si">{</span><span class="n">dag</span><span class="o">.</span><span class="n">dag_id</span><span class="si">}</span><span class="s2"> to project&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-334" name="__codelineno-0-334"></a>            <span class="n">project</span><span class="o">.</span><span class="n">add_dags</span><span class="p">(</span><span class="n">dag</span><span class="p">)</span>
+<a id="__codelineno-0-335" name="__codelineno-0-335"></a>
+<a id="__codelineno-0-336" name="__codelineno-0-336"></a>    <span class="c1"># POST PROCESSING Ruleset</span>
+<a id="__codelineno-0-337" name="__codelineno-0-337"></a>    <span class="n">translation_ruleset</span><span class="o">.</span><span class="n">post_processing_ruleset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">val</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">take_first</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-0-338" name="__codelineno-0-338"></a>
+<a id="__codelineno-0-339" name="__codelineno-0-339"></a>    <span class="k">return</span> <span class="n">project</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Apache Airflow® is a trademark of the Apache Software Foundation. Copyright 2024 Astronomer, Inc.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.path", "navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.expand", "toc.follow", "toc.integrate", "content.tabs.link", "content.action.edit", "content.code.copy", "content.code.annotate", "search.share", "search.highlight", "search.suggest"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.88dd0f4e.min.js"></script>
+      
+        <script src="../assets/_markdown_exec_pyodide.js"></script>
+      
+    
+  </body>
+</html>
