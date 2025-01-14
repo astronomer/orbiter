@@ -62,13 +62,15 @@ INPUT_DIR_KWARGS = dict(
         resolve_path=True,
         path_type=Path,
     ),
+    show_default=True,
+    help="Directory containing workflows to translate. Will prompt if not provided",
 )
 RULESET_ARGS = (
     "-r",
     "--ruleset",
 )
 RULESET_KWARGS = dict(
-    help="Fully Qualified name of a TranslationRuleset, will prompt if not given",
+    help="Qualified name of a TranslationRuleset, will prompt if not given",
     type=str,
 )
 
@@ -175,7 +177,7 @@ def import_ruleset(ruleset: str) -> TranslationRuleset:
         (_, translation_ruleset) = import_from_qualname(ruleset)
     except ModuleNotFoundError:
         logger.error(
-            f"Error importing ruleset: {ruleset}!\nEnsure ruleset repository is installed correctly via `orbiter install`!"
+            f"Error importing ruleset: {ruleset}!\nTranslations must already be installed with `orbiter install`!"
         )
         raise click.Abort()
     if not isinstance(translation_ruleset, TranslationRuleset):
@@ -257,7 +259,8 @@ def orbiter():
         path_type=Path,
     ),
     default=Path.cwd() / "output",
-    required=True,
+    show_default=True,
+    help="Directory to write translated workflows to",
 )
 @click.option(*RULESET_ARGS, **RULESET_KWARGS)
 @click.option(
@@ -273,15 +276,13 @@ def translate(
     ruleset: str | None,
     _format: bool,
 ):
-    """Translate workflows in an `INPUT_DIR` to an `OUTPUT_DIR` Airflow Project.
+    """Translate workflows in an `--input-dir` to an `--output-dir` Airflow Project.
+
+    Translations must already be installed with `orbiter install`
 
     Provide a specific ruleset with the `--ruleset` flag, or follow the prompt when given.
 
     Run `orbiter list-rulesets` to see available rulesets.
-
-    `INPUT_DIR` is prompted, if not provided.
-
-    `OUTPUT_DIR` defaults to `$CWD/output`
 
     Formats output with Ruff (https://astral.sh/ruff), by default.
     """
@@ -324,7 +325,7 @@ def translate(
     type=click.File("w", lazy=True),
     default="-",
     show_default=True,
-    help="File to write to, defaults to '-' (stdout)",
+    help="File to write to, defaults to stdout",
 )
 def analyze(
     input_dir: Path | None,
@@ -334,11 +335,9 @@ def analyze(
 ):
     """Analyze workflows in an `INPUT_DIR`
 
-    Provide a specific ruleset with the `--ruleset` flag.
+    Provide a specific ruleset with the `--ruleset` flag, or follow the prompt when given.
 
     Run `orbiter list-rulesets` to see available rulesets.
-
-    `INPUT_DIR` defaults to `$CWD/workflow`.
     """
     if not ruleset:
         ruleset = _prompt_for_ruleset()
@@ -508,13 +507,11 @@ def list_rulesets():
     )
 
 
-@orbiter.command(
-    help="Write Translation module documentation as HTML. Translations must already be installed with `orbiter install`"
-)
+@orbiter.command()
 @click.option(
     *RULESET_ARGS,
     multiple=True,
-    help="Translation module to document (e.g `orbiter_translation.oozie.xml_demo`), can be supplied multiple times. "
+    help="Translation to document (e.g `orbiter_translation.oozie.xml_demo`), can be supplied multiple times. "
     "Will prompt if not supplied.",
 )
 @click.option(
@@ -526,6 +523,7 @@ def list_rulesets():
     show_default=True,
 )
 def document(ruleset: list[str], output_file):
+    """Write Translation documentation as HTML. Translations must already be installed with `orbiter install`"""
     if not ruleset:
         ruleset = _prompt_for_ruleset(multi=True)
 
