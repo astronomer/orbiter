@@ -6,12 +6,12 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Sequence
 
 import requests
 import rich_click as click
 from loguru import logger
-from questionary import Choice, select
+from questionary import Choice, select, path, checkbox, text
 from rich.prompt import Prompt
 from rich.console import Console
 from tabulate import tabulate
@@ -53,29 +53,117 @@ logger.add(
     **(exceptions_off if LOG_LEVEL != "DEBUG" else exceptions_on),
 )
 
-INPUT_DIR_ARGS = ("input-dir",)
+INPUT_DIR_ARGS = ("--input-dir",)
 INPUT_DIR_KWARGS = dict(
     type=click.Path(
-        exists=True,
         dir_okay=True,
         file_okay=False,
         readable=True,
         resolve_path=True,
         path_type=Path,
     ),
-    default=Path.cwd() / "workflow",
-    required=True,
 )
 RULESET_ARGS = (
     "-r",
     "--ruleset",
 )
 RULESET_KWARGS = dict(
-    help="Qualified name of a TranslationRuleset",
+    help="Fully Qualified name of a TranslationRuleset, will prompt if not given",
     type=str,
-    prompt="Ruleset to use? (e.g. orbiter_community_translations.dag_factory.translation_ruleset)",
-    required=True,
 )
+
+
+def _get_rulesets_from_csv(package: str = "orbiter.assets", resource: str = "supported_origins.csv") -> Sequence[list]:
+    return (list(DictReader(pkgutil.get_data(package, resource).decode().splitlines())),)
+
+
+def prompt_for_path() -> str:
+    choice = path(
+        "Please select Input Directory containing workflows to translate (TAB to browse)",
+        only_directories=True,
+    ).ask()
+    if not choice:
+        raise click.Abort()
+    return choice
+
+
+def _prompt_for_ruleset(multi: bool = False) -> str:
+    from prompt_toolkit.formatted_text import FormattedText
+    from prompt_toolkit.styles import Style
+    import string
+
+    style = Style([("origin", "ansiblue bold"), ("repo", "darkgrey"), ("ruleset", "ansimagenta bold underline")])
+
+    def pretty_title(_shortcut_key: str, _origin: str, _repo: str, _ruleset: str) -> FormattedText:
+        return FormattedText(
+            [
+                ("class:text", f"{_shortcut_key}) "),
+                ("class:origin", _origin),
+                ("class:text", f" @ {_repo} - " if _repo else ""),
+                ("class:ruleset", _ruleset),
+            ]
+        )
+
+    ruleset_choices = []
+    # meta = {}
+    last_repo, last_origin = None, None
+    for ruleset in _get_rulesets_from_csv()[0]:
+        # Get the Origin, strip spaces (including special ones)
+        if origin := ruleset.get("Origin", "").strip(" ⠀"):
+            # and set it as the last_origin, to use if future rows skip it
+            last_origin = origin
+
+        if (
+            # Get the Repository, strip spaces (including special ones)
+            (__repo := ruleset.get("Repository").strip(" ⠀"))
+            # filter to just the name, not the link
+            and (repo := (re.search(r"\[?`?([\w.-]+)`?]?", __repo) or [None])[1])  # noqa: F821
+        ):
+            # and set it as the last_repo, to use if future rows skip it
+            last_repo = repo
+
+        if (
+            # Get the ruleset, strip spaces (including special ones)
+            (_ruleset := ruleset.get("Ruleset", "").strip(" ⠀"))
+            # strip any non-word characters
+            and (ruleset := re.sub(r"([^\w.-]+)", "", _ruleset))  # noqa: F821
+            # and skip if it's empty or 'WIP'
+            and ruleset.lower() != "wip"
+        ):
+            shortcut_key = string.ascii_lowercase[len(ruleset_choices)]
+            ruleset_choices.append(
+                Choice(
+                    title=pretty_title(shortcut_key, last_origin, last_repo, ruleset),
+                    shortcut_key=shortcut_key,
+                    value=ruleset,
+                )
+            )
+    if not multi:
+        shortcut_key = string.ascii_lowercase[len(ruleset_choices) + 1]
+        ruleset_choices += [
+            Choice(title=pretty_title(shortcut_key, "Other...", "", ""), shortcut_key=shortcut_key, value="Other...")
+        ]
+    choice = (checkbox if multi else select)(
+        "Please choose a translation ruleset",
+        choices=ruleset_choices,
+        **(
+            dict(
+                use_shortcuts=True,
+                use_jk_keys=False,
+            )
+            if not multi
+            else {}
+        ),
+        style=style,
+    ).ask()
+    if choice == "Other...":
+        choice = text(
+            "Please enter the fully qualified name "
+            "(e.g. orbiter_community_translations.dag_factory.translation_ruleset) of the ruleset:"
+        ).ask()
+    if not choice:
+        raise click.Abort()
+    return choice
 
 
 def import_ruleset(ruleset: str) -> TranslationRuleset:
@@ -83,7 +171,13 @@ def import_ruleset(ruleset: str) -> TranslationRuleset:
         _add_pyz()
 
     logger.debug(f"Importing ruleset: {ruleset}")
-    (_, translation_ruleset) = import_from_qualname(ruleset)
+    try:
+        (_, translation_ruleset) = import_from_qualname(ruleset)
+    except ModuleNotFoundError:
+        logger.error(
+            f"Error importing ruleset: {ruleset}!\nEnsure ruleset repository is installed correctly via `orbiter install`!"
+        )
+        raise click.Abort()
     if not isinstance(translation_ruleset, TranslationRuleset):
         raise RuntimeError(f"translation_ruleset={translation_ruleset} is not a TranslationRuleset")
     return translation_ruleset
@@ -152,9 +246,9 @@ def orbiter():
 
 
 @orbiter.command()
-@click.argument(*INPUT_DIR_ARGS, **INPUT_DIR_KWARGS)
-@click.argument(
-    "output-dir",
+@click.option(*INPUT_DIR_ARGS, **INPUT_DIR_KWARGS)
+@click.option(
+    "--output-dir",
     type=click.Path(
         dir_okay=True,
         file_okay=False,
@@ -174,27 +268,34 @@ def orbiter():
     show_default=True,
 )
 def translate(
-    input_dir: Path,
+    input_dir: Path | None,
     output_dir: Path,
     ruleset: str | None,
     _format: bool,
 ):
     """Translate workflows in an `INPUT_DIR` to an `OUTPUT_DIR` Airflow Project.
 
-    Provide a specific ruleset with the `--ruleset` flag.
+    Provide a specific ruleset with the `--ruleset` flag, or follow the prompt when given.
 
     Run `orbiter list-rulesets` to see available rulesets.
 
-    `INPUT_DIR` defaults to `$CWD/workflow`.
+    `INPUT_DIR` is prompted, if not provided.
 
     `OUTPUT_DIR` defaults to `$CWD/output`
 
     Formats output with Ruff (https://astral.sh/ruff), by default.
     """
+    if not ruleset:
+        ruleset = _prompt_for_ruleset()
+
+    if not input_dir:
+        input_dir = Path(prompt_for_path())
+
+    translation_ruleset = import_ruleset(ruleset)
+
     logger.debug(f"Creating output directory {output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    translation_ruleset = import_ruleset(ruleset)
     try:
         translation_ruleset.translate_fn(translation_ruleset=translation_ruleset, input_dir=input_dir).render(
             output_dir
@@ -207,7 +308,7 @@ def translate(
 
 
 @orbiter.command()
-@click.argument(*INPUT_DIR_ARGS, **INPUT_DIR_KWARGS)
+@click.option(*INPUT_DIR_ARGS, **INPUT_DIR_KWARGS)
 @click.option(*RULESET_ARGS, **RULESET_KWARGS)
 @click.option(
     "--format",
@@ -226,7 +327,7 @@ def translate(
     help="File to write to, defaults to '-' (stdout)",
 )
 def analyze(
-    input_dir: Path,
+    input_dir: Path | None,
     ruleset: str | None,
     _format: Literal["json", "csv", "md"],
     output_file: Path | None,
@@ -239,9 +340,16 @@ def analyze(
 
     `INPUT_DIR` defaults to `$CWD/workflow`.
     """
+    if not ruleset:
+        ruleset = _prompt_for_ruleset()
+
+    if not input_dir:
+        input_dir = Path(prompt_for_path())
+
+    translation_ruleset = import_ruleset(ruleset)
+
     if isinstance(output_file, Path):
         output_file = output_file.open("w", newline="")
-    translation_ruleset = import_ruleset(ruleset)
     try:
         translation_ruleset.translate_fn(translation_ruleset=translation_ruleset, input_dir=input_dir).analyze(
             _format, output_file
@@ -385,7 +493,7 @@ def list_rulesets():
     console = Console()
 
     table = tabulate(
-        list(DictReader(pkgutil.get_data("orbiter.assets", "supported_origins.csv").decode().splitlines())),
+        _get_rulesets_from_csv(),
         headers="keys",
         tablefmt="pipe",
         # https://github.com/Textualize/rich/issues/3027
@@ -406,9 +514,8 @@ def list_rulesets():
 @click.option(
     *RULESET_ARGS,
     multiple=True,
-    required=True,
-    prompt="Translation module to document? (e.g. `orbiter_translation.oozie.xml_demo`)",
-    help="Translation module to document (e.g `orbiter_translation.oozie.xml_demo`), can be supplied multiple times",
+    help="Translation module to document (e.g `orbiter_translation.oozie.xml_demo`), can be supplied multiple times. "
+    "Will prompt if not supplied.",
 )
 @click.option(
     "--output-file",
@@ -419,6 +526,9 @@ def list_rulesets():
     show_default=True,
 )
 def document(ruleset: list[str], output_file):
+    if not ruleset:
+        ruleset = _prompt_for_ruleset(multi=True)
+
     from mkdocs.commands import build
     from mkdocs.config.defaults import MkDocsConfig
     import tempfile
