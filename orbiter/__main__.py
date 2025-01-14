@@ -333,7 +333,7 @@ def analyze(
     _format: Literal["json", "csv", "md"],
     output_file: Path | None,
 ):
-    """Analyze workflows in an `INPUT_DIR`
+    """Analyze workflows in an `--input-dir` against a `--ruleset` and write analysis to an `--output-file`.
 
     Provide a specific ruleset with the `--ruleset` flag, or follow the prompt when given.
 
@@ -487,8 +487,12 @@ def install(
 
 
 # noinspection PyShadowingBuiltins
-@orbiter.command(help="List available Translation Rulesets")
+@orbiter.command()
 def list_rulesets():
+    """List available Translation Rulesets.
+
+    More info available in our docs: https://astronomer.github.io/orbiter/origins/#supported-origins.
+    """
     console = Console()
 
     table = tabulate(
