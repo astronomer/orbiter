@@ -75,8 +75,8 @@ RULESET_KWARGS = dict(
 )
 
 
-def _get_rulesets_from_csv(package: str = "orbiter.assets", resource: str = "supported_origins.csv") -> Sequence[list]:
-    return (list(DictReader(pkgutil.get_data(package, resource).decode().splitlines())),)
+def _get_rulesets_from_csv(package: str = "orbiter.assets", resource: str = "supported_origins.csv") -> Sequence[dict]:
+    return list(DictReader(pkgutil.get_data(package, resource).decode().splitlines()))
 
 
 def prompt_for_path() -> str:
@@ -109,7 +109,7 @@ def _prompt_for_ruleset(multi: bool = False) -> str:
     ruleset_choices = []
     # meta = {}
     last_repo, last_origin = None, None
-    for ruleset in _get_rulesets_from_csv()[0]:
+    for ruleset in _get_rulesets_from_csv():
         # Get the Origin, strip spaces (including special ones)
         if origin := ruleset.get("Origin", "").strip(" ⠀"):
             # and set it as the last_origin, to use if future rows skip it
@@ -160,8 +160,8 @@ def _prompt_for_ruleset(multi: bool = False) -> str:
     ).ask()
     if choice == "Other...":
         choice = text(
-            "Please enter the fully qualified name "
-            "(e.g. orbiter_community_translations.dag_factory.translation_ruleset) of the ruleset:"
+            "Please enter the fully qualified name of the ruleset "
+            "(e.g. orbiter_translations.dag_factory.yaml_base.translation_ruleset):"
         ).ask()
     if not choice:
         raise click.Abort()
