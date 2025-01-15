@@ -36,7 +36,7 @@ are available for download on the [Releases](https://github.com/astronomer/orbit
 Utilize the [`orbiter` CLI](./cli.md) with existing translations to convert workflows
 from other systems to an Airflow project.
 
-1. Set up a new folder, and create a `workflow/` folder. Add your workflows files to it
+1. **Set up a new  `workflow/` folder. Add your workflows files to it**
     ```shell
     .
     └── workflow/
@@ -44,24 +44,17 @@ from other systems to an Airflow project.
         ├── workflow_b.json
         └── ...
     ```
-2. Determine the specific translation ruleset via:
+2. Determine the specific translation ruleset and repository via:
     1. the [Origins](./origins.md) documentation
     2. the [`orbiter list-rulesets`](./cli.md#list-rulesets) command
     3. or [by creating a translation ruleset](#authoring-rulesets-customization), if one does not exist
-3. Install the translation ruleset via the [`orbiter install`](./cli.md#install) command (substituting `<REPOSITORY>` with the value in the last step)
-    ```shell
-    orbiter install --repo=<REPOSITORY>
-    ```
-4. Use the [`orbiter translate`](./cli.md#translate) command with the `<RULESET>` determined in the last step
-   This will produce output to an `output/` folder:
-    ```shell
-    orbiter translate workflow/ --ruleset <RULESET> output/
-    ```
-5. Review the contents of the `output/` folder. If extensions or customizations are required, review
-    [how to extend a translation ruleset](#extend-or-customize)
-6. (optional) Utilize the [`astro` CLI](https://www.astronomer.io/docs/astro/cli/overview)
-    to run Airflow instance with your migrated workloads
-7. (optional) Deploy to [Astro](https://www.astronomer.io/try-astro/) to run your translated workflows in production! 🚀
+3. **Install the translation ruleset** via the [`orbiter install`](./cli.md#install) command
+4. **Translate workloads** via the [`orbiter translate`](./cli.md#translate) command
+5. **Review** the contents of the output folder (default: `output/`).
+  If extensions or customizations are required, review [how to extend a translation ruleset](#extend-or-customize)
+6. (optional) **Initialize** a full Airflow project
+   containing your migrated workloads with the [`astro` CLI](https://www.astronomer.io/docs/astro/cli/overview)
+7. (optional) **Deploy** to [Astro](https://www.astronomer.io/try-astro/) to run your translated workflows in production! 🚀
 
 ## Authoring Rulesets & Customization
 Orbiter can be extended to fit specific needs, patterns, or to support additional origins.
@@ -95,9 +88,9 @@ To extend or customize an existing ruleset, you can easily modify it with simple
     7. Append the new [Rule](./Rules_and_Rulesets/index.md)
        to the [`translation_ruleset`](./Rules_and_Rulesets/rulesets.md#orbiter.rules.rulesets.TranslationRuleset)
 
-4. Invoke the `orbiter` CLI, pointing it at your customized ruleset, and writing output to an `output/` folder:
+4. Invoke the [`orbiter translate`](./cli.md#translate) command, pointing it at your customized ruleset
     ```shell
-    orbiter translate workflow/ output/ --ruleset override.translation_ruleset
+    orbiter translate --ruleset override.translation_ruleset
     ```
 5. Follow the remaining steps of the [Translate](#translate) instructions
 

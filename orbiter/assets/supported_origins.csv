@@ -1,15 +1,21 @@
 Origin,Maintainer,Repository,Ruleset,DAG Equivalent,Task Equivalent
-DAG Factory,Community,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.dag_factory.yaml_base.translation_ruleset`,DAG,Task
-Control M,Astronomer,`astronomer-orbiter-translations`,`orbiter_translations.control_m.xml_base.translation_ruleset`,Folder,Job
+Argo,Astronomer,`orbiter-community-translations`,WIP,Workflow,Step
+Automic,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.automic.xml_demo.translation_ruleset`,Workflow,Job
+Autosys,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.autosys.jil_demo.translation_ruleset`,Job (or Box),Job⠀
+⠀,⠀,`astronomer-orbiter-translations`,`orbiter_translations.autosys.jil_base.translation_ruleset`,⠀,⠀
+cron,Community,`orbiter-community-translations`,WIP,Job,Command
+Control M,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.control_m.xml_demo.translation_ruleset`,Folder,Job
+⠀,⠀,`astronomer-orbiter-translations`,`orbiter_translations.control_m.xml_base.translation_ruleset`,⠀,⠀
 ⠀,⠀,⠀,`orbiter_translations.control_m.json_base.translation_ruleset`,⠀,⠀
 ⠀,⠀,⠀,`orbiter_translations.control_m.json_ssh.translation_ruleset`,⠀,⠀
-⠀,⠀,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.control_m.xml_demo.translation_ruleset`,⠀,⠀
-Automic,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.automic.xml_demo.translation_ruleset`,Workflow,Job
-Autosys,Astronomer,`astronomer-orbiter-translations`,`orbiter_translations.autosys.jil_base.translation_ruleset`,Job (or Box),Job⠀
-⠀,⠀,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.autosys.jil_demo.translation_ruleset`,⠀,⠀
+DataStage,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.datastage.xml_demo.translation_ruleset`,Job,Stage
+DAG Factory,Community,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.dag_factory.yaml_base.translation_ruleset`,DAG,Task
+ESP,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.esp.txt_demo.translation_ruleset`,Procedure (or Application),Job
+Github Actions,Astronomer,`orbiter-community-translations`,WIP,Workflow,Task
+JAMS,Astronomer,`orbiter-community-translations`,WIP,Sequence,Job
 Jenkins,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.jenkins.json_demo.translation_ruleset`,Pipeline,Stage
-JAMS,Astronomer,`astronomer-orbiter-translations`,WIP,Sequence,Job
-SSIS,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.ssis.xml_demo.translation_ruleset`,Pipeline,Component
 Oozie,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.oozie.xml_demo.translation_ruleset`,Workflow,Node
 ⠀,Astronomer,`astronomer-orbiter-translations`,`orbiter_translations.oozie.xml_base.translation_ruleset`,⠀,⠀
+SSIS,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.ssis.xml_demo.translation_ruleset`,Workflow,Task
+Talend,Astronomer,`orbiter-community-translations`,WIP,Job,Component
 **& more!**,⠀,⠀,⠀,⠀,⠀
