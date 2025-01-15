@@ -79,14 +79,15 @@ def _get_rulesets_from_csv(package: str = "orbiter.assets", resource: str = "sup
     return list(DictReader(pkgutil.get_data(package, resource).decode().splitlines()))
 
 
-def prompt_for_path() -> str:
+def _prompt_for_path() -> Path:
     choice = path(
         "Please select Input Directory containing workflows to translate (TAB to browse)",
         only_directories=True,
+        default="workflow",
     ).ask()
     if not choice:
         raise click.Abort()
-    return choice
+    return Path(choice).expanduser().resolve()
 
 
 def _prompt_for_ruleset(multi: bool = False) -> str:
@@ -290,7 +291,7 @@ def translate(
         ruleset = _prompt_for_ruleset()
 
     if not input_dir:
-        input_dir = Path(prompt_for_path())
+        input_dir = _prompt_for_path()
 
     translation_ruleset = import_ruleset(ruleset)
 
@@ -343,7 +344,7 @@ def analyze(
         ruleset = _prompt_for_ruleset()
 
     if not input_dir:
-        input_dir = Path(prompt_for_path())
+        input_dir = _prompt_for_path()
 
     translation_ruleset = import_ruleset(ruleset)
 
