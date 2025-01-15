@@ -63,14 +63,14 @@ INPUT_DIR_KWARGS = dict(
         path_type=Path,
     ),
     show_default=True,
-    help="Directory containing workflows to translate. Will prompt if not provided",
+    help="Directory containing workflows to translate. Will prompt, if not given.",
 )
 RULESET_ARGS = (
     "-r",
     "--ruleset",
 )
 RULESET_KWARGS = dict(
-    help="Qualified name of a TranslationRuleset, will prompt if not given",
+    help="Qualified name of a TranslationRuleset. Will prompt, if not given.",
     type=str,
 )
 
@@ -338,6 +338,8 @@ def analyze(
 
     Provide a specific ruleset with the `--ruleset` flag, or follow the prompt when given.
 
+    Translations must already be installed with `orbiter install`.
+
     Run `orbiter list-rulesets` to see available rulesets.
     """
     if not ruleset:
@@ -444,7 +446,7 @@ def _bin_install(repo: str, key: str):
     required=False,
     allow_from_autoenv=True,
     show_envvar=True,
-    help="Choose a repository to install (will prompt, if not given)",
+    help="Choose a repository to install. Will prompt, if not given.",
 )
 @click.option(
     "-k",
@@ -460,7 +462,10 @@ def install(
     repo: (Literal["astronomer-orbiter-translations", "orbiter-community-translations"] | None),
     key: str | None,
 ):
-    """Install a new Translation Ruleset from a repository"""
+    """Install a new Translation Ruleset from a repository.
+
+    Run `orbiter list-rulesets` to see available rulesets.
+    """
     if not repo:
         choices = [
             "astronomer-orbiter-translations",
@@ -516,8 +521,9 @@ def list_rulesets():
 @click.option(
     *RULESET_ARGS,
     multiple=True,
-    help="Translation to document (e.g `orbiter_translation.oozie.xml_demo`), can be supplied multiple times. "
-    "Will prompt if not supplied.",
+    help="Translation module to document (e.g `orbiter_translation.oozie.xml_demo`), can be supplied multiple times. "
+    "Note: do not include `.translation_ruleset` at the end, to document the full module. "
+    "Will prompt, if not given.",
 )
 @click.option(
     "--output-file",
@@ -528,7 +534,11 @@ def list_rulesets():
     show_default=True,
 )
 def document(ruleset: list[str], output_file):
-    """Write Translation documentation as HTML. Translations must already be installed with `orbiter install`"""
+    """Write Translation documentation as HTML.
+
+    Translations must already be installed with `orbiter install`.
+
+    Run `orbiter list-rulesets` to see available rulesets."""
     if not ruleset:
         ruleset = _prompt_for_ruleset(multi=True)
 
