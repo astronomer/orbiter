@@ -121,13 +121,11 @@ class OrbiterDecoratedPythonOperator(OrbiterPythonOperator):
     ]
 
     def _to_ast(self) -> ast.stmt:
-        if isinstance(self.python_callable, Callable):
-            return py_function(
-                self.python_callable,
-                decorator_names=["task"],
-                decorator_kwargs=[{}],
-            )
-        return super()._to_ast()
+        return py_function(
+            self.python_callable,
+            decorator_names=["task"],
+            decorator_kwargs=[{}],
+        )
 
 
 if __name__ == "__main__":
