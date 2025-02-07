@@ -110,8 +110,6 @@ class OrbiterDecoratedPythonOperator(OrbiterPythonOperator):
     Parameters as per [`OrbiterPythonOperator`][orbiter.objects.operators.python.OrbiterPythonOperator]
     """
 
-    __mermaid__ = OrbiterPythonOperator.__mermaid__
-
     imports: ImportList = [
         OrbiterRequirement(
             package="apache-airflow",
