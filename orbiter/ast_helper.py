@@ -119,14 +119,32 @@ def py_with(item: ast.expr, body: List[ast.stmt], assignment: str | None = None)
     )
 
 
-def py_function(c: Callable):
+def py_function(c: Callable | str, decorator_names: List[str] = None, decorator_kwargs: List[dict] = None):
     """
+    ```pycon
     >>> def foo(a, b):
     ...     print(a + b)
     >>> render_ast(py_function(foo))
     'def foo(a, b):\\n    print(a + b)'
+
+    >>> render_ast(py_function(foo, decorator_names=["foo"], decorator_kwargs=[{"bar": "baz"}]))
+    "@foo(bar='baz')\\ndef foo(a, b):\\n    print(a + b)"
+
+    ```
     """
-    return ast.parse(inspect.getsource(c)).body[0]
+    fn = ast.parse(inspect.getsource(c) if isinstance(c, Callable) else c).body[0]
+    if decorator_names and decorator_kwargs:
+        fn.decorator_list = [
+            ast.Call(
+                func=ast.Name(id=decorator_name),
+                args=[],
+                keywords=[
+                    ast.keyword(arg=arg, value=ast.Constant(value=value)) for arg, value in decorator_kwarg.items()
+                ],
+            )
+            for decorator_name, decorator_kwarg in zip(decorator_names or [], decorator_kwargs or [])
+        ]
+    return fn
 
 
 def py_reference(name: str) -> ast.Expr:
@@ -166,3 +184,9 @@ class OrbiterASTBase(ABC):
 
     def __hash__(self):
         return hash(str(self))
+
+
+if __name__ == "main":
+    import doctest
+
+    doctest.testmod()

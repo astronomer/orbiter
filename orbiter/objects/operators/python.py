@@ -1,14 +1,18 @@
 from __future__ import annotations
+
+import ast
 from typing import Callable
 
 from orbiter.ast_helper import py_function
 from orbiter.objects import ImportList
 from orbiter.objects.requirement import OrbiterRequirement
-from orbiter.objects.task import OrbiterOperator, RenderAttributes
+from orbiter.objects.task import OrbiterOperator
+from orbiter.objects.task import RenderAttributes
 
 __mermaid__ = """
 --8<-- [start:mermaid-relationships]
 OrbiterOperator "implements" <|-- OrbiterPythonOperator
+OrbiterPythonOperator "implements" <|-- OrbiterDecoratedPythonOperator
 --8<-- [end:mermaid-relationships]
 """
 
@@ -86,6 +90,40 @@ class OrbiterPythonOperator(OrbiterOperator):
         if isinstance(self.python_callable, Callable):
             return [py_function(self.python_callable), super()._to_ast()]
         return super()._to_ast()
+
+
+class OrbiterDecoratedPythonOperator(OrbiterPythonOperator):
+    """
+    An Airflow
+    [TaskFlow @task](https://airflow.apache.org/docs/apache-airflow/stable/tutorial/taskflow.html).
+    Used to execute any Python Function.
+
+    ```pycon
+    >>> def foo(a, b):
+    ...    print(a + b)
+    >>> OrbiterDecoratedPythonOperator(task_id="foo", python_callable=foo)
+    @task()
+    def foo(a, b):
+        print(a + b)
+
+    ```
+    Parameters as per [`OrbiterPythonOperator`][orbiter.objects.operators.python.OrbiterPythonOperator]
+    """
+
+    imports: ImportList = [
+        OrbiterRequirement(
+            package="apache-airflow",
+            module="airflow.decorators",
+            names=["task"],
+        )
+    ]
+
+    def _to_ast(self) -> ast.stmt:
+        return py_function(
+            self.python_callable,
+            decorator_names=["task"],
+            decorator_kwargs=[{}],
+        )
 
 
 if __name__ == "__main__":
