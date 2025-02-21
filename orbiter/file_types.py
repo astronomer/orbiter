@@ -134,7 +134,7 @@ def xmltodict_parse(input_str: str) -> Any:
                         _fix(v)
                     else:
                         _fix(v)
-                if isinstance(v, str) and (v.startswith("<?xml") or v.startswith("<?XML")):
+                if isinstance(v, str) and (any(v.startswith(i) for i in ("<?xml", "<?XML")) or ("xmlns:" in v)):
                     d[k] = _fix_escaped_xml(v)
         # if it's a list, descend to fix
         if isinstance(d, list):
