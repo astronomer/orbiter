@@ -14,6 +14,7 @@ from pydantic import (
 from pydantic.v1 import validator
 
 from jilutil.jil_parser import JilParser
+from ast2json import str2json
 
 
 class FileType(BaseModel, ABC, arbitrary_types_allowed=True):
@@ -208,8 +209,8 @@ class FileTypeYAML(FileType):
     dump_fn: ClassVar[Callable[[dict], str]] = yaml.safe_dump
 
 
-def dump_jil(_: dict) -> str:
-    raise NotImplementedError("JIL dumping is not implemented yet.")
+def unimplemented_dump(_: dict) -> str:
+    raise NotImplementedError("Dumping is not implemented yet.")
 
 
 class FileTypeJIL(FileType):
@@ -219,13 +220,29 @@ class FileTypeJIL(FileType):
     :type extension: Set[str]
     :param load_fn: custom JIL loading function
     :type load_fn: Callable[[str], dict]
-    :param dump_fn: custom JIL dumping function
+    :param dump_fn: JIL dumping function not yet implemented, raises an error
     :type dump_fn: Callable[[dict], str]
     """
 
     extension: ClassVar[Set[str]] = {"JIL"}
     load_fn: ClassVar[Callable[[str], dict]] = JilParser(None).parse_jobs_from_str
-    dump_fn: ClassVar[Callable[[dict], str]] = dump_jil
+    dump_fn: ClassVar[Callable[[dict], str]] = unimplemented_dump
+
+
+class FileTypePython(FileType):
+    """Python File Type
+
+    :param extension: PY
+    :type extension: Set[str]
+    :param load_fn: Python AST loading function (via `ast2json`)
+    :type load_fn: Callable[[str], dict]
+    :param dump_fn: Python dumping function not yet implemented, raises an error
+    :type dump_fn: Callable[[dict], str]
+    """
+
+    extension: ClassVar[Set[str]] = {"PY"}
+    load_fn: ClassVar[Callable[[str], dict]] = str2json
+    dump_fn: ClassVar[Callable[[dict], str]] = unimplemented_dump
 
 
 if __name__ == "__main__":
