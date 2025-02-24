@@ -103,6 +103,18 @@ def xmltodict_parse(input_str: str) -> Any:
     {'a': [{'@foo': 'bar', 'foo': [{'@bar': 'baz'}, {'@bing': 'bop'}]}]}
     >>> xmltodict_parse("<a>&lt;?xml version=&apos;1.0&apos; encoding=&apos;UTF-16&apos;?&gt;&lt;Properties version=&apos;1.1&apos;&gt;&lt;/Properties&gt;</a>")
     {'a': {'Properties': [{'@version': '1.1'}]}}
+    >>> xmltodict_parse('''<Source>&lt;Activity mc:Ignorable="sap sap2010 sads"
+    ...   x:Class="Activity" sap2010:WorkflowViewState.IdRef="Activity_1"
+    ...   xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+    ...   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+    ...     &lt;TextExpression.NamespacesForImplementation&gt;
+    ...       &lt;sco:Collection x:TypeArguments="x:String"&gt;
+    ...         &lt;x:String&gt;System&lt;/x:String&gt;
+    ...       &lt;/sco:Collection&gt;
+    ...     &lt;/TextExpression.NamespacesForImplementation&gt;
+    ... &lt;/Activity&gt;</Source>
+    ... ''')  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    {'Source': {'Activity': [{'@mc:Ignorable': 'sap sap2010 sads',... 'TextExpression.NamespacesForImplementation': [{'sco:Collection': [{...}]}]}]}}
 
     ```
     :param input_str: The XML string to parse
@@ -134,7 +146,7 @@ def xmltodict_parse(input_str: str) -> Any:
                         _fix(v)
                     else:
                         _fix(v)
-                if isinstance(v, str) and (v.startswith("<?xml") or v.startswith("<?XML")):
+                if isinstance(v, str) and (any(v.startswith(i) for i in ("<?xml", "<?XML")) or ("xmlns:" in v)):
                     d[k] = _fix_escaped_xml(v)
         # if it's a list, descend to fix
         if isinstance(d, list):
