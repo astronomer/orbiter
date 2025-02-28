@@ -177,10 +177,15 @@ def import_ruleset(ruleset: str) -> TranslationRuleset:
     try:
         (_, translation_ruleset) = import_from_qualname(ruleset)
     except ModuleNotFoundError:
-        logger.error(
-            f"Error importing ruleset: {ruleset}!\nTranslations must already be installed with `orbiter install`!"
-        )
-        raise click.Abort()
+        try:
+            logger.debug("ModuleNotFound error! Adding current directory to sys.path and trying again")
+            sys.path.append(".")
+            (_, translation_ruleset) = import_from_qualname(ruleset)
+        except ModuleNotFoundError:
+            logger.error(
+                f"Error importing ruleset: {ruleset}!\nTranslations must already be installed with `orbiter install`!"
+            )
+            raise click.Abort()
     if not isinstance(translation_ruleset, TranslationRuleset):
         raise RuntimeError(f"translation_ruleset={translation_ruleset} is not a TranslationRuleset")
     return translation_ruleset
