@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import re
+import sys
+from pathlib import Path
 from typing import Any, Tuple
 
-__version__ = "1.5.4"
+from loguru import logger
+
+__version__ = "1.5.5"
 
 version = __version__
 
@@ -38,6 +42,26 @@ def clean_value(s: str):
     s = re.sub("[^A-Za-z0-9_.]", "", s)  # remove anything that isn't alphanum or _ or .
     s = re.sub(r"^(\d)", r"n\1", s)  # prefix a number at the start with an "n"
     return s
+
+
+def insert_cwd_to_sys_path():
+    """Insert the current directory to `sys.path`, if it is not already there.
+
+    This is used for finding translation rulesets locally (or as a `.pyz`, locally)
+
+    ```pycon
+    >>>  # setup - del from sys.path if it's there
+    ... path = str(Path.cwd()); sys.path = [p for p in sys.path if p != path]
+    >>> path in sys.path
+    False
+    >>> insert_cwd_to_sys_path()
+    >>> path in sys.path
+    True
+    """
+    cwd = Path.cwd()
+    logger.debug(f"Adding current directory {cwd} to sys.path")
+    if str(cwd) not in sys.path:
+        sys.path.insert(0, str(cwd))
 
 
 def import_from_qualname(qualname) -> Tuple[str, Any]:
