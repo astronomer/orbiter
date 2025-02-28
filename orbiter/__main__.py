@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 import re
 import subprocess
 import sys
@@ -20,7 +19,7 @@ from rich.markdown import Markdown
 import pkgutil
 from urllib.request import urlretrieve
 
-from orbiter import import_from_qualname
+from orbiter import import_from_qualname, insert_cwd_to_sys_path
 from orbiter.config import (
     RUNNING_AS_BINARY,
     KG_ACCOUNT_ID,
@@ -174,18 +173,14 @@ def import_ruleset(ruleset: str) -> TranslationRuleset:
         _add_pyz()
 
     logger.debug(f"Importing ruleset: {ruleset}")
+    insert_cwd_to_sys_path()
     try:
         (_, translation_ruleset) = import_from_qualname(ruleset)
     except ModuleNotFoundError:
-        try:
-            logger.debug("ModuleNotFound error! Adding current directory to sys.path and trying again")
-            sys.path.append(".")
-            (_, translation_ruleset) = import_from_qualname(ruleset)
-        except ModuleNotFoundError:
-            logger.error(
-                f"Error importing ruleset: {ruleset}!\nTranslations must already be installed with `orbiter install`!"
-            )
-            raise click.Abort()
+        logger.error(
+            f"Error importing ruleset: {ruleset}!\nTranslations must already be installed with `orbiter install`!"
+        )
+        raise click.Abort()
     if not isinstance(translation_ruleset, TranslationRuleset):
         raise RuntimeError(f"translation_ruleset={translation_ruleset} is not a TranslationRuleset")
     return translation_ruleset
@@ -421,9 +416,7 @@ def _get_gh_pyz(
 
 
 def _add_pyz():
-    logger.debug(f"Adding current directory {os.getcwd()} to sys.path")
-    sys.path.insert(0, os.getcwd())
-
+    insert_cwd_to_sys_path()
     local_pyz = [str(_path.resolve()) for _path in Path(".").iterdir() if _path.suffix == ".pyz"]
     logger.debug(f"Adding local .pyz files {local_pyz} to sys.path")
     sys.path += local_pyz
