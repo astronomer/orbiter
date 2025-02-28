@@ -50,7 +50,9 @@ def insert_cwd_to_sys_path():
     This is used for finding translation rulesets locally (or as a `.pyz`, locally)
 
     ```pycon
-    >>> (path := str(Path.cwd())) in sys.path
+    >>>  # setup - del from sys.path if it's there
+    ... path = str(Path.cwd()); sys.path = [p for p in sys.path if p != path]
+    >>> path in sys.path
     False
     >>> insert_cwd_to_sys_path()
     >>> path in sys.path
