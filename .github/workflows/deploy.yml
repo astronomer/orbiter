@@ -99,7 +99,7 @@ jobs:
       - uses: docker/build-push-action@v6.15.0
         id: push
         with:
-          build-args: [ 'ORBITER_BINARY=*/orbiter-ubuntu-*' ]
+          build-args: 'ORBITER_BINARY=*/orbiter-ubuntu-*'
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
