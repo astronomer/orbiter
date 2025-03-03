@@ -5,9 +5,11 @@ LABEL org.opencontainers.image.description="Orbiter can land legacy workloads sa
 LABEL org.opencontainers.image.license="Apache-2.0"
 LABEL org.opencontainers.image.title="Orbiter"
 
+ARG ORBITER_BINARY=./orbiter-linux-x86_64
+
 WORKDIR /app
 
-COPY ./orbiter-linux-x86_64 orbiter
+COPY ${ORBITER_BINARY_PATH} orbiter
 RUN chmod +x ./orbiter
 ENTRYPOINT ["./orbiter"]
 CMD ["--help"]
