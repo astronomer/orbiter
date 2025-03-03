@@ -20,5 +20,5 @@ Oozie,Astronomer,[`orbiter-community-translations`](https://github.com/astronome
 ⠀,Astronomer,`astronomer-orbiter-translations`,`orbiter_translations.oozie.xml_base.translation_ruleset`,⠀,⠀
 SSIS,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.ssis.xml_demo.translation_ruleset`,Workflow,Task
 Talend,Astronomer,`orbiter-community-translations`,WIP,Job,Component
-Tidal,Astronomer,`orbiter-community-translations`,WIP,Job Group,Job
+Tidal,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.tidal.xml_demo.translation_ruleset`,Job Group,Job
 **& more!**,⠀,⠀,⠀,⠀,⠀
