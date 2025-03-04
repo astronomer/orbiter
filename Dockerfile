@@ -6,8 +6,8 @@ LABEL org.opencontainers.image.description="Orbiter can land legacy workloads sa
 
 WORKDIR /app
 
-COPY astronomer_orbiter-*.whl astronomer_orbiter.whl
-RUN ls -R && pip install ./astronomer_orbiter.whl
+COPY astronomer_orbiter-*-py3-none-any.whl .
+RUN ls -R && pip install ./astronomer_orbiter-*-py3-none-any.whl
 
 ENTRYPOINT ["orbiter"]
 CMD ["--help"]
