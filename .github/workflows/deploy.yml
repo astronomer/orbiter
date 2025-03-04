@@ -99,5 +99,6 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
+          build-args: "ORBITER_WHEEL=astronomer_orbiter-*-py3-none-any.whl"
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
