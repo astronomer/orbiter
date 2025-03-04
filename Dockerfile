@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1
-FROM debian:stable-slim
+FROM python:3.12-slim
+
 LABEL maintainer="Astronomer <humans@astronomer.io>"
 LABEL org.opencontainers.image.description="Orbiter can land legacy workloads safely down in a new home on Apache Airflow!"
 
-ARG ORBITER_BINARY=./orbiter-linux-x86_64
-
 WORKDIR /app
 
-COPY ${ORBITER_BINARY} orbiter
-RUN chmod +x ./orbiter
-ENTRYPOINT ["./orbiter"]
+COPY dist/astronomer_orbiter-*-py3-none-any.whl .
+RUN pip install ./astronomer_orbiter-*.whl
+
+ENTRYPOINT ["orbiter"]
 CMD ["--help"]

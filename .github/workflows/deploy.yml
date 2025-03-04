@@ -83,8 +83,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          pattern: binary-ubuntu-*
-      - run: ls -R
+          name: dist
       - uses: docker/login-action@v3.3.0
         with:
           registry: ${{ env.REGISTRY }}
@@ -97,9 +96,7 @@ jobs:
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
       - uses: docker/build-push-action@v6.15.0
-        id: push
         with:
-          build-args: ORBITER_BINARY='*/orbiter-ubuntu-*'
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
