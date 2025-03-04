@@ -85,6 +85,7 @@ build-binary: clean
     orbiter/__main__.py
   cp dist/astronomer-orbiter orbiter-$(uname -s | awk '{print tolower($0)}' )-$(uname -m)
 
+# Build the binary, using docker (for integration testing)
 docker-build-binary:
     #!/usr/bin/env bash
     set -euxo pipefail
@@ -95,6 +96,7 @@ docker-build-binary:
     just build-binary
     EOF
 
+# Run the binary, using docker (for integration testing)
 docker-run-binary REPO='orbiter-community-translations'  DEMO="https://raw.githubusercontent.com/astronomer/orbiter-community-translations/refs/heads/main/tests/control_m/demo/workflow/demo.xml" RULESET='orbiter_translations.control_m.xml_demo.translation_ruleset' PLATFORM="linux/amd64":
     #!/usr/bin/env bash
     set -euxo pipefail
@@ -147,3 +149,11 @@ docker-run-python REPO='orbiter-community-translations' DEMO="https://raw.github
     LOG_LEVEL=DEBUG orbiter document --ruleset {{RULESET}} && \
     head translation_ruleset.html
     EOF
+
+# Build the docker image
+build-docker-image:
+    docker build --platform=linux/amd64 -t orbiter --file Dockerfile .
+
+# Run the docker image (integration testing)
+run-docker-image:
+    docker run --platform=linux/amd64 --rm -it orbiter
