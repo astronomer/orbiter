@@ -19,6 +19,6 @@ Kestra,Astronomer,[`orbiter-community-translations`](https://github.com/astronom
 Oozie,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.oozie.xml_demo.translation_ruleset`,Workflow,Node
 ⠀,Astronomer,`astronomer-orbiter-translations`,`orbiter_translations.oozie.xml_base.translation_ruleset`,⠀,⠀
 SSIS,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.ssis.xml_demo.translation_ruleset`,Workflow,Task
-Talend,Astronomer,`orbiter-community-translations`,WIP,Job,Component
+Talend,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.talend.json_demo.translation_ruleset`,Job,Component
 Tidal,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.tidal.xml_demo.translation_ruleset`,Job Group,Job
 **& more!**,⠀,⠀,⠀,⠀,⠀
