@@ -11,8 +11,9 @@ class OrbiterLivyOperator(OrbiterOperator):
     Used to submit Spark Jobs.
 
     ```pycon
-    >>> OrbiterLivyOperator(task_id="foo", file="/a/b/c.jar")
-    foo_task = LivyOperator(task_id='foo', file='/a/b/c.jar')
+    >>> from orbiter.objects import conn_id
+    >>> OrbiterLivyOperator(task_id="foo", **conn_id(conn_id='livy_default', prefix="livy", conn_type='livy'), file="/a/b/c.jar")
+    foo_task = LivyOperator(task_id='foo', livy_conn_id='livy_default', file='/a/b/c.jar')
 
     ```
     :param task_id: The `task_id` for the operator
@@ -43,7 +44,7 @@ class OrbiterLivyOperator(OrbiterOperator):
     livy_conn_id: str
 
     # noinspection Pydantic
-    render_attributes: RenderAttributes = OrbiterOperator.render_attributes
+    render_attributes: RenderAttributes = OrbiterOperator.render_attributes + ["livy_conn_id"]
 
 
 if __name__ == "__main__":
