@@ -11,7 +11,6 @@ from orbiter.objects.task import RenderAttributes
 
 __mermaid__ = """
 --8<-- [start:mermaid-relationships]
-OrbiterOperator "implements" <|-- OrbiterPythonOperator
 OrbiterPythonOperator "implements" <|-- OrbiterDecoratedPythonOperator
 --8<-- [end:mermaid-relationships]
 """
@@ -108,6 +107,13 @@ class OrbiterDecoratedPythonOperator(OrbiterPythonOperator):
 
     ```
     Parameters as per [`OrbiterPythonOperator`][orbiter.objects.operators.python.OrbiterPythonOperator]
+    """
+
+    __mermaid__ = """
+    --8<-- [start:mermaid-props]
+    operator = "@task"
+    task_id: str
+    --8<-- [end:mermaid-props]
     """
 
     imports: ImportList = [

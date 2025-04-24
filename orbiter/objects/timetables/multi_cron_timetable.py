@@ -10,6 +10,13 @@ from orbiter.objects.task import RenderAttributes
 from orbiter.objects.timetables import OrbiterTimetable
 
 
+__mermaid__ = """
+--8<-- [start:mermaid-dag-relationships]
+OrbiterTimetable "implements" <|-- OrbiterMultiCronTimetable
+--8<-- [end:mermaid-dag-relationships]
+"""
+
+
 class OrbiterMultiCronTimetable(OrbiterTimetable):
     """
     An
@@ -29,6 +36,16 @@ class OrbiterMultiCronTimetable(OrbiterTimetable):
     :type period_length: int
     :params period_unit: The unit of the period
     :type period_unit: str
+    """
+
+    __mermaid__ = """
+    --8<-- [start:mermaid-props]
+    timetable = "MultiCronTimetable"
+    cron_defs: List[str]
+    timezone: str
+    period_length: int
+    period_unit: str
+    --8<-- [end:mermaid-props]
     """
 
     imports: ImportList = [

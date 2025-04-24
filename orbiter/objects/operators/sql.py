@@ -3,12 +3,6 @@ from __future__ import annotations
 from orbiter.objects import ImportList, OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator, RenderAttributes
 
-__mermaid__ = """
---8<-- [start:mermaid-relationships]
-OrbiterOperator "implements" <|-- OrbiterSQLExecuteQueryOperator
---8<-- [end:mermaid-relationships]
-"""
-
 
 class OrbiterSQLExecuteQueryOperator(OrbiterOperator):
     """

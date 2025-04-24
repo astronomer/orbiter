@@ -105,7 +105,6 @@ plugins:
           parameter_headings: true
           summary: true
           group_by_category: true
-          trim_doctest_flags: true
           docstring_options:
             trim_doctest_flags: true
           show_bases: false

@@ -84,7 +84,7 @@ To extend or customize an existing ruleset, you can easily modify it with simple
     4. Create one or more `@rule` functions, as required. A higher priority means this rule will be applied first.
         [`@task_rule` Reference](./Rules_and_Rulesets/rules.md#orbiter.rules.TaskRule)
     5. `Rules` have an `if/else` statement - they must always return a **single** thing or **nothing**
-    6. [`OrbiterSSHOperator` Reference](./objects/Tasks/Operators_and_Callbacks/operators.md#orbiter.objects.operators.ssh.OrbiterSSHOperator)
+    6. [`OrbiterSSHOperator` Reference](./objects/Tasks/Operators.md#orbiter.objects.operators.ssh.OrbiterSSHOperator)
     7. Append the new [Rule](./Rules_and_Rulesets/index.md)
        to the [`translation_ruleset`](./Rules_and_Rulesets/rulesets.md#orbiter.rules.rulesets.TranslationRuleset)
 

@@ -21,6 +21,7 @@ classDiagram
     class OrbiterDAG["orbiter.objects.dag.OrbiterDAG"] {
         --8<-- "orbiter/objects/dag.py:mermaid-props"
     }
+    click OrbiterDAG href "../workflow/#orbiter.objects.dag.OrbiterDAG" "OrbiterDAG Documentation"
 
     class OrbiterEnvVar["orbiter.objects.env_var.OrbiterEnvVar"] {
         --8<-- "orbiter/objects/env_var.py:mermaid-props"
@@ -54,5 +55,7 @@ classDiagram
 ::: orbiter.objects.include.OrbiterInclude
 ::: orbiter.objects.pool.OrbiterPool
 ::: orbiter.objects.requirement.OrbiterRequirement
+    options:
+        filters: ["!^_[^_]"]
 ::: orbiter.objects.variable.OrbiterVariable
 ::: orbiter.objects.project.OrbiterProject

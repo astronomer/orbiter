@@ -27,7 +27,6 @@ OrbiterDAG --> "many" OrbiterVariable
 --8<-- [end:mermaid-project-relationships]
 
 --8<-- [start:mermaid-dag-relationships]
-OrbiterDAG "via schedule" --> OrbiterTimetable
 OrbiterDAG --> "many" OrbiterOperator
 OrbiterDAG --> "many" OrbiterTaskGroup
 OrbiterDAG --> "many" OrbiterRequirement
@@ -144,7 +143,6 @@ def _add_tasks(
 
 
 class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
-    # noinspection PyUnresolvedReferences
     """Represents an Airflow [DAG](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html),
     with its tasks and dependencies.
 
@@ -344,6 +342,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
             a_task >> b_task
             b >> e_task
 
+        ```
         """
 
         def dedupe_callable(ast_collection):
