@@ -26,7 +26,7 @@ class OrbiterEmptyOperator(OrbiterOperator):
 
     __mermaid__ = """
     --8<-- [start:mermaid-props]
-    operator = "BashOperator"
+    operator = "EmptyOperator"
     task_id: str
     --8<-- [end:mermaid-props]
     """
