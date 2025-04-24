@@ -8,6 +8,12 @@ from orbiter.ast_helper import OrbiterASTBase, py_object
 from orbiter.objects import OrbiterBase
 from orbiter.objects.task import RenderAttributes
 
+__mermaid__ = """
+--8<-- [start:mermaid-dag-relationships]
+OrbiterDAG "via schedule" --> OrbiterTimetable
+--8<-- [end:mermaid-dag-relationships]
+"""
+
 
 class OrbiterTimetable(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
     """An [Airflow Timetable](https://airflow.apache.org/docs/apache-airflow/stable/authoring-and-scheduling/timetable.html)
@@ -23,7 +29,6 @@ class OrbiterTimetable(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
     --8<-- [start:mermaid-props]
     imports: List[OrbiterRequirement]
     orbiter_includes: Set[OrbiterIncludes]
-    **kwargs: dict
     --8<-- [end:mermaid-props]
     """
 

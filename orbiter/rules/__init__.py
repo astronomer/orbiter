@@ -120,7 +120,7 @@ class Rule(BaseModel, Callable, extra="forbid"):
 
     !!! tip
 
-        If the returned value is an [Orbiter Object](../../objects/index.md),
+        If the returned value is an [Orbiter Object](../objects/index.md),
         the passed `kwargs` are saved in a special `orbiter_kwargs` property
 
         ```pycon

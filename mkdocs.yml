@@ -105,11 +105,11 @@ plugins:
           parameter_headings: true
           summary: true
           group_by_category: true
-          trim_doctest_flags: true
           docstring_options:
             trim_doctest_flags: true
           show_bases: false
           extensions:
           - griffe_inherited_docstrings
+          filters: ["!^_[^_]"]
 
-copyright: "Apache Airflow® is a trademark of the Apache Software Foundation. Copyright 2024 Astronomer, Inc."
+copyright: "Apache Airflow® is a trademark of the Apache Software Foundation. Copyright 2025 Astronomer, Inc."

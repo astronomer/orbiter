@@ -2,12 +2,6 @@ from orbiter.objects import ImportList
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator, RenderAttributes
 
-__mermaid__ = """
---8<-- [start:mermaid-relationships]
-OrbiterOperator "implements" <|-- OrbiterBashOperator
---8<-- [end:mermaid-relationships]
-"""
-
 
 class OrbiterBashOperator(OrbiterOperator):
     """

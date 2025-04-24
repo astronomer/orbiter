@@ -5,12 +5,6 @@ from typing import Set
 from orbiter.objects import OrbiterRequirement, ImportList, OrbiterConnection
 from orbiter.objects.task import OrbiterOperator, RenderAttributes
 
-__mermaid__ = """
---8<-- [start:mermaid-relationships]
-OrbiterOperator "implements" <|-- OrbiterEmailOperator
---8<-- [end:mermaid-relationships]
-"""
-
 
 class OrbiterEmailOperator(OrbiterOperator):
     # noinspection GrazieInspection
