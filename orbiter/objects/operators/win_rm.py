@@ -11,8 +11,9 @@ class OrbiterWinRMOperator(OrbiterOperator):
     Used to run commands on remote Window Servers.
 
     ```pycon
-    >>> OrbiterWinRMOperator(task_id="foo", command="echo hello")
-    foo_task = WinRMOperator(task_id='foo', ssh_conn_id='winrm_default', command="echo hello")
+    >>> from orbiter.objects import conn_id
+    >>> OrbiterWinRMOperator(task_id="foo", **conn_id(conn_id="winrm_default", prefix="ssh", conn_type="ssh"), command="echo hello")
+    foo_task = WinRMOperator(task_id='foo', ssh_conn_id='winrm_default', command='echo hello')
 
     ```
     :param task_id: The `task_id` for the operator
@@ -50,3 +51,9 @@ class OrbiterWinRMOperator(OrbiterOperator):
     ]
     ssh_conn_id: str
     command: str
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()
