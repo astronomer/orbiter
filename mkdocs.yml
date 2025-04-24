@@ -110,5 +110,6 @@ plugins:
           show_bases: false
           extensions:
           - griffe_inherited_docstrings
+          filters: ["!^_[^_]"]
 
-copyright: "Apache Airflow® is a trademark of the Apache Software Foundation. Copyright 2024 Astronomer, Inc."
+copyright: "Apache Airflow® is a trademark of the Apache Software Foundation. Copyright 2025 Astronomer, Inc."

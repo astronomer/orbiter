@@ -55,7 +55,5 @@ classDiagram
 ::: orbiter.objects.include.OrbiterInclude
 ::: orbiter.objects.pool.OrbiterPool
 ::: orbiter.objects.requirement.OrbiterRequirement
-    options:
-        filters: ["!^_[^_]"]
 ::: orbiter.objects.variable.OrbiterVariable
 ::: orbiter.objects.project.OrbiterProject

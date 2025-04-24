@@ -107,4 +107,3 @@ classDiagram
 ::: orbiter.objects.task_group.OrbiterTaskGroup
     options:
         heading_level: 3
-        filters: ["!^_[^_]"]

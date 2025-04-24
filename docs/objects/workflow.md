@@ -67,7 +67,6 @@ classDiagram
 
 ::: orbiter.objects.dag.OrbiterDAG
     options:
-        filters: ["!^_[^_]"]
         heading_level: 3
 
 ## Timetables
