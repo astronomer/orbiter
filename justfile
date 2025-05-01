@@ -144,7 +144,7 @@ docker-run-python REPO='orbiter-community-translations' DEMO="https://raw.github
     echo "[ORBITER INSTALL]" && \
     LOG_LEVEL=DEBUG orbiter install --repo={{REPO}} && \
     echo "[ORBITER TRANSLATE]" && \
-    LOG_LEVEL=DEBUG orbiter translate --input-dir=workflow/ output-dir=output/ --ruleset {{RULESET}} && \
+    LOG_LEVEL=DEBUG orbiter translate --input-dir=workflow/ --output-dir=output/ --ruleset {{RULESET}} && \
     echo "[ORBITER DOCUMENT]" && \
     LOG_LEVEL=DEBUG orbiter document --ruleset {{RULESET}} && \
     head translation_ruleset.html
