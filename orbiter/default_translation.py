@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import List
 
 from loguru import logger
-from pydantic import validate_call
 
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.project import OrbiterProject
@@ -120,7 +119,6 @@ def _get_parent_for_task_dependency(
     return None
 
 
-@validate_call
 def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     """
     Orbiter expects a folder containing text files which may have a structure like:
@@ -161,7 +159,7 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     6. After translation - the [`OrbiterProject`][orbiter.objects.project.OrbiterProject]
         is rendered to the output folder.
     """
-    from orbiter.rules.rulesets import TranslationRuleset
+    validate_translate_function_inputs(translation_ruleset, input_dir)
 
     if not isinstance(translation_ruleset, TranslationRuleset):
         raise RuntimeError(
@@ -249,7 +247,39 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     return project
 
 
+def validate_translate_function_inputs(translation_ruleset: TranslationRuleset, input_dir: Path) -> None:
+    """Validate the inputs to the translation function
+
+    !!! note
+
+        ```pycon
+        >>> from orbiter.rules.rulesets import EMPTY_TRANSLATION_RULESET
+        >>> validate_translate_function_inputs(None, Path())
+        Traceback (most recent call last):
+        TypeError: Error! type(translation_ruleset)==<class 'NoneType'>!=TranslationRuleset! Exiting!
+        >>> validate_translate_function_inputs(EMPTY_TRANSLATION_RULESET, '.')
+        Traceback (most recent call last):
+        TypeError: Error! type(input_dir)==<class 'str'>!=Path! Exiting!
+
+        ```
+
+    :raises RuntimeError: if either input is an invalid type
+    """
+    from orbiter.rules.rulesets import TranslationRuleset
+
+    if not isinstance(translation_ruleset, TranslationRuleset):
+        raise TypeError(f"Error! type(translation_ruleset)=={type(translation_ruleset)}!=TranslationRuleset! Exiting!")
+    if not isinstance(input_dir, Path):
+        raise TypeError(f"Error! type(input_dir)=={type(input_dir)}!=Path! Exiting!")
+
+
 def fake_translate(translation_ruleset: TranslationRuleset, input_dir: Path) -> OrbiterProject:
     """Fake translate function, for testing"""
     _ = (translation_ruleset, input_dir)
     return OrbiterProject()
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
