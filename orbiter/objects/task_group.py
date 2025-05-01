@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 import typing
 from abc import ABC
-from typing import List, Any, Set, Dict, Union
+from typing import List, Any, Set, Dict, Union, Iterable
 
 from pydantic import field_validator, validate_call
 
@@ -103,7 +103,7 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
             )
         return tasks
 
-    def add_tasks(self, tasks):
+    def add_tasks(self, tasks: (OrbiterOperator | OrbiterTaskGroup | Iterable[OrbiterOperator | OrbiterTaskGroup])):
         from orbiter.objects.dag import _add_tasks
 
         return _add_tasks(self, tasks)

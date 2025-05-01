@@ -5,8 +5,10 @@ from pathlib import Path
 
 from loguru import logger
 
+from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.project import OrbiterProject
-from orbiter.objects.task import OrbiterTaskDependency
+from orbiter.objects.task import OrbiterTaskDependency, OrbiterOperator
+from orbiter.objects.task_group import OrbiterTaskGroup
 from orbiter.rules import trim_dict
 
 if typing.TYPE_CHECKING:
@@ -85,31 +87,34 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     project = OrbiterProject()
 
     for i, (file, input_dict) in enumerate(translation_ruleset.get_files_with_extension(input_dir)):
-        file = file.resolve()
-        file_relative_to_input_dir_parent = file.relative_to(input_dir.parent)
+        file_relative_to_input_dir_parent = file.resolve().relative_to(input_dir.parent)
         file_log_prefix = f"[File {i}={file_relative_to_input_dir_parent}]"
         logger.info(f"{file_log_prefix} Translating file")
 
         logger.debug(f"{file_log_prefix} Extracting DAG candidates")
-        dag_dicts = translation_ruleset.dag_filter_ruleset.apply_ruleset(input_dict, file_relative_to_input_dir_parent)
+        dag_dicts: list[dict] = translation_ruleset.dag_filter_ruleset.apply_ruleset(
+            input_dict=input_dict, file=file_relative_to_input_dir_parent
+        )
         logger.debug(f"{file_log_prefix} Found {len(dag_dicts)} DAG candidates")
 
         for dag_dict in dag_dicts:
             logger.debug(f"{file_log_prefix} Translating DAG Candidate to DAG")
-            dag = translation_ruleset.dag_ruleset.apply_ruleset(dag_dict)
+            dag: OrbiterDAG = translation_ruleset.dag_ruleset.apply_ruleset(dag_dict=dag_dict)
             if dag is None:
                 logger.warning(f"{file_log_prefix} Couldn't extract DAG from dag_dict={dag_dict}")
                 continue
 
             dag_log_prefix = f"{file_log_prefix}[DAG={dag.dag_id}]"
             logger.debug(f"{dag_log_prefix} Extracting Task candidates")
-            task_dicts = translation_ruleset.task_filter_ruleset.apply_ruleset(dag_dict)
+            task_dicts: list[dict] = translation_ruleset.task_filter_ruleset.apply_ruleset(dag_dict=dag_dict)
             logger.debug(f"{dag_log_prefix} Found {len(task_dicts)} Task candidates")
 
             logger.debug(f"{dag_log_prefix} Translating Task Candidates to Tasks")
             tasks = []
             for task_dict in task_dicts:
-                task = translation_ruleset.task_ruleset.apply_ruleset(task_dict)
+                task: OrbiterOperator | OrbiterTaskGroup = translation_ruleset.task_ruleset.apply_ruleset(
+                    task_dict=task_dict
+                )
                 if task is None:
                     logger.warning(f"{dag_log_prefix} Couldn't extract task from expected task_dict={task_dict}")
                     continue
@@ -119,7 +124,7 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
 
             logger.debug(f"{dag_log_prefix} Extracting Task Dependencies to apply to Tasks")
             task_dependencies: list[OrbiterTaskDependency] = translation_ruleset.task_dependency_ruleset.apply_ruleset(
-                dag
+                dag=dag
             )
             if not len(task_dependencies):
                 logger.warning(f"{dag_log_prefix} Couldn't find task dependencies in dag={trim_dict(dag_dict)}")

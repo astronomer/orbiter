@@ -119,9 +119,6 @@ TranslateFn = Annotated[
 ]
 
 
-# noinspection t
-
-
 class Ruleset(BaseModel, frozen=True, extra="forbid"):
     """A list of rules, which are evaluated to generate different types of output
 
