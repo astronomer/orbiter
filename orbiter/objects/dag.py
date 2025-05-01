@@ -349,7 +349,9 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
             setattr(self, key, getattr(self, key) or getattr(other, key))
         return self
 
-    def add_tasks(self, tasks) -> OrbiterDAG:
+    def add_tasks(
+        self, tasks: OrbiterOperator | OrbiterTaskGroup | Iterable[OrbiterOperator | OrbiterTaskGroup]
+    ) -> OrbiterDAG:
         return _add_tasks(self, tasks)
 
     def get_task_dependency_parent(self, task_dependency: OrbiterTaskDependency) -> OrbiterDAG | OrbiterTaskGroup:
