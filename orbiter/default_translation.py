@@ -16,6 +16,7 @@ from orbiter.rules import trim_dict
 
 if typing.TYPE_CHECKING:
     from orbiter.rules.rulesets import TranslationRuleset
+    from orbiter.objects.task_group import OrbiterTaskGroup
 
 
 def apply_dag_filter_ruleset(
@@ -101,28 +102,18 @@ def apply_task_filter_ruleset(dag_dict: dict, translation_ruleset: TranslationRu
     )
 
 
-def apply_task_ruleset(
-    task_dicts: list[dict], translation_ruleset: TranslationRuleset, dag_log_prefix: str = ""
-) -> dict[str, OrbiterOperator]:
+def apply_task_ruleset(task_dict: dict, translation_ruleset: TranslationRuleset) -> OrbiterOperator | OrbiterTaskGroup:
     """Apply all rules from [Task Ruleset][orbiter.rules.ruleset.TaskRuleset] to convert the object to a Task,
     in priority order, stopping when the first rule returns a match.
 
     One task_dict makes up to one task (unless it produces a TaskGroup, which can contain many tasks).
     If no rule returns a match, the entry is filtered.
 
-    :param task_dicts: The list of task_dicts to filter - what was returned from the Task Filter ruleset
+    :param task_dict: A dict to translate - what was returned from the Task Filter ruleset
     :param translation_ruleset: The translation ruleset to use
-    :param dag_log_prefix: The file log prefix to use for logging, default is empty
-    :return: A dictionary of task_id -> task
+    :return: An `OrbiterOperator` (or descendant) or `OrbiterTaskGroup`
     """
-    tasks = {}
-    for task_dict in task_dicts:
-        task: OrbiterOperator = translation_ruleset.task_ruleset.apply(val=task_dict, take_first=True)
-        if task is None:
-            logger.warning(f"{dag_log_prefix} Couldn't extract task from expected task_dict={task_dict}")
-            continue
-
-    return tasks
+    return translation_ruleset.task_ruleset.apply(val=task_dict, take_first=True)
 
 
 def apply_task_dependency_ruleset(
@@ -266,10 +257,15 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
             logger.debug(f"{dag_log_prefix} Found {len(task_dicts)} Task candidates")
 
             logger.debug(f"{dag_log_prefix} Translating Task Candidates to Tasks")
-            tasks = apply_task_ruleset(task_dicts, translation_ruleset, dag_log_prefix)
-
+            tasks = []
+            for task_dict in task_dicts:
+                task = apply_task_ruleset(task_dict, translation_ruleset)
+                if task is None:
+                    logger.warning(f"{dag_log_prefix} Couldn't extract task from expected task_dict={task_dict}")
+                    continue
+                tasks.append(task)
             logger.debug(f"{dag_log_prefix} Adding {len(tasks)} tasks")
-            dag.add_tasks(tasks.values())
+            dag.add_tasks(tasks)
 
             logger.debug(f"{dag_log_prefix} Extracting Task Dependencies to apply to Tasks")
             apply_task_dependency_ruleset(dag, dag_dict, translation_ruleset, dag_log_prefix)
