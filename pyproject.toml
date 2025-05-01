@@ -35,61 +35,47 @@ dependencies = [
     # CLI
     "click",
     "rich-click",
-
     # CLI prompt
     "questionary",
-
     # fetch translation_rulesets in binary mode
     "requests",
-
     # For validation of objects
     # NOTE: 04/2025 - something broke in 2.11?
     # Errors like: "Define OrbiterProject before PostProcessingRuleset and call .model_rebuild()"
     "pydantic >= 2.6, < 2.11",
-
-     # for converting to snake_case
+    # for converting to snake_case
     "inflection",
-
     # for templating within @rules
     "jinja2",
-
-     # for parsing XML
+    # for parsing XML
     "xmltodict",
-
     # for parsing YAML
     "pyyaml",
     # alternative
     # "ruamel.yaml"
-
     # for parsing JIL - fork
     # original @ https://github.com/mscribellito/jilutil
     "jilutil",
-
     # for parsing python
     "ast2json",
-
     # to render timezone-aware DAGs
     "pendulum",
     "tzdata", # for timezone data, if system doesn't have it?
-
     # for 'list-rulesets' command, and '--analyze'
     "tabulate",
-
     # logging
     "loguru",
-
     # for code formatting
     "ruff",
-
     # backport
     "eval_type_backport; python_version < '3.10'",
-
     # for 'document' command
     "mkdocs",
     "mkdocs-material",
     "pygments",
     "mkdocstrings-python",
-    "htmlark"
+    "htmlark",
+    "pathos>=0.3.4",
 ]
 
 [project.optional-dependencies]

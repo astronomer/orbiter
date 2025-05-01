@@ -5,9 +5,7 @@ import sys
 from pathlib import Path
 from typing import Any, Tuple
 
-from loguru import logger
-
-__version__ = "1.5.8"
+__version__ = "1.6.0"
 
 version = __version__
 
@@ -58,6 +56,8 @@ def insert_cwd_to_sys_path():
     >>> path in sys.path
     True
     """
+    from loguru import logger
+
     cwd = Path.cwd()
     logger.debug(f"Adding current directory {cwd} to sys.path")
     if str(cwd) not in sys.path:

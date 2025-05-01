@@ -117,7 +117,7 @@ docker-run-binary REPO='orbiter-community-translations'  DEMO="https://raw.githu
     echo "[ORBITER INSTALL]" && \
     LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 install --repo={{REPO}} && \
     echo "[ORBITER TRANSLATE]" && \
-    LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 translate workflow/ output/ --ruleset {{RULESET}} --no-format && \
+    LOG_LEVEL=DEBUG ./orbiter-linux-x86_64 translate --input-dir=workflow/ --output-dir=output/ --ruleset {{RULESET}} --no-format && \
     echo "[ORBITER DOCUMENT]" && \
     echo "skipping d/t unknown error: No such file or directory: '/tmp/_MEICKUbts/mkdocs/templates'"
     EOF
@@ -144,7 +144,7 @@ docker-run-python REPO='orbiter-community-translations' DEMO="https://raw.github
     echo "[ORBITER INSTALL]" && \
     LOG_LEVEL=DEBUG orbiter install --repo={{REPO}} && \
     echo "[ORBITER TRANSLATE]" && \
-    LOG_LEVEL=DEBUG orbiter translate workflow/ output/ --ruleset {{RULESET}} && \
+    LOG_LEVEL=DEBUG orbiter translate --input-dir=workflow/ output-dir=output/ --ruleset {{RULESET}} && \
     echo "[ORBITER DOCUMENT]" && \
     LOG_LEVEL=DEBUG orbiter document --ruleset {{RULESET}} && \
     head translation_ruleset.html
