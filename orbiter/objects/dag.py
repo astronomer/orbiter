@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import ast
+import typing
 from datetime import datetime, timedelta
 from functools import reduce
 from pathlib import Path
 from typing import Annotated, Any, Dict, Iterable, List, Callable, ClassVar, TYPE_CHECKING
 
+from loguru import logger
 from pydantic_extra_types.pendulum_dt import DateTime
 from pydantic import AfterValidator, validate_call
 
@@ -14,7 +16,7 @@ from orbiter.ast_helper import OrbiterASTBase, py_object, py_with
 from orbiter.objects import ImportList, OrbiterBase, CALLBACK_KEYS
 from orbiter.objects.callbacks.callback_type import CallbackType
 from orbiter.objects.requirement import OrbiterRequirement
-from orbiter.objects.task import OrbiterOperator
+from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
 from orbiter.objects.timetables import TimetableType
 from orbiter.objects.task_group import TasksType
 
@@ -22,6 +24,9 @@ if TYPE_CHECKING:
     from orbiter.objects.task import OrbiterOperator
     from orbiter.objects.task_group import OrbiterTaskGroup
 
+
+if typing.TYPE_CHECKING:
+    from orbiter.objects.task_group import OrbiterTaskGroup
 
 __mermaid__ = """
 --8<-- [start:mermaid-project-relationships]
@@ -103,13 +108,21 @@ def _add_tasks(
 ) -> "OrbiterDAG | OrbiterTaskGroup":
     """Add one or more [`OrbiterOperators`][orbiter.objects.task.OrbiterOperator] to the DAG or Task Group
 
+    If the task_id doesn't already exist, in the DAG, it is added to the `tasks` dictionary.
+    If this task_id does exist, it is suffixed with a number to the end to prevent duplicate task_ids.
+
     ```pycon
     >>> from orbiter.objects.operators.empty import OrbiterEmptyOperator
     >>> OrbiterDAG(file_path="", dag_id="foo").add_tasks(OrbiterEmptyOperator(task_id="bar")).tasks
     {'bar': bar_task = EmptyOperator(task_id='bar')}
-
     >>> OrbiterDAG(file_path="", dag_id="foo").add_tasks([OrbiterEmptyOperator(task_id="bar")]).tasks
     {'bar': bar_task = EmptyOperator(task_id='bar')}
+    >>> OrbiterDAG(file_path="", dag_id="foo").add_tasks([
+    ...   OrbiterEmptyOperator(task_id="foo"),
+    ...   OrbiterEmptyOperator(task_id="foo"),
+    ...   OrbiterEmptyOperator(task_id="foo"),
+    ... ]).tasks
+    {'foo': foo_task = EmptyOperator(task_id='foo'), 'foo_1': foo_1_task = EmptyOperator(task_id='foo_1'), 'foo_2': foo_2_task = EmptyOperator(task_id='foo_2')}
 
     ```
 
@@ -142,12 +155,71 @@ def _add_tasks(
         tasks = [tasks]
 
     for task in tasks:
-        try:
-            task_id = getattr(task, "task_id", None) or getattr(task, "task_group_id")
-        except AttributeError:
-            raise AttributeError(f"Task {task} does not have a task_id or task_group_id attribute")
-        self.tasks[task_id] = task
+        # Deduplicate task_id - add a number to the end, if it already exists in the DAG
+        i = 0
+        while (task_id := task.task_id if i == 0 else f"{task.task_id}_{i}") in self.tasks:
+            i += 1
+        if i > 0:
+            logger.warning(
+                f"{task.task_id} encountered more than once, task IDs must be unique! "
+                f"Modifying task ID to '{task_id}'!"
+            )
+            setattr(task, "task_group_id" if hasattr(task, "task_group_id") else "task_id", task_id)
+
+        self.tasks[task.task_id] = task
     return self
+
+
+def _get_task_dependency_parent(
+    self: OrbiterDAG | OrbiterTaskGroup,
+    task_dependency: OrbiterTaskDependency,
+) -> OrbiterDAG | OrbiterTaskGroup | None:
+    """Look through any children in the `.tasks` property for a matching task_id, recursing into anything that contains
+    `.tasks`. Return the parent object that contains the task_id, or None if it's not found.
+
+    ```pycon
+    >>> from orbiter.objects.operators.empty import OrbiterEmptyOperator
+    >>> OrbiterDAG(dag_id="foo", file_path='', tasks={"bar": OrbiterEmptyOperator(task_id="bar")}).get_task_dependency_parent(
+    ...     OrbiterTaskDependency(task_id="bar", downstream="baz"),
+    ... ).dag_id  # returns the dag
+    'foo'
+    >>> OrbiterDAG(dag_id="foo", file_path='', tasks={
+    ...     "bar": OrbiterTaskGroup(task_group_id="bar", tasks={"bop": OrbiterEmptyOperator(task_id="bop")})
+    ... }).get_task_dependency_parent(
+    ...     OrbiterTaskDependency(task_id="bar", downstream="qux"),
+    ... ).dag_id  # returns the parent dag, even if a task group is the target
+    'foo'
+    >>> OrbiterDAG(dag_id="foo", file_path='', tasks={
+    ...    "bar": OrbiterTaskGroup(task_group_id="bar").add_tasks(OrbiterEmptyOperator(task_id="baz"))
+    ... }).get_task_dependency_parent(
+    ...     OrbiterTaskDependency(task_id="baz", downstream="qux"),
+    ... ).task_group_id  # returns a child task group, if it contains the task
+    'bar'
+    >>> OrbiterTaskGroup(task_group_id="foo").add_tasks([
+    ...     OrbiterTaskGroup(task_group_id="bar").add_tasks(OrbiterEmptyOperator(task_id="baz")),
+    ...     OrbiterTaskGroup(task_group_id="qux").add_tasks(OrbiterEmptyOperator(task_id="bonk"))
+    ... ]).get_task_dependency_parent(
+    ...     OrbiterTaskDependency(task_id="bonk", downstream="end"),
+    ... ).task_group_id  # returns a nested task group that contains the task
+    'qux'
+    >>> OrbiterDAG(dag_id="foo", file_path='', tasks={
+    ...     "bar": OrbiterTaskGroup(task_group_id="bar").add_tasks(OrbiterEmptyOperator(task_id="baz"))
+    ... }).get_task_dependency_parent(
+    ...     OrbiterTaskDependency(task_id="qux", downstream="qop"),
+    ... ) # returns nothing if the task was never found
+
+    ```
+    """
+    for task in getattr(self, "tasks", {}).values():
+        found = None
+        if getattr(task, "task_id", "") == task_dependency.task_id:
+            found = self
+        elif isinstance(task, OrbiterTaskGroup):
+            if _found := _get_task_dependency_parent(task, task_dependency):
+                found = _found
+        if found:
+            return found
+    return None
 
 
 class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
@@ -279,6 +351,9 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
     def add_tasks(self, tasks) -> OrbiterDAG:
         return _add_tasks(self, tasks)
+
+    def get_task_dependency_parent(self, task_dependency: OrbiterTaskDependency) -> OrbiterDAG | OrbiterTaskGroup:
+        return _get_task_dependency_parent(self, task_dependency)
 
     def _dag_to_ast(self) -> ast.Expr:
         """

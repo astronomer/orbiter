@@ -12,111 +12,10 @@ from loguru import logger
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.project import OrbiterProject
 from orbiter.objects.task import OrbiterTaskDependency, OrbiterOperator
-from orbiter.objects.task_group import OrbiterTaskGroup
 from orbiter.rules import trim_dict
 
 if typing.TYPE_CHECKING:
     from orbiter.rules.rulesets import TranslationRuleset
-
-
-def _add_task_deduped(_task, _tasks, n=""):
-    """
-    If this task_id doesn't already exist, add it as normal to the tasks dictionary.
-    If this task_id does exist - add a number to the end and try again
-
-    ```pycon
-    >>> from pydantic import BaseModel
-    >>> class Task(BaseModel):
-    ...   task_id: str
-    >>> tasks = {}
-    >>> _add_task_deduped(Task(task_id="foo"), tasks); tasks
-    {'foo': Task(task_id='foo')}
-    >>> _add_task_deduped(Task(task_id="foo"), tasks); tasks
-    {'foo': Task(task_id='foo'), 'foo1': Task(task_id='foo1')}
-    >>> _add_task_deduped(Task(task_id="foo"), tasks); tasks
-    {'foo': Task(task_id='foo'), 'foo1': Task(task_id='foo1'), 'foo2': Task(task_id='foo2')}
-
-    ```
-    """
-    if hasattr(_task, "task_id"):
-        _id = "task_id"
-    elif hasattr(_task, "task_group_id"):
-        _id = "task_group_id"
-    else:
-        raise TypeError("Attempting to add a task without a `task_id` or `task_group_id` attribute")
-
-    old_task_id = getattr(_task, _id)
-    new_task_id = old_task_id + n
-    if new_task_id not in _tasks:
-        if n != "":
-            logger.warning(
-                f"{old_task_id} encountered more than once, task IDs must be unique! "
-                f"Modifying task ID to '{new_task_id}'!"
-            )
-        setattr(_task, _id, new_task_id)
-        _tasks[new_task_id] = _task
-    else:
-        try:
-            n = str(int(n) + 1)
-        except ValueError:
-            n = "1"
-        _add_task_deduped(_task, _tasks, n)
-
-
-def _get_parent_for_task_dependency(
-    task_dependency: OrbiterTaskDependency, this: OrbiterDAG | OrbiterTaskGroup
-) -> OrbiterDAG | OrbiterTaskGroup | None:
-    """Look through any children in the `.tasks` property for a matching task_id, recursing into anything that contains
-    `.tasks`. Return the parent object that contains the task_id, or None if it's not found.
-
-    ```pycon
-    >>> from orbiter.objects.operators.empty import OrbiterEmptyOperator
-    >>> _get_parent_for_task_dependency(
-    ...     OrbiterTaskDependency(task_id="bar", downstream="baz"),
-    ...     OrbiterDAG(dag_id="foo", file_path='', tasks={"bar": OrbiterEmptyOperator(task_id="bar")})
-    ... ).dag_id  # returns the dag
-    'foo'
-    >>> _get_parent_for_task_dependency(
-    ...     OrbiterTaskDependency(task_id="bar", downstream="qux"),
-    ...     OrbiterDAG(dag_id="foo", file_path='', tasks={
-    ...         "bar": OrbiterTaskGroup(task_group_id="bar", tasks={"bop": OrbiterEmptyOperator(task_id="bop")})
-    ...     })
-    ... ).dag_id  # returns the parent dag, even if a task group is the target
-    'foo'
-    >>> _get_parent_for_task_dependency(
-    ...     OrbiterTaskDependency(task_id="baz", downstream="qux"),
-    ...     OrbiterDAG(dag_id="foo", file_path='', tasks={
-    ...         "bar": OrbiterTaskGroup(task_group_id="bar").add_tasks(OrbiterEmptyOperator(task_id="baz"))
-    ...     })
-    ... ).task_group_id  # returns a child task group, if it contains the task
-    'bar'
-    >>> _get_parent_for_task_dependency(
-    ...     OrbiterTaskDependency(task_id="bonk", downstream="end"),
-    ...     OrbiterTaskGroup(task_group_id="foo").add_tasks([
-    ...         OrbiterTaskGroup(task_group_id="bar").add_tasks(OrbiterEmptyOperator(task_id="baz")),
-    ...         OrbiterTaskGroup(task_group_id="qux").add_tasks(OrbiterEmptyOperator(task_id="bonk"))
-    ...     ])
-    ... ).task_group_id  # returns a nested task group that contains the task
-    'qux'
-    >>> _get_parent_for_task_dependency(
-    ...     OrbiterTaskDependency(task_id="qux", downstream="qop"),
-    ...     OrbiterDAG(dag_id="foo", file_path='', tasks={
-    ...         "bar": OrbiterTaskGroup(task_group_id="bar").add_tasks(OrbiterEmptyOperator(task_id="baz"))
-    ...     })
-    ... ) # returns nothing if the task was never found
-
-    ```
-    """
-    for task in getattr(this, "tasks", {}).values():
-        found = None
-        if getattr(task, "task_id", "") == task_dependency.task_id:
-            found = this
-        elif isinstance(task, OrbiterTaskGroup):
-            if _found := _get_parent_for_task_dependency(task_dependency, task):
-                found = _found
-        if found:
-            return found
-    return None
 
 
 def apply_dag_filter_ruleset(
@@ -223,7 +122,6 @@ def apply_task_ruleset(
             logger.warning(f"{dag_log_prefix} Couldn't extract task from expected task_dict={task_dict}")
             continue
 
-        _add_task_deduped(task, tasks)
     return tasks
 
 
@@ -247,7 +145,7 @@ def apply_task_dependency_ruleset(
         logger.warning(f"{dag_log_prefix} Couldn't find task dependencies in dag={trim_dict(dag_dict)}")
     for task_dependency in task_dependencies:
         task_dependency: OrbiterTaskDependency
-        if parent := _get_parent_for_task_dependency(task_dependency, dag):
+        if parent := dag.get_task_dependency_parent(task_dependency):
             parent.tasks[task_dependency.task_id].add_downstream(task_dependency)
         else:
             logger.warning(f"{dag_log_prefix} Couldn't find task_id={task_dependency.task_id} in tasks")

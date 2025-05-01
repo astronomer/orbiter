@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import typing
 from abc import ABC
 from typing import Annotated, Optional, List, Any, Set, Literal
 
@@ -32,6 +33,9 @@ from orbiter.objects.task import (
     task_add_downstream,
     to_task_id,
 )
+
+if typing.TYPE_CHECKING:
+    from orbiter.objects.dag import OrbiterDAG
 
 __mermaid__ = """
 --8<-- [start:mermaid-dag-relationships]
@@ -115,6 +119,11 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
         from orbiter.objects.dag import _add_tasks
 
         return _add_tasks(self, tasks)
+
+    def get_task_dependency_parent(self, task_dependency: OrbiterTaskDependency) -> OrbiterDAG | OrbiterTaskGroup:
+        from orbiter.objects.dag import _get_task_dependency_parent
+
+        return _get_task_dependency_parent(self, task_dependency)
 
     def add_downstream(self, task_id: str | List[str] | OrbiterTaskDependency) -> "OrbiterTaskGroup":
         return task_add_downstream(self, task_id)
