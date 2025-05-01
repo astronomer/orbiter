@@ -134,12 +134,12 @@ def _add_tasks(
         ... OrbiterDAG(file_path="", dag_id="foo").add_tasks("bar")
         ... # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
-        AttributeError: ...
+        ValidationError: ...
         >>> # noinspection PyTypeChecker
         ... OrbiterDAG(file_path="", dag_id="foo").add_tasks(["bar"])
         ... # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
-        AttributeError: ...
+        ValidationError: ...
 
         ```
     :param tasks: List of [OrbiterOperator][orbiter.objects.task.OrbiterOperator], or OrbiterTaskGroup or subclass

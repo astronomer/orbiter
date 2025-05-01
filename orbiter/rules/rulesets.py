@@ -570,7 +570,6 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
             logger.debug(f"Checking directory={directory}")
             for file in files:
                 file = directory / file
-                # noinspection PyBroadException
                 try:
                     yield (
                         # Return the file path
