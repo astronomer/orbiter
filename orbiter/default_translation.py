@@ -161,25 +161,25 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     """
     validate_translate_function_inputs(translation_ruleset, input_dir)
 
-    if not isinstance(translation_ruleset, TranslationRuleset):
-        raise RuntimeError(
-            f"Error! type(translation_ruleset)=={type(translation_ruleset)}!=TranslationRuleset! Exiting!"
-        )
-
-    # Create an initial OrbiterProject
+    logger.debug("Creating an empty OrbiterProject")
     project = OrbiterProject()
 
     for i, (file, input_dict) in enumerate(translation_ruleset.get_files_with_extension(input_dir)):
-        logger.info(f"Translating [File {i}]={file.resolve()}")
+        file = file.resolve()
+        # file_relative_to_input_dir = file.relative_to(input_dir)
+        file_relative_to_input_dir_parent = file.relative_to(input_dir.parent)
+        file_log_prefix = f"[File {i}={file_relative_to_input_dir_parent}]"
+
+        logger.info(f"{file_log_prefix} Translating")
 
         # DAG FILTER Ruleset - filter down to keys suspected of being translatable to a DAG, in priority order.
         # Add __file DAG FILTER inputs and outputs, so it's available for both DAG and DAG FILTER rules
         def with_file(d: dict) -> dict:
             try:
-                __file_addition = {"__file": (input_dir / file.relative_to(input_dir))}
+                __file_addition = {"__file": file_relative_to_input_dir_parent}
                 return __file_addition | d
             except Exception as e:
-                logger.opt(exception=e).debug("Unable to add __file")
+                logger.opt(exception=e).debug(f"{file_log_prefix} Unable to add __file")
                 return d
 
         dag_dicts: List[dict] = [
@@ -190,7 +190,7 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
                 [],
             )
         ]
-        logger.debug(f"Found {len(dag_dicts)} DAG candidates in {file.resolve()}")
+        logger.debug(f"{file_log_prefix} Found {len(dag_dicts)} DAG candidates")
         for dag_dict in dag_dicts:
             # DAG Ruleset - convert the object to an `OrbiterDAG` via `dag_ruleset`,
             #         in priority-order, stopping when the first rule returns a match
@@ -200,10 +200,12 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
             )
             if dag is None:
                 logger.warning(
-                    f"Couldn't extract DAG from dag_dict={dag_dict} with dag_ruleset={translation_ruleset.dag_ruleset}"
+                    f"{file_log_prefix} Couldn't extract DAG from dag_dict={dag_dict} with dag_ruleset={translation_ruleset.dag_ruleset}"
                 )
                 continue
             dag.orbiter_kwargs["file_path"] = file.relative_to(input_dir)
+
+            dag_log_prefix = f"{file_log_prefix}[DAG={dag.dag_id}]"
 
             tasks = {}
             # TASK FILTER Ruleset - Many entries in dag_dict -> Many task_dict
@@ -212,16 +214,16 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
                 translation_ruleset.task_filter_ruleset.apply(val=dag_dict),
                 [],
             )
-            logger.debug(f"Found {len(task_dicts)} Task candidates in {dag.dag_id} in {file.resolve()}")
+            logger.debug(f"{dag_log_prefix} Found {len(task_dicts)} Task candidates")
             for task_dict in task_dicts:
                 # TASK Ruleset one -> one
                 task: OrbiterOperator = translation_ruleset.task_ruleset.apply(val=task_dict, take_first=True)
                 if task is None:
-                    logger.warning(f"Couldn't extract task from expected task_dict={task_dict}")
+                    logger.warning(f"{dag_log_prefix} Couldn't extract task from expected task_dict={task_dict}")
                     continue
 
                 _add_task_deduped(task, tasks)
-            logger.debug(f"Adding {len(tasks)} tasks to DAG {dag.dag_id}")
+            logger.debug(f"{dag_log_prefix} Adding {len(tasks)} tasks")
             dag.add_tasks(tasks.values())
 
             # Dag-Level TASK DEPENDENCY Ruleset
@@ -229,16 +231,16 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
                 list(chain(*translation_ruleset.task_dependency_ruleset.apply(val=dag))) or []
             )
             if not len(task_dependencies):
-                logger.warning(f"Couldn't find task dependencies in dag={trim_dict(dag_dict)}")
+                logger.warning(f"{dag_log_prefix} Couldn't find task dependencies in dag={trim_dict(dag_dict)}")
             for task_dependency in task_dependencies:
                 task_dependency: OrbiterTaskDependency
                 if parent := _get_parent_for_task_dependency(task_dependency, dag):
                     parent.tasks[task_dependency.task_id].add_downstream(task_dependency)
                 else:
-                    logger.warning(f"Couldn't find task_id={task_dependency.task_id} in tasks for dag_id={dag.dag_id}")
+                    logger.warning(f"{dag_log_prefix} Couldn't find task_id={task_dependency.task_id} in tasks")
                     continue
 
-            logger.debug(f"Adding DAG {dag.dag_id} to project")
+            logger.debug(f"{dag_log_prefix} Adding DAG {dag.dag_id} to project")
             project.add_dags(dag)
 
     # POST PROCESSING Ruleset
