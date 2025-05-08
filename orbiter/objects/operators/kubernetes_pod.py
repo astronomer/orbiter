@@ -36,7 +36,7 @@ class OrbiterKubernetesPodOperator(OrbiterOperator):
     :param kubernetes_conn_id: The Kubernetes connection to use. Defaults to "KUBERNETES"
     :type kubernetes_conn_id: str, optional
     :param image: The Docker image to launch
-    :type image: str
+    :type image: str | None
     :param cmds: The commands to run in the container, defaults container Entrypoint
     :type cmds: list[str] | None, optional
     :param arguments: The arguments to pass to the commands, defaults container commands
@@ -47,6 +47,8 @@ class OrbiterKubernetesPodOperator(OrbiterOperator):
     :type container_resources: V1ResourceRequirements | None, optional
     :param image_pull_secrets: The secrets to use for pulling the Docker image, defaults to None
     :type image_pull_secrets: list[V1LocalObjectReference] | None, optional
+    :param pod_template_dict: The yaml (as a python dict) to use for the pod, defaults to None
+    :type pod_template_dict: dict | None, optional
     :param **kwargs: Extra arguments to pass to the operator
     :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """  # noqa: E501
@@ -62,6 +64,7 @@ class OrbiterKubernetesPodOperator(OrbiterOperator):
     env_vars: dict | None
     container_resources: V1ResourceRequirements | None
     image_pull_secrets: list | None
+    pod_template_dict: dict | None
     --8<-- [end:mermaid-props]
     """
 
@@ -83,6 +86,7 @@ class OrbiterKubernetesPodOperator(OrbiterOperator):
         "env_vars",
         "container_resources",
         "image_pull_secrets",
+        "pod_template_dict",
     ]
     kubernetes_conn_id: str | None = "KUBERNETES"
     image: str
@@ -91,6 +95,7 @@ class OrbiterKubernetesPodOperator(OrbiterOperator):
     env_vars: dict[str, str] | list[Any] | None = None  # V1EnvVar
     container_resources: Union[Any, None] = None  # V1ResourceRequirements
     image_pull_secrets: list[Any] | None = None  # V1LocalObjectReference
+    pod_template_dict: dict | None = None
     orbiter_conns: Set[OrbiterConnection] | None = {OrbiterConnection(conn_id="KUBERNETES", conn_type="kubernetes")}
 
 
