@@ -7,7 +7,7 @@ from typing import Any, Tuple
 
 from loguru import logger
 
-__version__ = "1.5.8"
+__version__ = "1.5.9"
 
 version = __version__
 
