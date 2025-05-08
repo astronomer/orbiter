@@ -2,10 +2,14 @@ from __future__ import annotations
 
 from typing import Set, TYPE_CHECKING, Union, Any
 
+from pydantic import model_validator
+
 from orbiter.objects import ImportList, OrbiterRequirement, OrbiterConnection
 from orbiter.objects.task import OrbiterOperator, RenderAttributes
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     # noinspection PyUnresolvedReferences
     from kubernetes.client.models import V1EnvVar  # noqa: F401
 
@@ -43,7 +47,7 @@ class OrbiterKubernetesPodOperator(OrbiterOperator):
     :type task_id: str
     :param kubernetes_conn_id: The Kubernetes connection to use. Defaults to "KUBERNETES"
     :type kubernetes_conn_id: str, optional
-    :param image: The Docker image to launch
+    :param image: The Docker image to launch, required if not using pod_template_dict
     :type image: str | None
     :param cmds: The commands to run in the container, defaults container Entrypoint
     :type cmds: list[str] | None, optional
@@ -105,6 +109,12 @@ class OrbiterKubernetesPodOperator(OrbiterOperator):
     image_pull_secrets: list[Any] | None = None  # V1LocalObjectReference
     pod_template_dict: dict | None = None
     orbiter_conns: Set[OrbiterConnection] | None = {OrbiterConnection(conn_id="KUBERNETES", conn_type="kubernetes")}
+
+    @model_validator(mode="after")
+    def check_image_or_pod_template_dict(self) -> Self:
+        if not any(map(bool, (self.image, self.pod_template_dict))):
+            raise ValueError("At least one of `image` or `pod_template_dict` must be set.")
+        return self
 
 
 if __name__ == "__main__":
