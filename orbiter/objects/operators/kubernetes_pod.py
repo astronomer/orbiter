@@ -29,6 +29,14 @@ class OrbiterKubernetesPodOperator(OrbiterOperator):
     ...     image="my-docker-image"
     ... )
     foo_task = KubernetesPodOperator(task_id='foo', kubernetes_conn_id='KUBERNETES', image='my-docker-image')
+    >>> OrbiterKubernetesPodOperator(
+    ...     task_id="bar",
+    ...     pod_template_dict={
+    ...         "apiVersion": "v1", "kind": "Pod",
+    ...         "spec": {"containers": [{"name": "bar", "image": "ubuntu", "command": ["echo", "hello world"]}]}
+    ...     },
+    ... )
+    bar_task = KubernetesPodOperator(task_id='bar', kubernetes_conn_id='KUBERNETES', pod_template_dict={'apiVersion': 'v1', 'kind': 'Pod', 'spec': {'containers': [{'name': 'bar', 'image': 'ubuntu', 'command': ['echo', 'hello world']}]}})
 
     ```
     :param task_id: The `task_id` for the operator
@@ -89,7 +97,7 @@ class OrbiterKubernetesPodOperator(OrbiterOperator):
         "pod_template_dict",
     ]
     kubernetes_conn_id: str | None = "KUBERNETES"
-    image: str
+    image: str | None = None
     cmds: list[str] | None = None
     arguments: list[str] | None = None
     env_vars: dict[str, str] | list[Any] | None = None  # V1EnvVar
