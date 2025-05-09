@@ -19,6 +19,7 @@ from typing import (
     Generator,
     Set,
     Type,
+    Mapping,
 )
 
 from loguru import logger
@@ -720,14 +721,14 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
             logger.debug(f"Checking directory={directory}")
             for file in files:
                 file = directory / file
-                # noinspection PyBroadException
                 try:
-                    yield (
-                        # Return the file path
-                        file,
-                        # and load the file and convert it into a python dict
-                        self.loads(file),
-                    )
+                    dict_or_list = self.loads(file)
+                    # If the file is list-like (not a dict), return each item in the list
+                    if isinstance(dict_or_list, Collection) and not isinstance(dict_or_list, Mapping):
+                        for item in dict_or_list:
+                            yield file, item
+                    else:
+                        yield file, dict_or_list
                 except TypeError:
                     logger.debug(f"File={file} not of correct type, skipping...")
                     continue
