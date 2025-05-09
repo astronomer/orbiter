@@ -19,6 +19,7 @@ from typing import (
     Generator,
     Set,
     Type,
+    Mapping,
 )
 
 from loguru import logger
@@ -722,8 +723,8 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
                 file = directory / file
                 try:
                     dict_or_list = self.loads(file)
-                    if isinstance(dict_or_list, list):
-                        # If the file is a list, return each item in the list
+                    # If the file is list-like (not a dict), return each item in the list
+                    if isinstance(dict_or_list, Collection) and not isinstance(dict_or_list, Mapping):
                         for item in dict_or_list:
                             yield file, item
                     else:

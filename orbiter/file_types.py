@@ -205,7 +205,7 @@ class FileTypeYAML(FileType):
     """
 
     extension: ClassVar[Set[str]] = {"YAML", "YML"}
-    load_fn: ClassVar[Callable[[str], dict]] = yaml.safe_load_all
+    load_fn: ClassVar[Callable[[str], dict]] = lambda s: list(yaml.full_load_all(s))
     dump_fn: ClassVar[Callable[[dict], str]] = yaml.safe_dump
 
 
