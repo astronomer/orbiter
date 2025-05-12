@@ -1,6 +1,9 @@
 import os
 import sys
 
+AF3 = bool(os.getenv("AF3", False))
+
+
 TRANSLATION_VERSION = os.getenv("ORBITER_TRANSLATION_VERSION", "latest")
 """The version of the translation ruleset to download. This can be overridden."""
 

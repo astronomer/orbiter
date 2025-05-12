@@ -28,7 +28,7 @@ class OrbiterEmptyOperator(OrbiterOperator):
     imports: ImportList = [
         OrbiterRequirement(
             package="apache-airflow",
-            module="airflow.operators.empty",
+            module="airflow.providers.standard.operators.empty",
             names=["EmptyOperator"],
         )
     ]
