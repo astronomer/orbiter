@@ -619,17 +619,15 @@ class OrbiterProject:
 
         def _get_task_types_for_tasks(tasks: Collection[OrbiterOperator | OrbiterTaskGroup]) -> list[str]:
             """recurse into task groups, running _get_task_type on each task"""
-            return reduce(
-                add,
-                [
+            return list(
+                chain.from_iterable(
                     (
                         _get_task_types_for_tasks(_tasks.values())
                         if (_tasks := getattr(task, "tasks", []))
                         else [_get_task_type(task)]
                     )
                     for task in tasks
-                ],
-                [],
+                )
             )
 
         dag_analysis = [
