@@ -3,7 +3,6 @@ from __future__ import annotations
 import sys
 import re
 from functools import reduce
-from operator import add
 from pathlib import Path
 from typing import Dict, Iterable, Set, Literal, Collection
 
