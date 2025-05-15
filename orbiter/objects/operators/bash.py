@@ -1,3 +1,4 @@
+from orbiter.config import AF3
 from orbiter.objects import ImportList
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator, RenderAttributes
@@ -33,7 +34,7 @@ class OrbiterBashOperator(OrbiterOperator):
     imports: ImportList = [
         OrbiterRequirement(
             package="apache-airflow",
-            module="airflow.providers.standard.operators.bash",
+            module="airflow.providers.standard.operators.bash" if AF3 else "airflow.operators.bash",
             names=["BashOperator"],
         )
     ]
