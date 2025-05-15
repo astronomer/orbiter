@@ -215,8 +215,8 @@ class OrbiterProject:
         ... # doctest: +NORMALIZE_WHITESPACE
         OrbiterProject(dags=[foo],
         requirements=[OrbiterRequirement(names=[DAG], package=apache-airflow, module=airflow, sys_package=None),
-        OrbiterRequirement(names=[BashOperator], package=apache-airflow, module=airflow.operators.bash, sys_package=None),
         OrbiterRequirement(names=[send_smtp_notification], package=apache-airflow-providers-smtp, module=airflow.providers.smtp.notifications.smtp, sys_package=None),
+        OrbiterRequirement(names=[BashOperator], package=apache-airflow-providers-standard, module=airflow.providers.standard.operators.bash, sys_package=None),
         OrbiterRequirement(names=[TaskGroup], package=apache-airflow, module=airflow.utils.task_group, sys_package=None),
         OrbiterRequirement(names=[MultiCronTimetable], package=croniter, module=include.multi_cron_timetable, sys_package=None),
         OrbiterRequirement(names=[DateTime,Timezone], package=pendulum, module=pendulum, sys_package=None)],
