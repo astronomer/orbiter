@@ -1,8 +1,8 @@
 import os
 import sys
 
-AF3 = bool(os.getenv("AF3", False))
-
+AF3 = bool(os.getenv("ORBITER_TRANSLATE_AF3", True))
+"""Whether to use Airflow 3 or 2 import paths in output for things like standard operators. Defaults to Airflow 3."""
 
 TRANSLATION_VERSION = os.getenv("ORBITER_TRANSLATION_VERSION", "latest")
 """The version of the translation ruleset to download. This can be overridden."""
