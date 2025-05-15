@@ -10,19 +10,19 @@ from itertools import chain
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import (
-    List,
-    Any,
-    Collection,
     Annotated,
+    Any,
     Callable,
-    Union,
+    Collection,
     Generator,
+    List,
     Set,
     Type,
+    Union,
 )
 
 from loguru import logger
-from pydantic import BaseModel, AfterValidator, validate_call
+from pydantic import AfterValidator, BaseModel, validate_call
 
 from orbiter import import_from_qualname
 from orbiter.file_types import FileType, FileTypeJSON
@@ -31,14 +31,14 @@ from orbiter.objects.project import OrbiterProject
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
 from orbiter.objects.task_group import OrbiterTaskGroup
 from orbiter.rules import (
-    Rule,
+    EMPTY_RULE,
     DAGFilterRule,
     DAGRule,
+    PostProcessingRule,
+    Rule,
+    TaskDependencyRule,
     TaskFilterRule,
     TaskRule,
-    TaskDependencyRule,
-    PostProcessingRule,
-    EMPTY_RULE,
     trim_dict,
 )
 
@@ -272,10 +272,10 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
         logger.info(f"Translating [File {i}]={file.resolve()}")
 
         # DAG FILTER Ruleset - filter down to keys suspected of being translatable to a DAG, in priority order.
-        # Add __file DAG FILTER inputs and outputs, so it's available for both DAG and DAG FILTER rules
+        # Add __file and __input_dir DAG FILTER inputs and outputs, so it's available for both DAG and DAG FILTER rules
         def with_file(d: dict) -> dict:
             try:
-                __file_addition = {"__file": (input_dir / file.relative_to(input_dir))}
+                __file_addition = {"__file": (input_dir / file.relative_to(input_dir)), "__input_dir": input_dir}
                 return __file_addition | d
             except Exception as e:
                 logger.opt(exception=e).debug("Unable to add __file")
