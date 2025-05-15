@@ -1,3 +1,4 @@
+from orbiter.config import AF3
 from orbiter.objects import ImportList
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator, RenderAttributes
@@ -27,8 +28,8 @@ class OrbiterEmptyOperator(OrbiterOperator):
 
     imports: ImportList = [
         OrbiterRequirement(
-            package="apache-airflow",
-            module="airflow.operators.empty",
+            package="apache-airflow-providers-standard",
+            module="airflow.providers.standard.operators.empty" if AF3 else "airflow.operators.empty",
             names=["EmptyOperator"],
         )
     ]

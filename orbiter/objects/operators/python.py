@@ -4,6 +4,7 @@ import ast
 from typing import Callable
 
 from orbiter.ast_helper import py_function
+from orbiter.config import AF3
 from orbiter.objects import ImportList
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
@@ -68,8 +69,8 @@ class OrbiterPythonOperator(OrbiterOperator):
 
     imports: ImportList = [
         OrbiterRequirement(
-            package="apache-airflow",
-            module="airflow.operators.python",
+            package="apache-airflow-providers-standard",
+            module="airflow.providers.standard.operators.python" if AF3 else "airflow.operators.python",
             names=["PythonOperator"],
         )
     ]

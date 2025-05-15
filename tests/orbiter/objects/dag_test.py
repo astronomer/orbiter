@@ -4,14 +4,14 @@ from orbiter.ast_helper import render_ast
 from orbiter.objects.task_group import OrbiterTaskGroup
 
 expected_basic_dag = """from airflow import DAG
-from airflow.operators.bash import BashOperator
+from airflow.providers.standard.operators.bash import BashOperator
 from pendulum import DateTime, Timezone
 with DAG(dag_id='dag_id', schedule=None, start_date=DateTime(1970, 1, 1, 0, 0, 0), catchup=False):
     task_id_task = BashOperator(task_id='task_id', bash_command="echo 'hello world'")"""
 
 
 expected_task_group = """from airflow import DAG
-from airflow.operators.bash import BashOperator
+from airflow.providers.standard.operators.bash import BashOperator
 from airflow.utils.task_group import TaskGroup
 from pendulum import DateTime, Timezone
 with DAG(dag_id='dag_id', schedule=None, start_date=DateTime(1970, 1, 1, 0, 0, 0), catchup=False):

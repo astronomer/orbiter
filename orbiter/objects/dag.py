@@ -329,7 +329,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         ...     OrbiterBashOperator(task_id="e", bash_command="e")
         ... ])  # doctest: +NORMALIZE_WHITESPACE
         from airflow import DAG
-        from airflow.operators.bash import BashOperator
+        from airflow.providers.standard.operators.bash import BashOperator
         from airflow.utils.task_group import TaskGroup
         from pendulum import DateTime, Timezone
         with DAG(dag_id='foo', schedule=None, start_date=DateTime(1970, 1, 1, 0, 0, 0), catchup=False):
