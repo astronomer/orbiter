@@ -33,7 +33,7 @@ class OrbiterBashOperator(OrbiterOperator):
 
     imports: ImportList = [
         OrbiterRequirement(
-            package="apache-airflow",
+            package="apache-airflow-providers-standard",
             module="airflow.providers.standard.operators.bash" if AF3 else "airflow.operators.bash",
             names=["BashOperator"],
         )

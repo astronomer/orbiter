@@ -69,7 +69,7 @@ class OrbiterPythonOperator(OrbiterOperator):
 
     imports: ImportList = [
         OrbiterRequirement(
-            package="apache-airflow",
+            package="apache-airflow-providers-standard",
             module="airflow.providers.standard.operators.python" if AF3 else "airflow.operators.python",
             names=["PythonOperator"],
         )
