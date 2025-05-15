@@ -3,8 +3,9 @@ from __future__ import annotations
 import sys
 import re
 from functools import reduce
+from itertools import chain
 from pathlib import Path
-from typing import Dict, Iterable, Set, Literal
+from typing import Dict, Iterable, Set, Literal, Collection
 
 import yaml
 from loguru import logger
@@ -583,10 +584,14 @@ class OrbiterProject:
         ...         tasks={"bar": OrbiterEmptyOperator(task_id="bar")}
         ...     ),
         ...     OrbiterDAG(file_path="", dag_id="baz", orbiter_kwargs={"file_path": "baz.py"},
-        ...         tasks={"bop": OrbiterEmptyOperator(task_id="bop")}
+        ...         tasks={"bing": OrbiterTaskGroup(task_group_id="bing", tasks={
+        ...             "bop": OrbiterEmptyOperator(task_id="bop"),
+        ...             "bang": OrbiterTaskGroup(task_group_id="bang", tasks={
+        ...                 "bam": OrbiterEmptyOperator(task_id="bam")
+        ...             }),
+        ...        })},
         ...     )
-        ... ]).analyze()
-        ... # doctest: +ELLIPSIS
+        ... ]).analyze() # doctest: +ELLIPSIS
         ┏━...
         ...Analysis...
         ┗━...
@@ -595,8 +600,8 @@ class OrbiterProject:
                    DAGs   OrbiterEmptyOperator
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           foo.py      1                      1
-          baz.py      1                      1
-          Totals      2                      2
+          baz.py      1                      2
+          Totals      2                      3
         <BLANKLINE>
 
         ```
@@ -606,16 +611,30 @@ class OrbiterProject:
 
         _task_type = re.compile(r"\[task_type=(?P<task_type>[A-Za-z0-9-_]+)")
 
-        def get_task_type(task):
+        def _get_task_type(task):
+            """get the `task_type=` from .doc_md (added by `cannot_map_rule` or get the `type(task)`"""
             match = _task_type.match(getattr(task, "doc_md", None) or "")
             match_or_task_type = (match.groupdict().get("task_type") if match else None) or type(task).__name__
             return match_or_task_type
+
+        def _get_task_types_for_tasks(tasks: Collection[OrbiterOperator | OrbiterTaskGroup]) -> list[str]:
+            """recurse into task groups, running _get_task_type on each task"""
+            return list(
+                chain.from_iterable(
+                    (
+                        _get_task_types_for_tasks(_tasks.values())
+                        if (_tasks := getattr(task, "tasks", []))
+                        else [_get_task_type(task)]
+                    )
+                    for task in tasks
+                )
+            )
 
         dag_analysis = [
             {
                 "file": dag.orbiter_kwargs.get("file_path", dag.file_path),
                 "dag_id": dag.dag_id,
-                "task_types": [get_task_type(task) for task in dag.tasks.values()],
+                "task_types": _get_task_types_for_tasks(dag.tasks.values()),
             }
             for dag in self.dags.values()
         ]
