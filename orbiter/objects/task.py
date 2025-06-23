@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import ast
 from abc import ABC
-from typing import Set, List, ClassVar, Annotated, Callable
+from typing import Any, Set, List, ClassVar, Annotated, Callable
 
 from loguru import logger
 from pydantic import AfterValidator, BaseModel, validate_call
@@ -39,7 +39,7 @@ TaskId = Annotated[str, AfterValidator(lambda t: to_task_id(t))]
 
 
 def task_add_downstream(
-    self, task_id: str | List[str] | OrbiterTaskDependency
+        self, task_id: str | List[str] | OrbiterTaskDependency
 ) -> "OrbiterOperator" | "OrbiterTaskGroup":  # noqa: F821
     # noinspection PyProtectedMember
     """
@@ -103,6 +103,7 @@ class OrbiterTaskDependency(BaseModel, extra="forbid"):
     # --8<-- [start:mermaid-td-props]
     task_id: TaskId
     downstream: TaskId | List[TaskId]
+
     # --8<-- [end:mermaid-td-props]
 
     def __str__(self):
@@ -238,13 +239,16 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
                 return ast.Name(id=attr)
             return attr
 
-        # foo = Bar(x=x,y=y, z=z)
         return py_assigned_object(
             to_task_id(self.task_id, ORBITER_TASK_SUFFIX),
             self.operator,
             **{k: prop(k) for k in self.render_attributes if k and getattr(self, k)},
             **{k: prop(k) for k in (self.model_extra.keys() or [])},
         )
+
+    @property
+    def output(self):
+        return f"{self.task_id}_task.output"
 
 
 class OrbiterTask(OrbiterOperator, extra="allow"):
@@ -343,4 +347,120 @@ def to_task_id(task_id: str, assignment_suffix: str = "") -> str:
     :type assignment_suffix: str
     """
     task_id = clean_value(task_id)
-    return task_id + (assignment_suffix if task_id[-len(assignment_suffix) :] != assignment_suffix else "")
+    return task_id + (assignment_suffix if task_id[-len(assignment_suffix):] != assignment_suffix else "")
+
+
+class OrbiterDynamicTaskMapping(OrbiterASTBase):
+    """
+    Class implementing Dynamic Task Mapping.
+
+    :param operator: Operator name
+    :type operator: str, optional
+    :param **kwargs: Other properties that may be passed to operator
+    :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
+    """
+    operator: OrbiterOperator
+    partial_kwargs: dict[str, Any]
+    expand_kwargs: dict[str, Any]
+
+    def __init__(self, operator, partial_kwargs, expand_kwargs):
+        self.operator = operator
+        self.expand_kwargs = expand_kwargs
+        self.partial_kwargs = partial_kwargs
+
+    def _move_op_attr_to_partial(self):
+        """
+        Move the attributes from Operator to Partial.
+
+        Some Operator arguments are not mappable and must be passed to partial(),
+        such as task_id, queue, pool, and most other arguments to BaseOperator.
+        See: https://airflow.apache.org/docs/apache-airflow/2.11.0/authoring-and-scheduling/dynamic-task-mapping.html?utm_source=chatgpt.com#mapping-with-non-taskflow-operators
+        """
+        for attr in ["task_id", "pool", "pool_slots"]:
+            if attr_val := getattr(self.operator, attr):
+                # Copy to Partial
+                self.partial_kwargs[attr] = attr_val
+                # Remove from Operator
+                setattr(self.operator, attr, None)
+
+    def _expand_value_ast(self, val):
+        """
+        Process expand_kwargs and return AST
+
+        We support two main DTM patterns:
+        1. Mapping over the result of another operator
+            expand(task1.output)
+        2. Simple mapping: map over a list defined directly
+            .expand(x=[1, 2, 3])
+        """
+        # Case 1: If value end with '.output', treat it as a reference to another task's output.
+        # Example: op_args=my_task.output (Airflow: `.expand(op_args=my_task.output)`)
+        if val.endswith('.output'):
+            # Parse the string as Python code to get an AST node referencing the output attribute
+            return ast.parse(val).body[0].value
+        # Case 2: For all other values, treat as a constant (e.g., a list, int, str, etc.)
+        # Example: op_args=[[1], [2], [3]] (Airflow: .expand(`op_args=[[1], [2], [3]])`)
+        if isinstance(val, list):
+            # Wrap the value as a Python constant in the AST
+            return ast.Constant(value=val)
+
+    def _to_ast(self):
+        import ast
+        from orbiter.config import ORBITER_TASK_SUFFIX
+
+        self._move_op_attr_to_partial()
+
+        # Generate the Operator AST (e.g., BashOperator(...))
+        op_ast = self.operator._to_ast()
+
+        # If the operator AST is a list (e.g., includes function defs), extract the assignment part
+        if isinstance(op_ast, list):
+            # Assume the last element is the assignment, the rest are function defs
+            *func_defs, op_assign = op_ast
+            op_ast_value = op_assign.value
+        else:
+            func_defs = []
+            op_assign = op_ast
+            op_ast_value = op_assign.value
+
+        # Wrap the operator instantiation with .partial(...)
+        partial_call = ast.Call(
+            func=ast.Attribute(
+                value=op_ast_value,
+                attr="partial",
+                ctx=ast.Load(),
+            ),
+            args=[],
+            keywords=[
+                ast.keyword(arg=k, value=ast.Constant(value=v))
+                for k, v in self.partial_kwargs.items()
+            ]
+        )
+
+        # Wrap with .expand(...)
+        expand_call = ast.Call(
+            func=ast.Attribute(
+                value=partial_call,
+                attr="expand",
+                ctx=ast.Load(),
+            ),
+            args=[],
+            keywords=[
+                ast.keyword(
+                    arg=k,
+                    value=self._expand_value_ast(v)
+                )
+                for k, v in self.expand_kwargs.items()
+            ]
+        )
+
+        # Assignment: <task_id>_task = ...
+        assign = ast.Assign(
+            targets=[ast.Name(id=to_task_id(self.operator.task_id, ORBITER_TASK_SUFFIX))],
+            value=expand_call
+        )
+
+        # Return function defs (if any) plus the assignment
+        return func_defs + [assign]
+
+        
