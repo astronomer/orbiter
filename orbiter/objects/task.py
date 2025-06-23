@@ -39,7 +39,7 @@ TaskId = Annotated[str, AfterValidator(lambda t: to_task_id(t))]
 
 
 def task_add_downstream(
-        self, task_id: str | List[str] | OrbiterTaskDependency
+    self, task_id: str | List[str] | OrbiterTaskDependency
 ) -> "OrbiterOperator" | "OrbiterTaskGroup":  # noqa: F821
     # noinspection PyProtectedMember
     """
@@ -347,7 +347,7 @@ def to_task_id(task_id: str, assignment_suffix: str = "") -> str:
     :type assignment_suffix: str
     """
     task_id = clean_value(task_id)
-    return task_id + (assignment_suffix if task_id[-len(assignment_suffix):] != assignment_suffix else "")
+    return task_id + (assignment_suffix if task_id[-len(assignment_suffix) :] != assignment_suffix else "")
 
 
 class OrbiterDynamicTaskMapping(OrbiterASTBase):
@@ -359,6 +359,7 @@ class OrbiterDynamicTaskMapping(OrbiterASTBase):
     :param **kwargs: Other properties that may be passed to operator
     :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """
+
     operator: OrbiterOperator
     partial_kwargs: dict[str, Any]
     expand_kwargs: dict[str, Any]
@@ -395,7 +396,7 @@ class OrbiterDynamicTaskMapping(OrbiterASTBase):
         """
         # Case 1: If value end with '.output', treat it as a reference to another task's output.
         # Example: op_args=my_task.output (Airflow: `.expand(op_args=my_task.output)`)
-        if val.endswith('.output'):
+        if val.endswith(".output"):
             # Parse the string as Python code to get an AST node referencing the output attribute
             return ast.parse(val).body[0].value
         # Case 2: For all other values, treat as a constant (e.g., a list, int, str, etc.)
@@ -431,10 +432,7 @@ class OrbiterDynamicTaskMapping(OrbiterASTBase):
                 ctx=ast.Load(),
             ),
             args=[],
-            keywords=[
-                ast.keyword(arg=k, value=ast.Constant(value=v))
-                for k, v in self.partial_kwargs.items()
-            ]
+            keywords=[ast.keyword(arg=k, value=ast.Constant(value=v)) for k, v in self.partial_kwargs.items()],
         )
 
         # Wrap with .expand(...)
@@ -445,22 +443,13 @@ class OrbiterDynamicTaskMapping(OrbiterASTBase):
                 ctx=ast.Load(),
             ),
             args=[],
-            keywords=[
-                ast.keyword(
-                    arg=k,
-                    value=self._expand_value_ast(v)
-                )
-                for k, v in self.expand_kwargs.items()
-            ]
+            keywords=[ast.keyword(arg=k, value=self._expand_value_ast(v)) for k, v in self.expand_kwargs.items()],
         )
 
         # Assignment: <task_id>_task = ...
         assign = ast.Assign(
-            targets=[ast.Name(id=to_task_id(self.operator.task_id, ORBITER_TASK_SUFFIX))],
-            value=expand_call
+            targets=[ast.Name(id=to_task_id(self.operator.task_id, ORBITER_TASK_SUFFIX))], value=expand_call
         )
 
         # Return function defs (if any) plus the assignment
         return func_defs + [assign]
-
-        

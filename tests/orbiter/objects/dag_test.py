@@ -56,10 +56,7 @@ def test_dag_render_dynamic_mapping():
 
     one_two_three_task = OrbiterPythonOperator(task_id="one_two_three_task", python_callable=one_two_three_traditional)
 
-    plus_10_task = OrbiterPythonOperator(
-        task_id="plus_10_task",
-        python_callable=plus_10_traditional
-    )
+    plus_10_task = OrbiterPythonOperator(task_id="plus_10_task", python_callable=plus_10_traditional)
 
     plus_10_task_dtm = OrbiterDynamicTaskMapping(
         operator=plus_10_task,
@@ -67,7 +64,9 @@ def test_dag_render_dynamic_mapping():
         expand_kwargs={"op_args": one_two_three_task.output},
     )
 
-    dag = OrbiterDAG(dag_id="dynamic_mapping_classic_etl", file_path="").add_tasks([one_two_three_task, plus_10_task_dtm])
+    dag = OrbiterDAG(dag_id="dynamic_mapping_classic_etl", file_path="").add_tasks(
+        [one_two_three_task, plus_10_task_dtm]
+    )
 
     actual = render_ast(dag._to_ast())
     assert (
@@ -89,10 +88,7 @@ def test_dag_render_dynamic_mapping_list():
     def plus_10_traditional(x):
         return x + 10
 
-    plus_10_task = OrbiterPythonOperator(
-        task_id="plus_10_task",
-        python_callable=plus_10_traditional
-    )
+    plus_10_task = OrbiterPythonOperator(task_id="plus_10_task", python_callable=plus_10_traditional)
 
     plus_10_task_dtm = OrbiterDynamicTaskMapping(
         operator=plus_10_task,
