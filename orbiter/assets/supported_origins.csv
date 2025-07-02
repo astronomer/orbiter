@@ -18,6 +18,7 @@ JAMS,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer
 ⠀,⠀,`astronomer-orbiter-translations`,`orbiter_translations.jams.xml_base.translation_ruleset`,⠀,⠀
 Jenkins,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.jenkins.json_demo.translation_ruleset`,Pipeline,Stage
 Kestra,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.kestra.yaml_demo.translation_ruleset`,Flow,Task
+Matillion,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.matillion.yaml_demo.translation_ruleset`,Pipeline,Component
 Oozie,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.oozie.xml_demo.translation_ruleset`,Workflow,Node
 ⠀,Astronomer,`astronomer-orbiter-translations`,`orbiter_translations.oozie.xml_base.translation_ruleset`,⠀,⠀
 SSIS,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.ssis.xml_demo.translation_ruleset`,Workflow,Task
