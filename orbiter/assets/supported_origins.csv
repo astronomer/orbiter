@@ -1,5 +1,6 @@
 Origin,Maintainer,Repository,Ruleset,DAG Equivalent,Task Equivalent
 Argo,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.argo.yaml_demo.translation_ruleset`,Workflow,Step
+⠀,⠀,`astronomer-orbiter-translations`,`orbiter_translations.argo.yaml_base.translation_ruleset`,⠀,⠀
 Automic,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.automic.xml_demo.translation_ruleset`,Workflow,Job
 Autosys,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.autosys.jil_demo.translation_ruleset`,Job (or Box),Job⠀
 ⠀,⠀,`astronomer-orbiter-translations`,`orbiter_translations.autosys.jil_base.translation_ruleset`,⠀,⠀
@@ -12,6 +13,7 @@ cron,Community,[`orbiter-community-translations`](https://github.com/astronomer/
 DAG Factory,Community,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.dag_factory.yaml_base.translation_ruleset`,DAG,Task
 DataStage,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.datastage.xml_demo.translation_ruleset`,Job,Stage
 ESP,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.esp.txt_demo.translation_ruleset`,Procedure (or Application),Job
+⠀,⠀,`astronomer-orbiter-translations`,`orbiter_translations.esp.txt_base.translation_ruleset`,⠀,⠀
 JAMS,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.jams.xml_demo.translation_ruleset`,Sequence,Job
 ⠀,⠀,`astronomer-orbiter-translations`,`orbiter_translations.jams.xml_base.translation_ruleset`,⠀,⠀
 Jenkins,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.jenkins.json_demo.translation_ruleset`,Pipeline,Stage
