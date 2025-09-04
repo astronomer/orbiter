@@ -89,12 +89,14 @@ def _prompt_for_path() -> Path:
     return Path(choice).expanduser().resolve()
 
 
+# noinspection D
 def _prompt_for_ruleset(multi: bool = False) -> str:
     from prompt_toolkit.formatted_text import FormattedText
     from prompt_toolkit.styles import Style
     import string
 
     style = Style([("origin", "ansiblue bold"), ("repo", "darkgrey"), ("ruleset", "ansimagenta bold underline")])
+    indexes = string.ascii_lowercase + string.digits + string.punctuation
 
     def pretty_title(_shortcut_key: str, _origin: str, _repo: str, _ruleset: str) -> FormattedText:
         return FormattedText(
@@ -122,7 +124,7 @@ def _prompt_for_ruleset(multi: bool = False) -> str:
             and (repo := (re.search(r"\[?`?([\w.-]+)`?]?", __repo) or [None])[1])  # noqa: F821
         ):
             # and set it as the last_repo, to use if future rows skip it
-            last_repo = repo
+            last_repo = repo  # noqa
 
         if (
             # Get the ruleset, strip spaces (including special ones)
@@ -132,7 +134,7 @@ def _prompt_for_ruleset(multi: bool = False) -> str:
             # and skip if it's empty or 'WIP'
             and ruleset.lower() != "wip"
         ):
-            shortcut_key = string.ascii_lowercase[len(ruleset_choices)]
+            shortcut_key = indexes[len(ruleset_choices)]
             ruleset_choices.append(
                 Choice(
                     title=pretty_title(shortcut_key, last_origin, last_repo, ruleset),
@@ -141,7 +143,7 @@ def _prompt_for_ruleset(multi: bool = False) -> str:
                 )
             )
     if not multi:
-        shortcut_key = string.ascii_lowercase[len(ruleset_choices) + 1]
+        shortcut_key = indexes[len(ruleset_choices)]
         ruleset_choices += [
             Choice(title=pretty_title(shortcut_key, "Other...", "", ""), shortcut_key=shortcut_key, value="Other...")
         ]
