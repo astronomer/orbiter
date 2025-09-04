@@ -111,7 +111,11 @@ def _prompt_for_ruleset(multi: bool = False) -> str:
     ruleset_choices = []
     # meta = {}
     last_repo, last_origin = None, None
-    for ruleset in _get_rulesets_from_csv():
+    rulesets = _get_rulesets_from_csv()
+    if len(rulesets) > len(indexes):
+        logger.warning("Too many rulesets to list, will be truncated. View additional rulesets at documentation.")
+        rulesets = rulesets[: len(indexes)]
+    for ruleset in rulesets:
         # Get the Origin, strip spaces (including special ones)
         if origin := ruleset.get("Origin", "").strip(" ⠀"):
             # and set it as the last_origin, to use if future rows skip it
