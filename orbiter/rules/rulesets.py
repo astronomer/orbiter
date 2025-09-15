@@ -19,10 +19,12 @@ from typing import (
     Set,
     Type,
     Union,
+    Tuple,
 )
 
 from loguru import logger
 from pydantic import AfterValidator, BaseModel, validate_call
+from pydantic.v1 import BaseSettings
 
 from orbiter import import_from_qualname
 from orbiter.file_types import FileType, FileTypeJSON
@@ -218,7 +220,7 @@ def _get_parent_for_task_dependency(
     return None
 
 
-# noinspection t
+# noinspection t,D
 @validate_call
 def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     """
@@ -600,6 +602,10 @@ EMPTY_RULESET = {"ruleset": [EMPTY_RULE]}
 """Empty ruleset, for testing"""
 
 
+class TranslationConfig(BaseSettings):
+    pass
+
+
 class TranslationRuleset(BaseModel, ABC, extra="forbid"):
     """
     A `Ruleset` is a collection of [`Rules`][orbiter.rules.Rule] that are
@@ -650,6 +656,7 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
     """  # noqa: E501
 
     file_type: Set[Type[FileType]]
+    config: TranslationConfig = TranslationConfig()
     dag_filter_ruleset: DAGFilterRuleset | dict
     dag_ruleset: DAGRuleset | dict
     task_filter_ruleset: TaskFilterRuleset | dict
@@ -707,7 +714,7 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
                 return file_type.dump_fn(input_dict)
         raise TypeError(f"Invalid file_type={ext}")
 
-    def get_files_with_extension(self, input_dir: Path) -> Generator[Path, dict]:
+    def get_files_with_extension(self, input_dir: Path) -> Generator[Tuple[Path, dict]]:
         """
         A generator that yields files with a specific extension(s) in a directory
 
@@ -747,7 +754,7 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
         """
         with TemporaryDirectory() as tempdir:
             file = Path(tempdir) / f"{uuid.uuid4()}.{self.get_ext()}"
-            file.write_text(self.dumps(input_value) if isinstance(input_value, dict) else input_value)
+            file.write_text(self.dumps(input_value) if not isinstance(input_value, dict) else input_value)
             return self.translate_fn(translation_ruleset=self, input_dir=file.parent)
 
 
