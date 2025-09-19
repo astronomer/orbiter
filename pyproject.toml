@@ -46,6 +46,7 @@ dependencies = [
     # NOTE: 04/2025 - something broke in 2.11?
     # Errors like: "Define OrbiterProject before PostProcessingRuleset and call .model_rebuild()"
     "pydantic >= 2.6, < 2.11",
+    "pydantic-settings",
 
      # for converting to snake_case
     "inflection",

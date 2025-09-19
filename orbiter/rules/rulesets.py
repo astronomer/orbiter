@@ -24,7 +24,7 @@ from typing import (
 
 from loguru import logger
 from pydantic import AfterValidator, BaseModel, validate_call
-from pydantic.v1 import BaseSettings
+from pydantic_settings import BaseSettings
 
 from orbiter import import_from_qualname
 from orbiter.file_types import FileType, FileTypeJSON
