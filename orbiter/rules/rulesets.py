@@ -754,7 +754,7 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
         """
         with TemporaryDirectory() as tempdir:
             file = Path(tempdir) / f"{uuid.uuid4()}.{self.get_ext()}"
-            file.write_text(self.dumps(input_value) if not isinstance(input_value, dict) else input_value)
+            file.write_text(self.dumps(input_dict=input_value) if isinstance(input_value, dict) else input_value)
             return self.translate_fn(translation_ruleset=self, input_dir=file.parent)
 
 
