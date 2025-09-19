@@ -11,7 +11,7 @@ Control M,Astronomer,[`orbiter-community-translations`](https://github.com/astro
 cron,Community,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.cron.crontab_base.translation_ruleset`,Job,Command
 ⠀,⠀,⠀,`orbiter_translations.cron.crontab_ssh.translation_ruleset`,⠀,⠀
 DAG Factory,Community,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.dag_factory.yaml_base.translation_ruleset`,DAG,Task
-DataStage,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.datastage.xml_demo.translation_ruleset`,Job,Stage
+DataStage,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.data_stage.xml_demo.translation_ruleset`,Job,Stage
 ESP,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.esp.txt_demo.translation_ruleset`,Procedure (or Application),Job
 ⠀,⠀,`astronomer-orbiter-translations`,`orbiter_translations.esp.txt_base.translation_ruleset`,⠀,⠀
 JAMS,Astronomer,[`orbiter-community-translations`](https://github.com/astronomer/orbiter-community-translations),`orbiter_translations.jams.xml_demo.translation_ruleset`,Sequence,Job
