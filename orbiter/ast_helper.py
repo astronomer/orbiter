@@ -121,7 +121,9 @@ def py_with(item: ast.expr, body: List[ast.stmt], assignment: str | None = None)
     )
 
 
-def py_function(c: Callable | str, decorator_names: List[str] | None = None, decorator_kwargs: List[dict] | None = None):
+def py_function(
+    c: Callable | str, decorator_names: List[str] | None = None, decorator_kwargs: List[dict] | None = None
+):
     """
     ```pycon
     >>> def foo(a, b):
