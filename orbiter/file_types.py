@@ -71,7 +71,7 @@ class FileTypeJSON(FileType):
     dump_fn: ClassVar[Callable[[dict], str]] = partial(json.dumps, default=str)
 
 
-# noinspection t
+# noinspection t, D
 def xmltodict_parse(input_str: str) -> Any:
     """Calls `xmltodict.parse` and does post-processing fixes.
 
@@ -132,7 +132,7 @@ def xmltodict_parse(input_str: str) -> Any:
         except Exception as e:
             logger.debug(f"Error parsing escaped XML: {e}")
 
-    # noinspection t
+    # noinspection t, D
     def _fix(d):
         """fix the dict in place, recursively, standardizing on a list of dict even if there's only one entry."""
         # if it's a dict, descend to fix
