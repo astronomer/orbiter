@@ -85,6 +85,7 @@ def _get_imports_recursively(
         imports |= reduce(reduce_imports_from_callback, CALLBACK_KEYS, set())
         if hasattr(task, "tasks"):
             # descend, for a task group
+            # noinspection PyUnresolvedReferences
             imports |= set(_get_imports_recursively(task.tasks.values()))
     return list(sorted(imports, key=str))
 
@@ -92,7 +93,7 @@ def _get_imports_recursively(
 def _add_tasks(
     self,
     tasks: (OrbiterOperator | OrbiterTaskGroup | Iterable[OrbiterOperator | OrbiterTaskGroup]),
-) -> "OrbiterDAG" | OrbiterTaskGroup:
+) -> "OrbiterDAG | OrbiterTaskGroup":
     """Add one or more [`OrbiterOperators`][orbiter.objects.task.OrbiterOperator] to the DAG or Task Group
 
     ```pycon
@@ -194,6 +195,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     --8<-- [end:mermaid-props]
     """
 
+    # noinspection PyTypeHints
     imports: ImportList = [
         OrbiterRequirement(package="apache-airflow", module="airflow", names=["DAG"]),
         OrbiterRequirement(package="pendulum", module="pendulum", names=["DateTime", "Timezone"]),
@@ -204,7 +206,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     schedule: str | timedelta | OrbiterTimetable | None = None
     catchup: bool = False
     start_date: DateTime | datetime = DateTime(1970, 1, 1)
-    tags: List[str] = None
+    tags: List[str] | None = None
     default_args: Dict[str, Any] = dict()
     params: Dict[str, Any] = dict()
     doc_md: str | None = None

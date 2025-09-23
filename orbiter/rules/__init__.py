@@ -83,8 +83,9 @@ def trim_dict(v):
 
 def rule(
     func=None, *, priority=None
-) -> Rule | "DAGFilterRule" | "DAGRule" | "TaskFilterRule" | "TaskRule" | "TaskDependencyRule" | "PostProcessingRule":
+) -> "Rule | DAGFilterRule | DAGRule | TaskFilterRule | TaskRule | TaskDependencyRule | PostProcessingRule":
     if func is None:
+        # noinspection PyTypeChecker
         return functools.partial(rule, priority=priority)
 
     priority = priority or 1

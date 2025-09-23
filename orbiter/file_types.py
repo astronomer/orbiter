@@ -71,7 +71,7 @@ class FileTypeJSON(FileType):
     dump_fn: ClassVar[Callable[[dict], str]] = partial(json.dumps, default=str)
 
 
-# noinspection t
+# noinspection t, D
 def xmltodict_parse(input_str: str) -> Any:
     """Calls `xmltodict.parse` and does post-processing fixes.
 
@@ -132,7 +132,7 @@ def xmltodict_parse(input_str: str) -> Any:
         except Exception as e:
             logger.debug(f"Error parsing escaped XML: {e}")
 
-    # noinspection t
+    # noinspection t, D
     def _fix(d):
         """fix the dict in place, recursively, standardizing on a list of dict even if there's only one entry."""
         # if it's a dict, descend to fix
@@ -213,6 +213,23 @@ def unimplemented_dump(_: dict) -> str:
     raise NotImplementedError("Dumping is not implemented yet.")
 
 
+def parse_jil(s: str) -> dict[str, list[dict]]:
+    """Parses JIL string into a dictionary.
+
+    ```pycon
+    >>> parse_jil(r'''insert_job: TEST.ECHO  job_type: CMD  /* INLINE COMMENT */
+    ... owner: foo
+    ... /* MULTILINE
+    ...     COMMENT */
+    ... machine: bar
+    ... command: echo "Hello World"''')
+    {'jobs': [{'insert_job': 'TEST.ECHO', 'job_type': 'CMD', 'owner': 'foo', 'machine': 'bar', 'command': 'echo "Hello World"'}]}
+
+    ```
+    """
+    return {k: [dict(job) for job in v] for k, v in JilParser(None).parse_jobs_from_str(s).items()}
+
+
 class FileTypeJIL(FileType):
     """JIL File Type
 
@@ -225,7 +242,7 @@ class FileTypeJIL(FileType):
     """
 
     extension: ClassVar[Set[str]] = {"JIL"}
-    load_fn: ClassVar[Callable[[str], dict]] = JilParser(None).parse_jobs_from_str
+    load_fn: ClassVar[Callable[[str], dict]] = parse_jil
     dump_fn: ClassVar[Callable[[dict], str]] = unimplemented_dump
 
 

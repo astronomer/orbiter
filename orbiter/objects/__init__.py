@@ -49,7 +49,7 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
     """
 
     imports: ImportList
-    orbiter_kwargs: dict = None
+    orbiter_kwargs: dict | None = None
 
     orbiter_conns: Set[OrbiterConnection] | None = None
     orbiter_env_vars: Set[OrbiterEnvVar] | None = None

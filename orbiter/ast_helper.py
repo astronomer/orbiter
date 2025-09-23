@@ -62,10 +62,11 @@ def py_root(*args) -> ast.Module:
     :param args: ast objects, such as ast.Expr
     :return: root ast.Module, which can be `ast.unparse`d
     """
+    # noinspection PyTypeChecker
     return ast.Module(body=args, type_ignores=[])
 
 
-def py_import(names: List[str], module: str = None) -> ast.ImportFrom | ast.Import | list:
+def py_import(names: List[str], module: str | None = None) -> ast.ImportFrom | ast.Import | list:
     """
     :param module: e.g. `airflow.operators.bash` for `from airflow.operators.bash import BashOperator`
     :param names: e.g. `BashOperator` for `from airflow.operators.bash import BashOperator`
@@ -107,6 +108,7 @@ def py_with(item: ast.expr, body: List[ast.stmt], assignment: str | None = None)
     """
     if isinstance(item, ast.Expr):
         item = item.value
+    # noinspection PyTypeChecker
     return ast.With(
         items=[
             ast.withitem(
@@ -119,7 +121,9 @@ def py_with(item: ast.expr, body: List[ast.stmt], assignment: str | None = None)
     )
 
 
-def py_function(c: Callable | str, decorator_names: List[str] = None, decorator_kwargs: List[dict] = None):
+def py_function(
+    c: Callable | str, decorator_names: List[str] | None = None, decorator_kwargs: List[dict] | None = None
+):
     """
     ```pycon
     >>> def foo(a, b):
