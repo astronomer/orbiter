@@ -56,9 +56,3 @@ class OrbiterWinRMOperator(OrbiterOperator):
     ]
     ssh_conn_id: str
     command: str
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()

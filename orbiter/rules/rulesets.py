@@ -768,9 +768,3 @@ EMPTY_TRANSLATION_RULESET = TranslationRuleset(
     post_processing_ruleset=EMPTY_RULESET,
     translate_fn=fake_translate,
 )
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)

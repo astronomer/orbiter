@@ -119,9 +119,3 @@ class OrbiterKubernetesPodOperator(OrbiterOperator):
         if not any(map(bool, (self.image, self.pod_template_dict))):
             raise ValueError("At least one of `image` or `pod_template_dict` must be set.")
         return self
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()

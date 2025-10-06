@@ -132,9 +132,3 @@ class OrbiterDecoratedPythonOperator(OrbiterPythonOperator):
             decorator_names=["task"],
             decorator_kwargs=[{}],
         )
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)

@@ -703,9 +703,3 @@ OrbiterProject.add_includes = validate_call()(OrbiterProject.add_includes)
 OrbiterProject.add_pools = validate_call()(OrbiterProject.add_pools)
 OrbiterProject.add_requirements = validate_call()(OrbiterProject.add_requirements)
 OrbiterProject.add_variables = validate_call()(OrbiterProject.add_variables)
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)

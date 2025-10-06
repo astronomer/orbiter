@@ -48,9 +48,3 @@ class OrbiterLivyOperator(OrbiterOperator):
 
     # noinspection Pydantic
     render_attributes: RenderAttributes = OrbiterOperator.render_attributes + ["livy_conn_id"]
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()

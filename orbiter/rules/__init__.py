@@ -337,9 +337,3 @@ def cannot_map_rule(val: dict) -> OrbiterOperator | None:
 
 EMPTY_RULE = Rule(rule=lambda val: None, priority=0)
 """Empty rule, for testing"""
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)
