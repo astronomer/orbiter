@@ -29,7 +29,7 @@ class OrbiterCallback(OrbiterASTBase, OrbiterBase, extra="forbid"):
     ... # doctest: +ELLIPSIS
     from airflow import DAG
     from my_callback import my_callback
-    with DAG(on_failure_callback=my_callback):
+    with DAG(dag_id='', on_failure_callback=my_callback):
 
     ```
 
