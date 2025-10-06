@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from orbiter.objects import ImportList, OrbiterRequirement
+from typing import Literal
+
+from orbiter.objects.requirement import OrbiterRequirement
+
+from orbiter.objects import ImportList
 from orbiter.objects.task import OrbiterOperator, RenderAttributes
 
 
@@ -35,6 +39,7 @@ class OrbiterWinRMOperator(OrbiterOperator):
      kwargs: Any
      --8<-- [end:mermaid-props]
      """
+    orbiter_type: Literal["OrbiterWinRMOperator"] = "OrbiterWinRMOperator"
 
     imports: ImportList = [
         OrbiterRequirement(
@@ -51,9 +56,3 @@ class OrbiterWinRMOperator(OrbiterOperator):
     ]
     ssh_conn_id: str
     command: str
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()

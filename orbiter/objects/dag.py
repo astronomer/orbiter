@@ -4,7 +4,7 @@ import ast
 from datetime import datetime, timedelta
 from functools import reduce
 from pathlib import Path
-from typing import Annotated, Any, Dict, Iterable, List, Callable, Union
+from typing import Annotated, Any, Dict, Iterable, List, Callable, ClassVar, TYPE_CHECKING
 
 from pendulum import DateTime
 from pydantic import AfterValidator, validate_call
@@ -14,8 +14,13 @@ from orbiter.ast_helper import OrbiterASTBase, py_object, py_with
 from orbiter.objects import ImportList, OrbiterBase, CALLBACK_KEYS
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
-from orbiter.objects.task_group import OrbiterTaskGroup
 from orbiter.objects.timetables import OrbiterTimetable
+from orbiter.objects.task_group import TasksType
+
+if TYPE_CHECKING:
+    from orbiter.objects.task import OrbiterOperator
+    from orbiter.objects.task_group import OrbiterTaskGroup
+
 
 __mermaid__ = """
 --8<-- [start:mermaid-project-relationships]
@@ -204,17 +209,16 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
     dag_id: DagId
     schedule: str | timedelta | OrbiterTimetable | None = None
-    catchup: bool = False
-    start_date: DateTime | datetime = DateTime(1970, 1, 1)
+    catchup: bool | None = None
+    start_date: DateTime | datetime | None = None
     tags: List[str] | None = None
-    default_args: Dict[str, Any] = dict()
-    params: Dict[str, Any] = dict()
+    default_args: Dict[str, Any] | None = None
+    params: Dict[str, Any] | None = None
     doc_md: str | None = None
 
-    tasks: Dict[str, Union[OrbiterOperator, OrbiterTaskGroup]] = dict()
+    tasks: TasksType
 
-    nullable_attributes: List[str] = ["catchup", "schedule"]
-    render_attributes: List[str] = [
+    render_attributes: ClassVar[List[str]] = [
         "dag_id",
         "schedule",
         "start_date",
@@ -234,7 +238,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
             f"catchup={self.catchup})"
         )
 
-    # noinspection t
+    # noinspection t,D
     def __add__(self, other):
         if other.tasks:
             for task in other.tasks.values():
@@ -269,7 +273,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         ```pycon
         >>> from orbiter.ast_helper import render_ast
         >>> render_ast(OrbiterDAG(dag_id="dag_id", file_path="")._dag_to_ast())
-        "DAG(dag_id='dag_id', schedule=None, start_date=DateTime(1970, 1, 1, 0, 0, 0), catchup=False)"
+        "DAG(dag_id='dag_id')"
 
         ```
 
@@ -277,29 +281,30 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         >>> render_ast(OrbiterDAG(
         ...    dag_id="dag_id",
         ...    file_path="",
-        ...    default_args={},
+        ...    default_args=None,
         ...    params={},
         ...    schedule="@hourly",
         ...    start_date=datetime(2000, 1, 1),
         ...    description="foo"
         ... )._dag_to_ast())
-        "DAG(dag_id='dag_id', schedule='@hourly', start_date=datetime.datetime(2000, 1, 1, 0, 0), catchup=False, description='foo')"
+        "DAG(dag_id='dag_id', schedule='@hourly', start_date=datetime.datetime(2000, 1, 1, 0, 0), params={}, description='foo')"
+
+        >>> render_ast(OrbiterDAG(file_path="", dag_id="foo", catchup=False)._dag_to_ast())
+        "DAG(dag_id='foo', catchup=False)"
 
         ```
         :return: `DAG(...)` as an ast.Expr
         """  # noqa: E501
 
         def prop(k):
-            # special case - nullable_attributes can be False / None
-            if k in self.nullable_attributes:
-                return getattr(self, k)
-            attr = getattr(self, k, None) or getattr(self.model_extra, k, None)
+            attr = getattr(self, k, None)
+            if attr is None:
+                # Try model_extra, if we couldn't find it on the main object
+                attr = getattr(self.model_extra, k, None)
             return ast.Name(id=attr.__name__) if isinstance(attr, Callable) else attr
 
         index_map = {v: i for i, v in enumerate(self.render_attributes)}
-        rendered_params = {
-            k: prop(k) for k in self.render_attributes if getattr(self, k) or k in self.nullable_attributes
-        }
+        rendered_params = {k: prop(k) for k in self.render_attributes if (getattr(self, k) is not None)}
         extra_params = {k: prop(k) for k in (self.model_extra.keys() or [])}
         return py_object(
             name="DAG",
@@ -333,8 +338,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         from airflow import DAG
         from airflow.operators.bash import BashOperator
         from airflow.utils.task_group import TaskGroup
-        from pendulum import DateTime, Timezone
-        with DAG(dag_id='foo', schedule=None, start_date=DateTime(1970, 1, 1, 0, 0, 0), catchup=False):
+        with DAG(dag_id='foo'):
             a_task = BashOperator(task_id='a', bash_command='a')
             with TaskGroup(group_id='b') as b:
                 c_task = BashOperator(task_id='c', bash_command='c')
@@ -366,7 +370,8 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         # DAG Imports, e.g. `from airflow import DAG`
         # Task/TaskGroup Imports, e.g. `from airflow.operators.bash import BashOperator`
         pre_imports = list(
-            set(self.imports)
+            # Ignore the pendulum import if start_date is None
+            set(i for i in self.imports if not (i.package == "pendulum" and self.start_date is None))
             | set(_get_imports_recursively(self.tasks.values()))
             | (set(self.schedule.imports) if isinstance(self.schedule, OrbiterTimetable) else set())
             | reduce(
@@ -404,7 +409,8 @@ def to_dag_id(dag_id: str) -> str:
     return clean_value(dag_id)
 
 
-if __name__ == "__main__":
-    import doctest
+# This needs to be here, specifically after OrbiterDAG is defined
+# to avoid circular imports
+from orbiter.objects.task_group import OrbiterTaskGroup  # noqa: E402
 
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)
+OrbiterDAG.model_rebuild()

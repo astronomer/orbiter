@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import ast
-from typing import Callable
+from typing import Callable, Literal
 
 from orbiter.ast_helper import py_function
 from orbiter.objects import ImportList
@@ -65,6 +65,7 @@ class OrbiterPythonOperator(OrbiterOperator):
     op_kwargs: dict | None
     --8<-- [end:mermaid-props]
     """
+    orbiter_type: Literal["OrbiterPythonOperator"] = "OrbiterPythonOperator"
 
     imports: ImportList = [
         OrbiterRequirement(
@@ -115,6 +116,7 @@ class OrbiterDecoratedPythonOperator(OrbiterPythonOperator):
     task_id: str
     --8<-- [end:mermaid-props]
     """
+    orbiter_type: Literal["OrbiterDecoratedPythonOperator"] = "OrbiterDecoratedPythonOperator"
 
     imports: ImportList = [
         OrbiterRequirement(
@@ -130,9 +132,3 @@ class OrbiterDecoratedPythonOperator(OrbiterPythonOperator):
             decorator_names=["task"],
             decorator_kwargs=[{}],
         )
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)

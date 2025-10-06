@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import ast
 from abc import ABC
-from typing import Set, List, ClassVar, Annotated, Callable
+from typing import Set, List, ClassVar, Annotated, Callable, Literal, TYPE_CHECKING
 
 from loguru import logger
 from pydantic import AfterValidator, BaseModel, validate_call
@@ -18,6 +18,9 @@ from orbiter.config import ORBITER_TASK_SUFFIX
 from orbiter.objects import ImportList
 from orbiter.objects import OrbiterBase
 from orbiter.objects.pool import OrbiterPool
+
+if TYPE_CHECKING:
+    from orbiter.objects.task_group import OrbiterTaskGroup
 
 __mermaid__ = """
 --8<-- [start:mermaid-dag-relationships]
@@ -38,9 +41,7 @@ RenderAttributes = ClassVar[List[str]]
 TaskId = Annotated[str, AfterValidator(lambda t: to_task_id(t))]
 
 
-def task_add_downstream(
-    self, task_id: str | List[str] | OrbiterTaskDependency
-) -> "OrbiterOperator" | "OrbiterTaskGroup":  # noqa: F821
+def task_add_downstream(self, task_id: str | List[str] | OrbiterTaskDependency) -> "OrbiterOperator | OrbiterTaskGroup":
     # noinspection PyProtectedMember
     """
     Add a downstream task dependency
@@ -179,6 +180,8 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """
 
+    orbiter_type: Literal["OrbiterOperator"] = "OrbiterOperator"
+
     imports: ImportList
 
     operator: str
@@ -281,6 +284,8 @@ class OrbiterTask(OrbiterOperator, extra="allow"):
     :type imports: List[OrbiterRequirement]
     :param **kwargs: Any other keyword arguments to be passed to the operator
     """
+
+    orbiter_type: Literal["OrbiterTask"] = "OrbiterTask"
 
     imports: ImportList
     task_id: TaskId

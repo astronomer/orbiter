@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict
+from typing import Dict, Literal
 
 from orbiter.objects import ImportList
 from orbiter.objects.requirement import OrbiterRequirement
@@ -39,6 +39,7 @@ class OrbiterSSHOperator(OrbiterOperator):
     environment: Dict[str, str] | None
     --8<-- [end:mermaid-props]
     """
+    orbiter_type: Literal["OrbiterSSHOperator"] = "OrbiterSSHOperator"
 
     imports: ImportList = [
         OrbiterRequirement(

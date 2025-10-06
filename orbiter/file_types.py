@@ -260,9 +260,3 @@ class FileTypePython(FileType):
     extension: ClassVar[Set[str]] = {"PY"}
     load_fn: ClassVar[Callable[[str], dict]] = str2json
     dump_fn: ClassVar[Callable[[dict], str]] = unimplemented_dump
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)
