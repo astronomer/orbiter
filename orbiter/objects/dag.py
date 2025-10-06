@@ -4,7 +4,7 @@ import ast
 from datetime import datetime, timedelta
 from functools import reduce
 from pathlib import Path
-from typing import Annotated, Any, Dict, Iterable, List, Callable, Union
+from typing import Annotated, Any, Dict, Iterable, List, Callable, ClassVar, Union
 
 from pendulum import DateTime
 from pydantic import AfterValidator, validate_call
@@ -213,8 +213,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
     tasks: Dict[str, Union[OrbiterOperator, OrbiterTaskGroup]] = dict()
 
-    nullable_attributes: List[str] = ["catchup", "schedule"]
-    render_attributes: List[str] = [
+    render_attributes: ClassVar[List[str]] = [
         "dag_id",
         "schedule",
         "start_date",
