@@ -1,3 +1,5 @@
+from typing import Literal
+
 from orbiter.objects import ImportList
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator, RenderAttributes
@@ -24,6 +26,7 @@ class OrbiterEmptyOperator(OrbiterOperator):
     task_id: str
     --8<-- [end:mermaid-props]
     """
+    orbiter_type: Literal["OrbiterEmptyOperator"] = "OrbiterEmptyOperator"
 
     imports: ImportList = [
         OrbiterRequirement(

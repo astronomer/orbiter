@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from typing import Set, TYPE_CHECKING, Union, Any
+from typing import Set, TYPE_CHECKING, Union, Any, Literal
 
+from orbiter.objects.requirement import OrbiterRequirement
+
+from orbiter.objects.connection import OrbiterConnection
 from pydantic import model_validator
 
-from orbiter.objects import ImportList, OrbiterRequirement, OrbiterConnection
+from orbiter.objects import ImportList
 from orbiter.objects.task import OrbiterOperator, RenderAttributes
 
 if TYPE_CHECKING:
@@ -79,6 +82,7 @@ class OrbiterKubernetesPodOperator(OrbiterOperator):
     pod_template_dict: dict | None
     --8<-- [end:mermaid-props]
     """
+    orbiter_type: Literal["OrbiterKubernetesPodOperator"] = "OrbiterKubernetesPodOperator"
 
     imports: ImportList = [
         OrbiterRequirement(

@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from orbiter.objects import ImportList, OrbiterRequirement
+from typing import Literal
+
+from orbiter.objects.requirement import OrbiterRequirement
+
+from orbiter.objects import ImportList
 from orbiter.objects.task import OrbiterOperator, RenderAttributes
 
 
@@ -35,6 +39,7 @@ class OrbiterSQLExecuteQueryOperator(OrbiterOperator):
     sql: str | list[str]
     --8<-- [end:mermaid-props]
     """
+    orbiter_type: Literal["OrbiterSQLExecuteQueryOperator"] = "OrbiterSQLExecuteQueryOperator"
 
     imports: ImportList = [
         OrbiterRequirement(
