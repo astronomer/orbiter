@@ -4,7 +4,7 @@ import ast
 from datetime import datetime, timedelta
 from functools import reduce
 from pathlib import Path
-from typing import Annotated, Any, Dict, Iterable, List, Callable, ClassVar, Union
+from typing import Annotated, Any, Dict, Iterable, List, Callable, ClassVar, TYPE_CHECKING
 
 from pendulum import DateTime
 from pydantic import AfterValidator, validate_call
@@ -14,8 +14,13 @@ from orbiter.ast_helper import OrbiterASTBase, py_object, py_with
 from orbiter.objects import ImportList, OrbiterBase, CALLBACK_KEYS
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
-from orbiter.objects.task_group import OrbiterTaskGroup
 from orbiter.objects.timetables import OrbiterTimetable
+from orbiter.objects.task_group import TasksType
+
+if TYPE_CHECKING:
+    from orbiter.objects.task import OrbiterOperator
+    from orbiter.objects.task_group import OrbiterTaskGroup
+
 
 __mermaid__ = """
 --8<-- [start:mermaid-project-relationships]
@@ -211,7 +216,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     params: Dict[str, Any] | None = None
     doc_md: str | None = None
 
-    tasks: Dict[str, Union[OrbiterOperator, OrbiterTaskGroup]] = dict()
+    tasks: TasksType
 
     render_attributes: ClassVar[List[str]] = [
         "dag_id",
@@ -404,7 +409,8 @@ def to_dag_id(dag_id: str) -> str:
     return clean_value(dag_id)
 
 
-if __name__ == "__main__":
-    import doctest
+# This needs to be here, specifically after OrbiterDAG is defined
+# to avoid circular imports
+from orbiter.objects.task_group import OrbiterTaskGroup  # noqa: E402
 
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)
+OrbiterDAG.model_rebuild()

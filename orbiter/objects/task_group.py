@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import ast
 from abc import ABC
-from typing import List, Any, Set, Dict, Union
+from typing import Annotated, Union, Optional, List, Any, Set, Literal
 
-from pydantic import field_validator, validate_call
+from pydantic import field_validator, validate_call, Field
 
 from orbiter.config import ORBITER_TASK_SUFFIX
 from orbiter.ast_helper import (
@@ -14,9 +14,19 @@ from orbiter.ast_helper import (
     py_bitshift,
 )
 from orbiter.objects import OrbiterBase, ImportList, OrbiterRequirement
+from orbiter.objects.operators.bash import OrbiterBashOperator
+from orbiter.objects.operators.empty import OrbiterEmptyOperator
+from orbiter.objects.operators.kubernetes_pod import OrbiterKubernetesPodOperator
+from orbiter.objects.operators.livy import OrbiterLivyOperator
+from orbiter.objects.operators.python import OrbiterPythonOperator, OrbiterDecoratedPythonOperator
+from orbiter.objects.operators.smtp import OrbiterEmailOperator
+from orbiter.objects.operators.sql import OrbiterSQLExecuteQueryOperator
+from orbiter.objects.operators.ssh import OrbiterSSHOperator
+from orbiter.objects.operators.win_rm import OrbiterWinRMOperator
 from orbiter.objects.task import (
     TaskId,
     OrbiterTaskDependency,
+    OrbiterTask,
     OrbiterOperator,
     task_add_downstream,
     to_task_id,
@@ -67,6 +77,7 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
     add_downstream(str | List[str] | OrbiterTaskDependency)
     --8<-- [end:mermaid-op-props]
     """
+    orbiter_type: Literal["OrbiterTaskGroup"] = "OrbiterTaskGroup"
 
     imports: ImportList = [
         OrbiterRequirement(
@@ -76,7 +87,7 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
         )
     ]
     task_group_id: TaskId
-    tasks: Dict[str, Union[OrbiterOperator, OrbiterTaskGroup]] = dict()
+    tasks: "TasksType"
     downstream: Set[str] = set()
 
     @property
@@ -148,7 +159,26 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
 # https://github.com/pydantic/pydantic/issues/8790
 OrbiterTaskGroup.add_tasks = validate_call()(OrbiterTaskGroup.add_tasks)
 
-if __name__ == "__main__":
-    import doctest
+# This needs to be **here**, specifically,
+# to handle circular reference with OrbiterDAG
+# and forward-reference with OrbiterTaskGroup
+TaskType = Annotated[
+    Union[
+        OrbiterTask
+        | OrbiterTaskGroup
+        | OrbiterOperator
+        | OrbiterEmptyOperator
+        | OrbiterBashOperator
+        | OrbiterLivyOperator
+        | OrbiterPythonOperator
+        | OrbiterDecoratedPythonOperator
+        | OrbiterEmailOperator
+        | OrbiterSQLExecuteQueryOperator
+        | OrbiterKubernetesPodOperator
+        | OrbiterSSHOperator
+        | OrbiterWinRMOperator
+    ],
+    Field(discriminator="orbiter_type"),
+]
 
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)
+TasksType = Annotated[Optional[dict[str, TaskType]], Field(default_factory=dict)]

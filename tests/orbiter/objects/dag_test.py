@@ -1,6 +1,8 @@
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.operators.bash import OrbiterBashOperator
 from orbiter.ast_helper import render_ast
+from orbiter.objects.operators.empty import OrbiterEmptyOperator
+from orbiter.objects.operators.sql import OrbiterSQLExecuteQueryOperator
 from orbiter.objects.task_group import OrbiterTaskGroup
 
 expected_basic_dag = """from airflow import DAG
@@ -37,3 +39,23 @@ def test_dag_render_task_group():
         ._to_ast()
     )
     assert actual == expected_task_group
+
+
+def test_dag_parse_complex():
+    test = OrbiterDAG(dag_id="dag_id", file_path="").add_tasks(
+        [
+            OrbiterBashOperator(task_id="a", bash_command="a").add_downstream("b"),
+            OrbiterTaskGroup(task_group_id="b")
+            .add_tasks(
+                [
+                    OrbiterBashOperator(task_id="c", bash_command="c").add_downstream("d"),
+                    OrbiterEmptyOperator(task_id="d"),
+                ]
+            )
+            .add_downstream("e"),
+            OrbiterSQLExecuteQueryOperator(task_id="e", sql="e", conn_id="foo"),
+        ]
+    )
+    actual_json = test.model_dump_json()
+    actual = OrbiterDAG.model_validate_json(actual_json)
+    assert actual == test
