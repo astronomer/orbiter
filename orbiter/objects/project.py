@@ -182,13 +182,13 @@ class OrbiterProject(BaseModel):
 
         ```pycon
         >>> OrbiterProject().add_dags(OrbiterDAG(dag_id='foo', file_path="")).dags['foo'].repr()
-        'OrbiterDAG(dag_id=foo, schedule=None, start_date=1970-01-01 00:00:00, catchup=False)'
+        'OrbiterDAG(dag_id=foo, schedule=None, start_date=None, catchup=None)'
 
         >>> dags = OrbiterProject().add_dags(
         ...     [OrbiterDAG(dag_id='foo', file_path=""), OrbiterDAG(dag_id='bar', file_path="")]
         ... ).dags; dags['foo'].repr(), dags['bar'].repr()
         ... # doctest: +NORMALIZE_WHITESPACE
-        ('OrbiterDAG(dag_id=foo, schedule=None, start_date=1970-01-01 00:00:00, catchup=False)', 'OrbiterDAG(dag_id=bar, schedule=None, start_date=1970-01-01 00:00:00, catchup=False)')
+        ('OrbiterDAG(dag_id=foo, schedule=None, start_date=None, catchup=None)', 'OrbiterDAG(dag_id=bar, schedule=None, start_date=None, catchup=None)')
 
         >>> # An example adding a little of everything, including deeply nested things
         ... from orbiter.objects.operators.bash import OrbiterBashOperator

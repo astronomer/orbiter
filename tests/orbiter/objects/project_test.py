@@ -84,8 +84,7 @@ def test_project_render(tmpdir):
     expected_dag = """from airflow import DAG
 from airflow.operators.empty import EmptyOperator
 from include.multi_cron_timetable import MultiCronTimetable
-from pendulum import DateTime, Timezone
-with DAG(dag_id='foo', schedule=MultiCronTimetable(cron_defs=['0 1 * * *', '*/5 0 * * *']), start_date=DateTime(1970, 1, 1, 0, 0, 0), catchup=False, doc_md='foo'):
+with DAG(dag_id='foo', schedule=MultiCronTimetable(cron_defs=['0 1 * * *', '*/5 0 * * *']), doc_md='foo'):
     foo_task = EmptyOperator(task_id='foo', doc='some other thing')"""
     assert actual_dag == expected_dag
 
