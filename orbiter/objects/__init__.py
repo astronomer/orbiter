@@ -11,6 +11,15 @@ from orbiter.objects.env_var import OrbiterEnvVar
 from orbiter.objects.variable import OrbiterVariable
 from orbiter.objects.include import OrbiterInclude
 
+CALLBACK_KEYS = [
+    "on_success_callback",
+    "on_failure_callback",
+    "sla_miss_callback",
+    "on_retry_callback",
+    "on_execute_callback",
+    "on_skipped_callback",
+]
+
 RenderAttributes = ClassVar[list[str]]
 
 
@@ -93,13 +102,3 @@ def pool(name: str) -> dict:
         "pool": name,
         "orbiter_pools": {OrbiterPool(name=name)},
     }
-
-
-CALLBACK_KEYS = [
-    "on_success_callback",
-    "on_failure_callback",
-    "sla_miss_callback",
-    "on_retry_callback",
-    "on_execute_callback",
-    "on_skipped_callback",
-]
