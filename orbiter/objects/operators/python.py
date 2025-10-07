@@ -42,8 +42,8 @@ class OrbiterPythonOperator(OrbiterOperator):
     >>> OrbiterPythonOperator(
     ...     task_id="foo",
     ...     orbiter_includes={OrbiterInclude(filepath="include/bar.py", contents="def baz(): pass")},
-    ...     imports=[OrbiterRequirement(module="orbiter.__main__", names=["translate"])],
-    ...     python_callable=""
+    ...     imports=[OrbiterRequirement(module="include.bar", names=["baz"])],
+    ...     python_callable="baz"
     ... )
     foo_task = PythonOperator(task_id='foo', python_callable=baz)
 
@@ -104,7 +104,7 @@ class OrbiterPythonOperator(OrbiterOperator):
         elif isinstance(v, str):
             try:
                 return dill.loads(codecs.decode(v.encode(), "base64"))  # nosec: B301
-            except UnpicklingError:
+            except (UnpicklingError, ValueError):
                 return v
         elif isinstance(v, Callable):
             return v
