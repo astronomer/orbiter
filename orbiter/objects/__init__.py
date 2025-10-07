@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import List, Annotated, Set, ClassVar
+from typing import List, Set, ClassVar, Annotated
 
 from pydantic import BaseModel, AfterValidator
+
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.connection import OrbiterConnection
 from orbiter.objects.env_var import OrbiterEnvVar
@@ -92,3 +93,13 @@ def pool(name: str) -> dict:
         "pool": name,
         "orbiter_pools": {OrbiterPool(name=name)},
     }
+
+
+CALLBACK_KEYS = [
+    "on_success_callback",
+    "on_failure_callback",
+    "sla_miss_callback",
+    "on_retry_callback",
+    "on_execute_callback",
+    "on_skipped_callback",
+]

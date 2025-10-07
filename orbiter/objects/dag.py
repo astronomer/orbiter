@@ -11,8 +11,8 @@ from pydantic import AfterValidator, validate_call
 
 from orbiter import clean_value
 from orbiter.ast_helper import OrbiterASTBase, py_object, py_with
-from orbiter.objects import ImportList, OrbiterBase
-from orbiter.objects.callbacks import OrbiterCallback
+from orbiter.objects import ImportList, OrbiterBase, CALLBACK_KEYS
+from orbiter.objects.callbacks.callback_type import CallbackType
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
 from orbiter.objects.timetables import OrbiterTimetable
@@ -41,15 +41,6 @@ OrbiterDAG --> "many" OrbiterCallback
 """
 
 DagId = Annotated[str, AfterValidator(lambda d: to_dag_id(d))]
-
-CALLBACK_KEYS = [
-    "on_success_callback",
-    "on_failure_callback",
-    "sla_miss_callback",
-    "on_retry_callback",
-    "on_execute_callback",
-    "on_skipped_callback",
-]
 
 
 def _get_imports_recursively(
@@ -213,6 +204,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     on_retry_callback: OrbiterCallback
     on_skipped_callback: OrbiterCallback
     on_execute_callback: OrbiterCallback
+    sla_miss_callback: OrbiterCallback
     --8<-- [end:mermaid-props]
     """
 
@@ -232,11 +224,12 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     params: Dict[str, Any] | None = None
     doc_md: str | None = None
 
-    on_failure_callback: OrbiterCallback | None = None
-    on_success_callback: OrbiterCallback | None = None
-    on_retry_callback: OrbiterCallback | None = None
-    on_skipped_callback: OrbiterCallback | None = None
-    on_execute_callback: OrbiterCallback | None = None
+    on_success_callback: CallbackType
+    on_failure_callback: CallbackType
+    on_retry_callback: CallbackType
+    on_execute_callback: CallbackType
+    on_skipped_callback: CallbackType
+    sla_miss_callback: CallbackType
 
     tasks: TasksType
 
@@ -249,7 +242,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         "default_args",
         "params",
         "doc_md",
-    ]
+    ] + CALLBACK_KEYS
 
     def repr(self):
         return (
@@ -307,12 +300,15 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         ...    params={},
         ...    schedule="@hourly",
         ...    start_date=datetime(2000, 1, 1),
-        ...    description="foo"
+        ...    description="foo",
         ... )._dag_to_ast())
         "DAG(dag_id='dag_id', schedule='@hourly', start_date=datetime.datetime(2000, 1, 1, 0, 0), params={}, description='foo')"
 
-        >>> render_ast(OrbiterDAG(file_path="", dag_id="foo", catchup=False)._dag_to_ast())
-        "DAG(dag_id='foo', catchup=False)"
+        >>> from orbiter.objects.callbacks.smtp import OrbiterSmtpNotifierCallback
+        >>> render_ast(
+        ...   OrbiterDAG(file_path="", dag_id="foo", catchup=False, on_retry_callback=OrbiterSmtpNotifierCallback(to="")
+        ... )._dag_to_ast())
+        "DAG(dag_id='foo', catchup=False, on_retry_callback=send_smtp_notification(from_email=None, smtp_conn_id='SMTP'))"
 
         ```
         :return: `DAG(...)` as an ast.Expr
@@ -394,11 +390,13 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         pre_imports = list(
             # Ignore the pendulum import if start_date is None
             set(i for i in self.imports if not (i.package == "pendulum" and self.start_date is None))
+            # Get imports from tasks, and descend into task groups
             | set(_get_imports_recursively(self.tasks.values()))
+            # Get imports from Schedule, if it's a timetable
             | (set(self.schedule.imports) if isinstance(self.schedule, OrbiterTimetable) else set())
             | reduce(
-                # Look for e.g. on_failure_callback in model_extra, get imports, merge them all
-                lambda old, item: old | set(getattr(self.model_extra.get(item, {}), "imports", set())),
+                # Look for e.g. on_failure_callback, get imports, merge them all
+                lambda old, item: old | set(getattr(getattr(self, item, {}), "imports", set())),
                 CALLBACK_KEYS,
                 set(),
             )
