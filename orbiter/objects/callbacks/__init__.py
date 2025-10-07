@@ -1,7 +1,8 @@
 import ast
 
 from orbiter.ast_helper import OrbiterASTBase, py_object, py_reference
-from orbiter.objects import OrbiterBase, ImportList, OrbiterRequirement, RenderAttributes
+from orbiter.objects import OrbiterBase, ImportList, RenderAttributes
+from orbiter.objects.requirement import OrbiterRequirement
 
 __mermaid__ = """
 --8<-- [start:mermaid-relationships]
