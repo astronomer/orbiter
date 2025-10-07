@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import Literal
 
-from orbiter.objects import ImportList, OrbiterRequirement
-from orbiter.objects.task import OrbiterOperator, RenderAttributes
+from orbiter.objects import ImportList, RenderAttributes
+from orbiter.objects.requirement import OrbiterRequirement
+from orbiter.objects.task import OrbiterOperator
 
 
 class OrbiterLivyOperator(OrbiterOperator):

@@ -6,7 +6,7 @@ from typing import List, Set
 
 from orbiter.objects import OrbiterRequirement, ImportList
 from orbiter.objects.include import OrbiterInclude
-from orbiter.objects.task import RenderAttributes
+from orbiter.objects import RenderAttributes
 from orbiter.objects.timetables import OrbiterTimetable
 
 

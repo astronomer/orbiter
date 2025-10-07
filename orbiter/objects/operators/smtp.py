@@ -6,8 +6,8 @@ from orbiter.objects.requirement import OrbiterRequirement
 
 from orbiter.objects.connection import OrbiterConnection
 
-from orbiter.objects import ImportList
-from orbiter.objects.task import OrbiterOperator, RenderAttributes
+from orbiter.objects import ImportList, RenderAttributes
+from orbiter.objects.task import OrbiterOperator
 
 
 class OrbiterEmailOperator(OrbiterOperator):

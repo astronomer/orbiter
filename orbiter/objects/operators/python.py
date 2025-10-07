@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 import ast
+from pickle import UnpicklingError  # nosec: B403
+
+import dill  # nosec: B403
 from typing import Callable, Literal
 
+from pydantic import field_serializer, field_validator
+
 from orbiter.ast_helper import py_function
-from orbiter.objects import ImportList
+from orbiter.objects import ImportList, RenderAttributes
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
-from orbiter.objects.task import RenderAttributes
 
 __mermaid__ = """
 --8<-- [start:mermaid-relationships]
@@ -83,6 +87,29 @@ class OrbiterPythonOperator(OrbiterOperator):
     ]
 
     python_callable: Callable | str
+
+    @field_serializer("python_callable", when_used="json-unless-none")
+    def serialize_python_callable(self, v) -> str:
+        import codecs
+
+        return codecs.encode(dill.dumps(v), "base64").decode()
+
+    @field_validator("python_callable", mode="before")
+    @classmethod
+    def validate_python_callable(cls, v: str | Callable) -> Callable | str:
+        import codecs
+
+        if isinstance(v, bytes):
+            return dill.loads(codecs.decode(v, "base64"))  # nosec: B301
+        elif isinstance(v, str):
+            try:
+                return dill.loads(codecs.decode(v.encode(), "base64"))  # nosec: B301
+            except (UnpicklingError, ValueError):
+                return v
+        elif isinstance(v, Callable):
+            return v
+        raise ValueError("python_callable must be a dill-compatible bytes as a string or callable")
+
     op_args: list | None = None
     op_kwargs: dict | None = None
 
