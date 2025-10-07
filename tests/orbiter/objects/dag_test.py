@@ -1,3 +1,4 @@
+from orbiter.objects.callbacks.smtp import OrbiterSmtpNotifierCallback
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.operators.bash import OrbiterBashOperator
 from orbiter.ast_helper import render_ast
@@ -55,6 +56,19 @@ def test_dag_parse_complex():
             .add_downstream("e"),
             OrbiterSQLExecuteQueryOperator(task_id="e", sql="e", conn_id="foo"),
         ]
+    )
+    actual_json = test.model_dump_json()
+    actual = OrbiterDAG.model_validate_json(actual_json)
+    assert actual == test
+
+
+def test_dag_parse_callback():
+    test = OrbiterDAG(
+        dag_id="dag_id",
+        file_path="",
+        on_failure_callback=OrbiterSmtpNotifierCallback(
+            to="foo@test.com", from_email="bar@test.com", subject="Hello", html_content="World"
+        ),
     )
     actual_json = test.model_dump_json()
     actual = OrbiterDAG.model_validate_json(actual_json)

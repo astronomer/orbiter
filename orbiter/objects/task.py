@@ -17,6 +17,7 @@ from orbiter.ast_helper import py_assigned_object
 from orbiter.config import ORBITER_TASK_SUFFIX
 from orbiter.objects import ImportList, RenderAttributes
 from orbiter.objects import OrbiterBase
+from orbiter.objects.callbacks import OrbiterCallback
 from orbiter.objects.pool import OrbiterPool
 
 if TYPE_CHECKING:
@@ -192,6 +193,12 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     pool_slots: int | None = None
     orbiter_pool: OrbiterPool | None = None
     downstream: Set[str] = set()
+
+    on_success_callback: OrbiterCallback | None = None
+    on_failure_callback: OrbiterCallback | None = None
+    on_retry_callback: OrbiterCallback | None = None
+    on_execute_callback: OrbiterCallback | None = None
+    on_skipped_callback: OrbiterCallback | None = None
 
     render_attributes: RenderAttributes = [
         "task_id",

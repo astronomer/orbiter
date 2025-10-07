@@ -12,6 +12,7 @@ from pydantic import AfterValidator, validate_call
 from orbiter import clean_value
 from orbiter.ast_helper import OrbiterASTBase, py_object, py_with
 from orbiter.objects import ImportList, OrbiterBase
+from orbiter.objects.callbacks import OrbiterCallback
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
 from orbiter.objects.timetables import OrbiterTimetable
@@ -35,6 +36,7 @@ OrbiterDAG --> "many" OrbiterVariable
 OrbiterDAG --> "many" OrbiterOperator
 OrbiterDAG --> "many" OrbiterTaskGroup
 OrbiterDAG --> "many" OrbiterRequirement
+OrbiterDAG --> "many" OrbiterCallback
 --8<-- [end:mermaid-dag-relationships]
 """
 
@@ -206,6 +208,11 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     orbiter_vars: Set[OrbiterVariable]
     orbiter_env_vars: Set[OrbiterEnvVar]
     orbiter_includes: Set[OrbiterInclude]
+    on_failure_callback: OrbiterCallback
+    on_success_callback: OrbiterCallback
+    on_retry_callback: OrbiterCallback
+    on_skipped_callback: OrbiterCallback
+    on_execute_callback: OrbiterCallback
     --8<-- [end:mermaid-props]
     """
 
@@ -224,6 +231,12 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     default_args: Dict[str, Any] | None = None
     params: Dict[str, Any] | None = None
     doc_md: str | None = None
+
+    on_failure_callback: OrbiterCallback | None = None
+    on_success_callback: OrbiterCallback | None = None
+    on_retry_callback: OrbiterCallback | None = None
+    on_skipped_callback: OrbiterCallback | None = None
+    on_execute_callback: OrbiterCallback | None = None
 
     tasks: TasksType
 
@@ -326,7 +339,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
             **extra_params,
         )
 
-    # noinspection PyProtectedMember
+    # noinspection PyProtectedMember,D
     def _to_ast(self) -> List[ast.stmt]:
         """
         Renders the DAG to an AST, including imports, tasks, and task dependencies
