@@ -4,8 +4,8 @@ from typing import Literal
 
 from orbiter.objects.requirement import OrbiterRequirement
 
-from orbiter.objects import ImportList
-from orbiter.objects.task import OrbiterOperator, RenderAttributes
+from orbiter.objects import ImportList, RenderAttributes
+from orbiter.objects.task import OrbiterOperator
 
 
 class OrbiterWinRMOperator(OrbiterOperator):

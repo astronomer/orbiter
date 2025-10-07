@@ -11,7 +11,7 @@ from pydantic import AfterValidator, validate_call
 
 from orbiter import clean_value
 from orbiter.ast_helper import OrbiterASTBase, py_object, py_with
-from orbiter.objects import ImportList, OrbiterBase, CALLBACK_KEYS
+from orbiter.objects import ImportList, OrbiterBase
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
 from orbiter.objects.timetables import OrbiterTimetable
@@ -39,6 +39,15 @@ OrbiterDAG --> "many" OrbiterRequirement
 """
 
 DagId = Annotated[str, AfterValidator(lambda d: to_dag_id(d))]
+
+CALLBACK_KEYS = [
+    "on_success_callback",
+    "on_failure_callback",
+    "sla_miss_callback",
+    "on_retry_callback",
+    "on_execute_callback",
+    "on_skipped_callback",
+]
 
 
 def _get_imports_recursively(

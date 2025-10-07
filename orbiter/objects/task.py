@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import ast
 from abc import ABC
-from typing import Set, List, ClassVar, Annotated, Callable, Literal, TYPE_CHECKING
+from typing import Set, List, Annotated, Callable, Literal, TYPE_CHECKING
 
 from loguru import logger
 from pydantic import AfterValidator, BaseModel, validate_call
@@ -15,7 +15,7 @@ from orbiter.ast_helper import (
 )
 from orbiter.ast_helper import py_assigned_object
 from orbiter.config import ORBITER_TASK_SUFFIX
-from orbiter.objects import ImportList
+from orbiter.objects import ImportList, RenderAttributes
 from orbiter.objects import OrbiterBase
 from orbiter.objects.pool import OrbiterPool
 
@@ -37,7 +37,6 @@ OrbiterOperator --> "many" OrbiterCallback
 --8<-- [end:mermaid-task-relationships]
 """
 
-RenderAttributes = ClassVar[List[str]]
 TaskId = Annotated[str, AfterValidator(lambda t: to_task_id(t))]
 
 

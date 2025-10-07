@@ -4,10 +4,9 @@ import ast
 from typing import Callable, Literal
 
 from orbiter.ast_helper import py_function
-from orbiter.objects import ImportList
+from orbiter.objects import ImportList, RenderAttributes
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
-from orbiter.objects.task import RenderAttributes
 
 __mermaid__ = """
 --8<-- [start:mermaid-relationships]

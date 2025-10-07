@@ -5,8 +5,7 @@ import ast
 from pydantic import BaseModel
 
 from orbiter.ast_helper import OrbiterASTBase, py_object
-from orbiter.objects import OrbiterBase
-from orbiter.objects.task import RenderAttributes
+from orbiter.objects import OrbiterBase, RenderAttributes
 
 __mermaid__ = """
 --8<-- [start:mermaid-dag-relationships]

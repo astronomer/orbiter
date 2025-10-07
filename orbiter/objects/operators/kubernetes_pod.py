@@ -7,8 +7,8 @@ from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.connection import OrbiterConnection
 from pydantic import model_validator
 
-from orbiter.objects import ImportList
-from orbiter.objects.task import OrbiterOperator, RenderAttributes
+from orbiter.objects import ImportList, RenderAttributes
+from orbiter.objects.task import OrbiterOperator
 
 if TYPE_CHECKING:
     from typing_extensions import Self
