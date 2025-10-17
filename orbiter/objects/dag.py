@@ -218,7 +218,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     dag_id: DagId
     schedule: str | timedelta | OrbiterTimetable | None = None
     catchup: bool | None = None
-    start_date: DateTime | datetime | None = None
+    start_date: datetime | DateTime | None = None
     tags: List[str] | None = None
     default_args: Dict[str, Any] | None = None
     params: Dict[str, Any] | None = None
