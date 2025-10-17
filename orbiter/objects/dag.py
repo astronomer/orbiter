@@ -6,7 +6,7 @@ from functools import reduce
 from pathlib import Path
 from typing import Annotated, Any, Dict, Iterable, List, Callable, ClassVar, TYPE_CHECKING
 
-from pendulum import DateTime
+from pydantic_extra_types.pendulum_dt import DateTime
 from pydantic import AfterValidator, validate_call
 
 from orbiter import clean_value
