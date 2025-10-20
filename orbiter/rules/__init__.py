@@ -204,7 +204,7 @@ class DAGRule(Rule):
     @dag_rule
     def foo(val: dict) -> OrbiterDAG | None:
         if "id" in val:
-            return OrbiterDAG(dag_id=val["id"], file_path=f"{val["id"]}.py")
+            return OrbiterDAG(dag_id=val["id"], file_path=f"{val['id']}.py")
         else:
             return None
     ```
