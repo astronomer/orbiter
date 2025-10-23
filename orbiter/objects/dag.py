@@ -15,7 +15,7 @@ from orbiter.objects import ImportList, OrbiterBase, CALLBACK_KEYS
 from orbiter.objects.callbacks.callback_type import CallbackType
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
-from orbiter.objects.timetables import OrbiterTimetable
+from orbiter.objects.timetables import TimetableType
 from orbiter.objects.task_group import TasksType
 
 if TYPE_CHECKING:
@@ -216,7 +216,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     file_path: str | Path
 
     dag_id: DagId
-    schedule: str | timedelta | OrbiterTimetable | None = None
+    schedule: str | timedelta | TimetableType | None = None
     catchup: bool | None = None
     start_date: datetime | DateTime | None = None
     tags: List[str] | None = None
@@ -368,6 +368,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
         ```
         """
+        from orbiter.objects.timetables.timetable import OrbiterTimetable
 
         def dedupe_callable(ast_collection):
             items = []
