@@ -46,7 +46,7 @@ class OrbiterProject(BaseModel):
         They can be added together
         ```pycon
         >>> OrbiterProject() + OrbiterProject()
-        OrbiterProject(dags=[], requirements=[], pools=[], connections=[], variables=[], env_vars=[])
+        OrbiterProject(dags=[], requirements=[], pools=[], connections=[], variables=[], env_vars=[], includes=[])
 
         ```
 
@@ -116,6 +116,7 @@ class OrbiterProject(BaseModel):
             + [self.connections == other.connections]
             + [self.variables == other.variables]
             + [self.env_vars == other.env_vars]
+            + [self.includes == other.includes]
         )
 
     def __repr__(self):
@@ -126,7 +127,8 @@ class OrbiterProject(BaseModel):
             f"pools={sorted(self.pools)}, "
             f"connections={sorted(self.connections)}, "
             f"variables={sorted(self.variables)}, "
-            f"env_vars={sorted(self.env_vars)})"
+            f"env_vars={sorted(self.env_vars)}, "
+            f"includes={sorted(self.includes)})"
         )
 
     def add_connections(self, connections: OrbiterConnection | Iterable[OrbiterConnection]) -> "OrbiterProject":
@@ -225,7 +227,8 @@ class OrbiterProject(BaseModel):
         pools=['foo'],
         connections=['SMTP', 'foo'],
         variables=['foo'],
-        env_vars=['foo'])
+        env_vars=['foo'],
+        includes=['foo.txt', 'include/unmapped.py'])
 
         ```
 
