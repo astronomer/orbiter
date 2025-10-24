@@ -306,24 +306,26 @@ class DAGFilterRuleset(Ruleset):
 
     ruleset: List[DAGFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict]
 
-    def apply_ruleset(self, input_dict: dict, file: Path) -> list[dict]:
+    def apply_ruleset(self, input_dict: dict, file: Path, input_dir: Path) -> list[dict]:
         """Apply all rules from [DAG Filter Ruleset][orbiter.rules.ruleset.DAGFilterRuleset] to filter down to keys
         that look like they can be translated to a DAG, in priority order.
 
         !!! note
 
             The file is added under a `__file` key to both input and output dictionaries, for use in future rules.
+            The input dir is added under a `__input_dir` key to both input and output dictionaries, for use in future rules.
 
         :param input_dict: The input dictionary to filter, e.g. the file that was loaded and converted into a python dict
         :param file: The file relative to the input directory's parent (is added under '__file' key)
+        :param input_dir: The input directory (is added under '__input_dir' key)
         :return: A list of dictionaries that look like they can be translated to a DAG
         """
 
         def with_file(d: dict) -> dict:
             try:
-                return {"__file": file} | d
+                return {"__file": file, "__input_dir": input_dir} | d
             except TypeError as e:
-                logger.opt(exception=e).debug("Unable to add __file")
+                logger.opt(exception=e).debug("Unable to add one or both of `__file` or `__input_dir` keys")
                 return d
 
         return [with_file(dag_dict) for dag_dict in functools.reduce(add, self.apply(val=with_file(input_dict)), [])]

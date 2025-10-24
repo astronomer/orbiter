@@ -42,6 +42,28 @@ def validate_translate_function_inputs(translation_ruleset: TranslationRuleset, 
         raise TypeError(f"Error! type(input_dir)=={type(input_dir)}!=Path! Exiting!")
 
 
+def file_relative_to_parent(file: Path, parent: Path) -> Path:
+    """Get the file relative to the parent, if possible, otherwise return the absolute path
+
+    The returned value *includes the parent*, but nothing before it.
+
+    ```pycon
+    >>> file_relative_to_parent(Path("/a/b/c/d.txt"), Path("/a/b"))
+    PosixPath('b/c/d.txt')
+    >>> file_relative_to_parent(Path("/a/b/c/d.txt"), Path("/g"))
+    PosixPath('a/b/c/d.txt')
+
+    ```
+    """
+    file_resolved = file.resolve()
+    try:
+        file_relative_to_input_dir_parent = file_resolved.relative_to(parent.parent)
+    except ValueError as e:
+        logger.opt(exception=e).warning(f"File {file_resolved} is not relative to {parent.parent}")
+        file_relative_to_input_dir_parent = file_resolved
+    return file_relative_to_input_dir_parent
+
+
 # noinspection t,D
 @validate_call
 def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
@@ -91,13 +113,13 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     project = OrbiterProject()
 
     for i, (file, input_dict) in enumerate(translation_ruleset.get_files_with_extension(input_dir)):
-        file_relative_to_input_dir_parent = file.resolve().relative_to(input_dir.parent)
+        file_relative_to_input_dir_parent = file_relative_to_parent(file, input_dir)
         file_log_prefix = f"[File {i}={file_relative_to_input_dir_parent}]"
         logger.info(f"{file_log_prefix} Translating file")
 
         logger.debug(f"{file_log_prefix} Extracting DAG candidates")
         dag_dicts: list[dict] = translation_ruleset.dag_filter_ruleset.apply_ruleset(
-            input_dict=input_dict, file=file_relative_to_input_dir_parent
+            input_dict=input_dict, file=file_relative_to_input_dir_parent, input_dir=input_dir
         )
         logger.debug(f"{file_log_prefix} Found {len(dag_dicts)} DAG candidates")
 
