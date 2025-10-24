@@ -9,7 +9,7 @@ and the [`Rulesets`][orbiter.rules.rulesets.Ruleset] that contain them.
 - A [`TranslationRuleset`][orbiter.rules.rulesets.TranslationRuleset]
     is a collection of [`Rulesets`][orbiter.rules.rulesets.Ruleset],
     relating to an [Origin](../origins.md) and [`FileType`][orbiter.file_types.FileType],
-    with a [`translate_fn`][orbiter.rules.rulesets.translate] which determines how to apply the rulesets.
+    with a [`translate_fn`][orbiter.default_translation.translate] which determines how to apply the rulesets.
 
 Different [`Rules`][orbiter.rules.Rule] are applied in different scenarios, such as:
 
