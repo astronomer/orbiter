@@ -46,7 +46,7 @@ class OrbiterProject(BaseModel):
         They can be added together
         ```pycon
         >>> OrbiterProject() + OrbiterProject()
-        OrbiterProject(dags=[], requirements=[], pools=[], connections=[], variables=[], env_vars=[])
+        OrbiterProject(dags=[], requirements=[], pools=[], connections=[], variables=[], env_vars=[], includes=[])
 
         ```
 
@@ -116,6 +116,7 @@ class OrbiterProject(BaseModel):
             + [self.connections == other.connections]
             + [self.variables == other.variables]
             + [self.env_vars == other.env_vars]
+            + [self.includes == other.includes]
         )
 
     def __repr__(self):
@@ -126,7 +127,8 @@ class OrbiterProject(BaseModel):
             f"pools={sorted(self.pools)}, "
             f"connections={sorted(self.connections)}, "
             f"variables={sorted(self.variables)}, "
-            f"env_vars={sorted(self.env_vars)})"
+            f"env_vars={sorted(self.env_vars)}, "
+            f"includes={sorted(self.includes)})"
         )
 
     def add_connections(self, connections: OrbiterConnection | Iterable[OrbiterConnection]) -> "OrbiterProject":
@@ -192,26 +194,30 @@ class OrbiterProject(BaseModel):
 
         >>> # An example adding a little of everything, including deeply nested things
         ... from orbiter.objects.operators.bash import OrbiterBashOperator
-        >>> from orbiter.objects.timetables.multi_cron_timetable import OrbiterMultiCronTimetable
+        >>> from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
+        >>> from orbiter.objects.timetables.multiple_cron_trigger_timetable import OrbiterMultipleCronTriggerTimetable
         >>> from orbiter.objects.callbacks.smtp import OrbiterSmtpNotifierCallback
         >>> OrbiterProject().add_dags(OrbiterDAG(
         ...     dag_id='foo', file_path="",
         ...     orbiter_env_vars={OrbiterEnvVar(key="foo", value="bar")},
         ...     orbiter_includes={OrbiterInclude(filepath='foo.txt', contents="Hello, World!")},
-        ...     schedule=OrbiterMultiCronTimetable(cron_defs=["0 */5 * * *", "0 */3 * * *"]),
+        ...     schedule=OrbiterMultipleCronTriggerTimetable(crons=["0 */5 * * *", "0 */3 * * *"]),
         ...     ).add_tasks(
-        ...         OrbiterTaskGroup(task_group_id="foo").add_tasks(OrbiterBashOperator(
-        ...             task_id='foo', bash_command='echo "Hello, World!"',
-        ...             orbiter_pool=OrbiterPool(name='foo', slots=1),
-        ...             orbiter_vars={OrbiterVariable(key='foo', value='bar')},
-        ...             orbiter_conns={OrbiterConnection(conn_id='foo')},
-        ...             orbiter_env_vars={OrbiterEnvVar(key='foo', value='bar')},
-        ...             on_success_callback=OrbiterSmtpNotifierCallback(
-        ...                 to="foo@bar.com",
-        ...                 smtp_conn_id="SMTP",
-        ...                 orbiter_conns={OrbiterConnection(conn_id="SMTP", conn_type="smtp")}
-        ...             )
-        ...         )
+        ...         OrbiterTaskGroup(task_group_id="foo").add_tasks([
+        ...             OrbiterBashOperator(
+        ...                 task_id='foo', bash_command='echo "Hello, World!"',
+        ...                 orbiter_pool=OrbiterPool(name='foo', slots=1),
+        ...                 orbiter_vars={OrbiterVariable(key='foo', value='bar')},
+        ...                 orbiter_conns={OrbiterConnection(conn_id='foo')},
+        ...                 orbiter_env_vars={OrbiterEnvVar(key='foo', value='bar')},
+        ...                 on_success_callback=OrbiterSmtpNotifierCallback(
+        ...                     to="foo@bar.com",
+        ...                     smtp_conn_id="SMTP",
+        ...                     orbiter_conns={OrbiterConnection(conn_id="SMTP", conn_type="smtp")}
+        ...                 )
+        ...             ),
+        ...             OrbiterUnmappedOperator(task_id='bar', source="foo")
+        ...         ]
         ...     )
         ... ))
         ... # doctest: +NORMALIZE_WHITESPACE
@@ -219,13 +225,15 @@ class OrbiterProject(BaseModel):
         requirements=[OrbiterRequirement(names=[DAG], package=apache-airflow, module=airflow, sys_package=None),
         OrbiterRequirement(names=[BashOperator], package=apache-airflow, module=airflow.operators.bash, sys_package=None),
         OrbiterRequirement(names=[send_smtp_notification], package=apache-airflow-providers-smtp, module=airflow.providers.smtp.notifications.smtp, sys_package=None),
+        OrbiterRequirement(names=[MultipleCronTriggerTimetable], package=apache-airflow, module=airflow.timetables.trigger, sys_package=None),
         OrbiterRequirement(names=[TaskGroup], package=apache-airflow, module=airflow.utils.task_group, sys_package=None),
-        OrbiterRequirement(names=[MultiCronTimetable], package=croniter, module=include.multi_cron_timetable, sys_package=None),
+        OrbiterRequirement(names=[UnmappedOperator], package=apache-airflow, module=include.unmapped, sys_package=None),
         OrbiterRequirement(names=[DateTime,Timezone], package=pendulum, module=pendulum, sys_package=None)],
         pools=['foo'],
         connections=['SMTP', 'foo'],
         variables=['foo'],
-        env_vars=['foo'])
+        env_vars=['foo'],
+        includes=['foo.txt', 'include/unmapped.py'])
 
         ```
 

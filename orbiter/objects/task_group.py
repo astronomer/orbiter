@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import ast
 from abc import ABC
-from typing import Annotated, Union, Optional, List, Any, Set, Literal
+from typing import Annotated, Optional, List, Any, Set, Literal
 
 from pydantic import field_validator, validate_call, Field
 
@@ -22,6 +22,7 @@ from orbiter.objects.operators.python import OrbiterPythonOperator, OrbiterDecor
 from orbiter.objects.operators.smtp import OrbiterEmailOperator
 from orbiter.objects.operators.sql import OrbiterSQLExecuteQueryOperator
 from orbiter.objects.operators.ssh import OrbiterSSHOperator
+from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
 from orbiter.objects.operators.win_rm import OrbiterWinRMOperator
 from orbiter.objects.task import (
     TaskId,
@@ -163,21 +164,20 @@ OrbiterTaskGroup.add_tasks = validate_call()(OrbiterTaskGroup.add_tasks)
 # to handle circular reference with OrbiterDAG
 # and forward-reference with OrbiterTaskGroup
 TaskType = Annotated[
-    Union[
-        OrbiterTask
-        | OrbiterTaskGroup
-        | OrbiterOperator
-        | OrbiterEmptyOperator
-        | OrbiterBashOperator
-        | OrbiterLivyOperator
-        | OrbiterPythonOperator
-        | OrbiterDecoratedPythonOperator
-        | OrbiterEmailOperator
-        | OrbiterSQLExecuteQueryOperator
-        | OrbiterKubernetesPodOperator
-        | OrbiterSSHOperator
-        | OrbiterWinRMOperator
-    ],
+    OrbiterTask
+    | OrbiterTaskGroup
+    | OrbiterOperator
+    | OrbiterEmptyOperator
+    | OrbiterUnmappedOperator
+    | OrbiterBashOperator
+    | OrbiterLivyOperator
+    | OrbiterPythonOperator
+    | OrbiterDecoratedPythonOperator
+    | OrbiterEmailOperator
+    | OrbiterSQLExecuteQueryOperator
+    | OrbiterKubernetesPodOperator
+    | OrbiterSSHOperator
+    | OrbiterWinRMOperator,
     Field(discriminator="orbiter_type"),
 ]
 

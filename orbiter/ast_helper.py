@@ -43,15 +43,15 @@ def py_assigned_object(ast_name: str, obj: str, **kwargs) -> ast.Assign:
     )
 
 
-def py_object(name: str, **kwargs) -> ast.Expr:
+def py_object(name: str, *args, **kwargs) -> ast.Expr:
     """
-    >>> render_ast(py_object("Bar", baz="bop"))
-    "Bar(baz='bop')"
+    >>> render_ast(py_object("Bar", "boom", "bing", baz="bop"))
+    "Bar('boom', 'bing', baz='bop')"
     """
     return ast.Expr(
         value=ast.Call(
             func=ast.Name(id=name),
-            args=[],
+            args=[ast.Constant(value=value) for value in args],
             keywords=[ast.keyword(arg=arg, value=ast.Constant(value=value)) for arg, value in kwargs.items()],
         )
     )
