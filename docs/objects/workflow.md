@@ -72,6 +72,6 @@ classDiagram
 ::: orbiter.objects.timetables.OrbiterTimetable
     options:
         heading_level: 3
-::: orbiter.objects.timetables.orbiter_multiple_cron_trigger_timetable.OrbiterMultipleCronTriggerTimetable
+::: orbiter.objects.timetables.multiple_cron_trigger_timetable.OrbiterMultipleCronTriggerTimetable
     options:
         heading_level: 3
