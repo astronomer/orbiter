@@ -32,12 +32,11 @@ classDiagram
     }
     click OrbiterTimetable href "#orbiter.objects.timetables.OrbiterTimetable" "OrbiterTimetable Documentation"
 
-    --8<-- "orbiter/objects/timetables/multi_cron_timetable.py:mermaid-dag-relationships"
-    class OrbiterMultiCronTimetable["orbiter.objects.timetables.multi_cron_timetable.OrbiterMultiCronTimetable"] {
-        --8<-- "orbiter/objects/timetables/multi_cron_timetable.py:mermaid-props"
+    --8<-- "orbiter/objects/timetables/orbiter_multiple_cron_trigger_timetable.py:mermaid-dag-relationships"
+    class OrbiterMultipleCronTriggerTimetable["orbiter.objects.timetables.orbiter_multiple_cron_trigger_timetable.OrbiterMultipleCronTriggerTimetable"] {
+        --8<-- "orbiter/objects/timetables/orbiter_multiple_cron_trigger_timetable.py:mermaid-props"
     }
-    click OrbiterMultiCronTimetable href "#orbiter.objects.timetables.multi_cron_timetable.OrbiterMultiCronTimetable" "OrbiterMultiCronTimetable Documentation"
-
+    click OrbiterMultipleCronTriggerTimetable href "#orbiter.objects.timetables.orbiter_multiple_cron_trigger_timetable.OrbiterMultipleCronTriggerTimetable" "OrbiterMultipleCronTriggerTimetable Documentation"
 
     class OrbiterConnection["orbiter.objects.connection.OrbiterConnection"] {
         --8<-- "orbiter/objects/connection.py:mermaid-props"
@@ -73,6 +72,6 @@ classDiagram
 ::: orbiter.objects.timetables.OrbiterTimetable
     options:
         heading_level: 3
-::: orbiter.objects.timetables.multi_cron_timetable.OrbiterMultiCronTimetable
+::: orbiter.objects.timetables.orbiter_multiple_cron_trigger_timetable.OrbiterMultipleCronTriggerTimetable
     options:
         heading_level: 3
