@@ -9,7 +9,8 @@ from orbiter.objects.operators.empty import OrbiterEmptyOperator
 from orbiter.objects.project import OrbiterProject
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
 from orbiter.rules import dag_rule, dag_filter_rule, task_filter_rule, task_rule, task_dependency_rule
-from orbiter.rules.rulesets import TranslationRuleset, EMPTY_RULESET, translate
+from orbiter.rules.rulesets import TranslationRuleset, EMPTY_RULESET
+from orbiter.default_translation import translate
 
 
 def test_loads(project_root):
