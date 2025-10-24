@@ -4,9 +4,9 @@ import functools
 import inspect
 import re
 import uuid
-from _operator import add
-from abc import ABC
+from abc import ABC, abstractmethod
 from itertools import chain
+from operator import add
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import (
@@ -121,7 +121,7 @@ TranslateFn = Annotated[
 ]
 
 
-class Ruleset(BaseModel, frozen=True, extra="forbid"):
+class Ruleset(BaseModel, ABC, frozen=True, extra="forbid"):
     """A list of rules, which are evaluated to generate different types of output
 
     You must pass a [`Rule`][orbiter.rules.Rule] (or `dict` with the schema of [`Rule`][orbiter.rules.Rule])
@@ -130,9 +130,9 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
     >>> @rule
     ... def x(val):
     ...    return None
-    >>> Ruleset(ruleset=[x, {"rule": lambda: None}])
+    >>> GenericRuleset(ruleset=[x, {"rule": lambda: None}])
     ... # doctest: +ELLIPSIS
-    Ruleset(ruleset=[Rule(...), Rule(...)])
+    GenericRuleset(ruleset=[Rule(...), ...])
 
     ```
 
@@ -141,7 +141,7 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         You can't pass non-Rules
         ```pycon
         >>> # noinspection PyTypeChecker
-        ... Ruleset(ruleset=[None])
+        ... GenericRuleset(ruleset=[None])
         ... # doctest: +ELLIPSIS
         Traceback (most recent call last):
         pydantic_core._pydantic_core.ValidationError: ...
@@ -172,7 +172,7 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         ... def filter_for_type_folder(val):
         ...   (key, val) = val
         ...   return (key, val) if val.get('Type', '') == 'Folder' else None
-        >>> ruleset = Ruleset(ruleset=[filter_for_type_folder])
+        >>> ruleset = GenericRuleset(ruleset=[filter_for_type_folder])
         >>> input_dict = {
         ...    "a": {"Type": "Folder"},
         ...    "b": {"Type": "File"},
@@ -219,7 +219,7 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
     def _sorted(self) -> List[Rule]:
         """Return a copy of the ruleset, sorted by priority
         ```pycon
-        >>> sorted_rules = Ruleset(ruleset=[
+        >>> sorted_rules = GenericRuleset(ruleset=[
         ...   Rule(rule=lambda x: 1, priority=1),
         ...   Rule(rule=lambda x: 99, priority=99)]
         ... )._sorted()
@@ -244,7 +244,7 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         >>> @rule
         ... def gt_4(val):
         ...     return str(val) if val > 4 else None
-        >>> Ruleset(ruleset=[gt_4]).apply(val=5)
+        >>> GenericRuleset(ruleset=[gt_4]).apply(val=5)
         ['5']
 
         ```
@@ -254,14 +254,14 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         >>> @rule
         ... def gt_3(val):
         ...    return str(val) if val > 3 else None
-        >>> Ruleset(ruleset=[gt_4, gt_3]).apply(val=5)
+        >>> GenericRuleset(ruleset=[gt_4, gt_3]).apply(val=5)
         ['5', '5']
 
         ```
 
         The `take_first` flag will evaluate rules in the ruleset and return the first match
         ```pycon
-        >>> Ruleset(ruleset=[gt_4, gt_3]).apply(val=5, take_first=True)
+        >>> GenericRuleset(ruleset=[gt_4, gt_3]).apply(val=5, take_first=True)
         '5'
 
         ```
@@ -274,14 +274,14 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         >>> @rule
         ... def more_always_none(val):
         ...     return None
-        >>> Ruleset(ruleset=[always_none, more_always_none]).apply(val=5)
+        >>> GenericRuleset(ruleset=[always_none, more_always_none]).apply(val=5)
         []
 
         ```
 
         If nothing matched, and `take_first=True`, `None` is returned
         ```pycon
-        >>> Ruleset(ruleset=[always_none, more_always_none]).apply(val=5, take_first=True)
+        >>> GenericRuleset(ruleset=[always_none, more_always_none]).apply(val=5, take_first=True)
         ... # None
 
         ```
@@ -290,7 +290,7 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
 
             If no input is given, an error is returned
             ```pycon
-            >>> Ruleset(ruleset=[always_none]).apply()
+            >>> GenericRuleset(ruleset=[always_none]).apply()
             Traceback (most recent call last):
             RuntimeError: No values provided! Supply at least one key=val pair as kwargs!
 
@@ -328,11 +328,37 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
                     return result
         return None if take_first and not len(results) else results
 
+    @abstractmethod
+    def apply_ruleset(self, **kwargs) -> Any:
+        pass
+
 
 class DAGFilterRuleset(Ruleset):
     """Ruleset of [`DAGFilterRule`][orbiter.rules.DAGFilterRule]"""
 
     ruleset: List[DAGFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict]
+
+    def apply_ruleset(self, input_dict: dict, file: Path) -> list[dict]:
+        """Apply all rules from [DAG Filter Ruleset][orbiter.rules.ruleset.DAGFilterRuleset] to filter down to keys
+        that look like they can be translated to a DAG, in priority order.
+
+        !!! note
+
+            The file is added under a `__file` key to both input and output dictionaries, for use in future rules.
+
+        :param input_dict: The input dictionary to filter, e.g. the file that was loaded and converted into a python dict
+        :param file: The file relative to the input directory's parent (is added under '__file' key)
+        :return: A list of dictionaries that look like they can be translated to a DAG
+        """
+
+        def with_file(d: dict) -> dict:
+            try:
+                return {"__file": file} | d
+            except TypeError as e:
+                logger.opt(exception=e).debug("Unable to add __file")
+                return d
+
+        return [with_file(dag_dict) for dag_dict in functools.reduce(add, self.apply(val=with_file(input_dict)), [])]
 
 
 class DAGRuleset(Ruleset):
@@ -340,11 +366,36 @@ class DAGRuleset(Ruleset):
 
     ruleset: List[DAGRule | Rule | Callable[[dict], OrbiterDAG | None] | dict]
 
+    def apply_ruleset(self, dag_dict: dict) -> OrbiterDAG | None:
+        """Apply all rules from `DAGRuleset` to convert the object to an `OrbiterDAG`,
+        in priority order, stopping when the first rule returns a match.
+        If no rule returns a match, the entry is filtered.
+
+        !!! note
+
+            The file is retained via `OrbiterDAG.orbiter_kwargs['val']['__file']`, for use in future rules.
+
+        :param dag_dict: DAG Candidate, filtered via @dag_filter_rules
+        :return: An `OrbiterDAG` object
+        """
+        return self.apply(val=dag_dict, take_first=True)
+
 
 class TaskFilterRuleset(Ruleset):
     """Ruleset of [`TaskFilterRule`][orbiter.rules.TaskFilterRule]"""
 
     ruleset: List[TaskFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict]
+
+    def apply_ruleset(self, dag_dict: dict) -> list[dict]:
+        """Apply all rules from `TaskFilterRuleset` to filter down to keys that look like they can be translated
+         to a Task, in priority order.
+
+        Many entries in the dag_dict result in many task_dicts.
+
+        :param dag_dict: The dict to filter - the same dict that was passed to the DAG ruleset
+        :return: A list of dictionaries that look like they can be translated to a Task
+        """
+        return functools.reduce(add, self.apply(val=dag_dict), [])
 
 
 class TaskRuleset(Ruleset):
@@ -352,17 +403,54 @@ class TaskRuleset(Ruleset):
 
     ruleset: List[TaskRule | Rule | Callable[[dict], OrbiterOperator | OrbiterTaskGroup | None] | dict]
 
+    def apply_ruleset(self, task_dict: dict) -> OrbiterOperator | OrbiterTaskGroup:
+        """Apply all rules from `TaskRuleset` to convert the object to a Task, in priority order,
+        stopping when the first rule returns a match.
+
+        One task_dict makes up to one task (unless it produces a TaskGroup, which can contain many tasks).
+        If no rule returns a match, the entry is filtered.
+
+        :param task_dict: A dict to translate - what was returned from the Task Filter ruleset
+        :return: An [OrbiterOperator][orbiter.objects.task.OrbiterOperator] (or descendant) or [OrbiterTaskGroup][orbiter.objects.task.OrbiterTaskGroup]
+        """
+        return self.apply(val=task_dict, take_first=True)
+
 
 class TaskDependencyRuleset(Ruleset):
     """Ruleset of [`TaskDependencyRule`][orbiter.rules.TaskDependencyRule]"""
 
     ruleset: List[TaskDependencyRule | Rule | Callable[[OrbiterDAG], List[OrbiterTaskDependency] | None] | dict]
 
+    def apply_ruleset(self, dag: OrbiterDAG) -> list[OrbiterTaskDependency]:
+        """Apply all rules from `TaskDependencyRuleset` to create a list of
+        [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency],
+        which are then added in-place to each task in the [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG].
+
+        :param dag: The DAG to add the task dependencies to
+        :return: A list of [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency]
+        """
+        return list(chain(*self.apply(val=dag))) or []
+
 
 class PostProcessingRuleset(Ruleset):
     """Ruleset of [`PostProcessingRule`][orbiter.rules.PostProcessingRule]"""
 
     ruleset: List[PostProcessingRule | Rule | Callable[[OrbiterProject], None] | dict]
+
+    def apply_ruleset(self, project: OrbiterProject) -> None:
+        """Apply all rules from `PostProcessingRuleset` to modify project in-place
+
+        :param project: The OrbiterProject to modify
+        :return: None
+        """
+        self.apply(val=project, take_first=False)
+
+
+class GenericRuleset(Ruleset):
+    """Generic ruleset, for testing"""
+
+    def apply_ruleset(self, **kwargs) -> Any:
+        pass
 
 
 EMPTY_RULESET = {"ruleset": [EMPTY_RULE]}
