@@ -161,8 +161,7 @@ def _add_tasks(
             i += 1
         if i > 0:
             logger.warning(
-                f"{task.task_id} encountered more than once, task IDs must be unique! "
-                f"Modifying task ID to '{task_id}'!"
+                f"{task.task_id} encountered more than once, task IDs must be unique! Modifying task ID to '{task_id}'!"
             )
             setattr(task, "task_group_id" if hasattr(task, "task_group_id") else "task_id", task_id)
 

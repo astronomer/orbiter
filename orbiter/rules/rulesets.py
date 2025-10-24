@@ -120,6 +120,7 @@ TranslateFn = Annotated[
     AfterValidator(validate_translate_fn),
 ]
 
+
 class Ruleset(BaseModel, frozen=True, extra="forbid"):
     """A list of rules, which are evaluated to generate different types of output
 
