@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import functools
 import inspect
-import re
 import uuid
 from abc import ABC, abstractmethod
 from itertools import chain
@@ -26,7 +25,7 @@ from loguru import logger
 from pydantic import AfterValidator, BaseModel, validate_call
 from pydantic_settings import BaseSettings
 
-from orbiter import import_from_qualname
+from orbiter import import_from_qualname, trim_dict, QualifiedImport, validate_qualified_imports, _backport_walk
 from orbiter.default_translation import translate, fake_translate
 from orbiter.file_types import FileType, FileTypeJSON
 from orbiter.objects.dag import OrbiterDAG
@@ -42,20 +41,7 @@ from orbiter.rules import (
     TaskDependencyRule,
     TaskFilterRule,
     TaskRule,
-    trim_dict,
 )
-
-
-def _backport_walk(input_dir: Path):
-    """Path.walk() is only available in Python 3.12+, so, backport"""
-    import os
-
-    for result in os.walk(input_dir):
-        yield Path(result[0]), result[1], result[2]
-
-
-qualname_validator_regex = r"^[\w.]+$"
-qualname_validator = re.compile(qualname_validator_regex)
 
 
 def validate_translate_fn(
@@ -96,24 +82,6 @@ def validate_translate_fn(
         translate_fn = _translate_fn
     return translate_fn
 
-
-def validate_qualified_imports(qualified_imports: List[str]) -> List[str]:
-    """
-    ```pycon
-    >>> validate_qualified_imports(["json", "package.module.Class"])
-    ['json', 'package.module.Class']
-
-    ```
-    """
-    for _qualname in qualified_imports:
-        assert qualname_validator.match(_qualname), (
-            f"Import Qualified Name='{_qualname}' is not valid."
-            f"Qualified Names must match regex {qualname_validator_regex}"
-        )
-    return qualified_imports
-
-
-QualifiedImport = Annotated[str, AfterValidator(validate_qualified_imports)]
 
 TranslateFn = Annotated[
     Union[QualifiedImport, Callable[["TranslationRuleset", Path], OrbiterProject]],

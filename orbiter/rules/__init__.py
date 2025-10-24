@@ -50,15 +50,13 @@ Different [`Rules`][orbiter.rules.Rule] are applied in different scenarios, such
 from __future__ import annotations
 
 import functools
-import json
-import re
-from typing import Callable, Any, Collection, TYPE_CHECKING, List, Mapping
+from typing import Callable, Any, Collection, TYPE_CHECKING, List
 
 from pydantic import BaseModel, Field
 
 from loguru import logger
 
-from orbiter.config import TRIM_LOG_OBJECT_LENGTH
+from orbiter import trim_dict
 from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
 
@@ -66,20 +64,6 @@ if TYPE_CHECKING:
     from orbiter.objects.task_group import OrbiterTaskGroup
     from orbiter.objects.project import OrbiterProject
     from orbiter.objects.dag import OrbiterDAG
-
-qualname_validator_regex = r"^[\w.]+$"
-qualname_validator = re.compile(qualname_validator_regex)
-
-
-def trim_dict(v):
-    """Stringify and trim a dictionary if it's greater than a certain length
-    (used to trim down overwhelming log output)"""
-    if TRIM_LOG_OBJECT_LENGTH != -1 and isinstance(v, Mapping):
-        if len(str(v)) > TRIM_LOG_OBJECT_LENGTH:
-            return json.dumps(v, default=str)[:TRIM_LOG_OBJECT_LENGTH] + "..."
-    if isinstance(v, list):
-        return [trim_dict(_v) for _v in v]
-    return v
 
 
 def rule(
