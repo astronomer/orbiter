@@ -57,15 +57,17 @@ def test__get_files_with_extension(project_root):
 
 
 def test_translate():
+    fake_path = Path(__file__)
+
     expected = OrbiterProject().add_dags(
-        OrbiterDAG(dag_id="dag_a", file_path=Path("xyz.yaml")).add_tasks(
+        OrbiterDAG(dag_id="dag_a", file_path=fake_path).add_tasks(
             [OrbiterEmptyOperator(task_id="task_a").add_downstream("task_b"), OrbiterEmptyOperator(task_id="task_b")]
         )
     )
 
     def test_file_generator(_, __):
         yield (
-            Path("xyz.yaml"),
+            fake_path,
             {
                 "dags": [
                     {
@@ -114,7 +116,7 @@ def test_translate():
         translate_fn=translate,
     )
     TranslationRuleset.get_files_with_extension = test_file_generator
-    actual = test_ruleset.translate_fn(translation_ruleset=test_ruleset, input_dir=Path("."))
+    actual = test_ruleset.translate_fn(translation_ruleset=test_ruleset, input_dir=fake_path)
     assert actual == expected
     assert actual.dags["dag_a"].tasks == expected.dags["dag_a"].tasks
     assert actual.dags["dag_a"].tasks["task_a"].downstream == expected.dags["dag_a"].tasks["task_a"].downstream
