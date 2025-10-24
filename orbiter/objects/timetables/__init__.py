@@ -8,6 +8,6 @@ from orbiter.objects.timetables.multiple_cron_trigger_timetable import OrbiterMu
 from orbiter.objects.timetables.timetable import OrbiterTimetable
 
 TimetableType = Annotated[
-    Union[OrbiterTimetable | OrbiterMultipleCronTriggerTimetable],
+    OrbiterTimetable | OrbiterMultipleCronTriggerTimetable,
     Field(discriminator="orbiter_type"),
 ]
