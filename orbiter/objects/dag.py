@@ -6,6 +6,11 @@ from functools import reduce
 from pathlib import Path
 from typing import Annotated, Any, Dict, Iterable, List, Callable, ClassVar, TYPE_CHECKING
 
+try:
+    from typing import Self  # py3.11
+except ImportError:
+    from typing_extensions import Self
+
 from pydantic_extra_types.pendulum_dt import DateTime
 from pydantic import AfterValidator, validate_call
 
@@ -15,12 +20,13 @@ from orbiter.objects import ImportList, OrbiterBase, CALLBACK_KEYS
 from orbiter.objects.callbacks.callback_type import CallbackType
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
+from orbiter.objects.tasks_parent_shared_utils import _add_tasks, _get_task_dependency_parent
 from orbiter.objects.timetables import TimetableType
-from orbiter.objects.task_group import TasksType
 
 if TYPE_CHECKING:
     from orbiter.objects.task import OrbiterOperator
     from orbiter.objects.task_group import OrbiterTaskGroup
+    from orbiter.objects.task_group import TasksType
 
 
 __mermaid__ = """
@@ -95,59 +101,6 @@ def _get_imports_recursively(
             # noinspection PyUnresolvedReferences
             imports |= set(_get_imports_recursively(task.tasks.values()))
     return list(sorted(imports, key=str))
-
-
-def _add_tasks(
-    self,
-    tasks: (OrbiterOperator | OrbiterTaskGroup | Iterable[OrbiterOperator | OrbiterTaskGroup]),
-) -> "OrbiterDAG | OrbiterTaskGroup":
-    """Add one or more [`OrbiterOperators`][orbiter.objects.task.OrbiterOperator] to the DAG or Task Group
-
-    ```pycon
-    >>> from orbiter.objects.operators.empty import OrbiterEmptyOperator
-    >>> OrbiterDAG(file_path="", dag_id="foo").add_tasks(OrbiterEmptyOperator(task_id="bar")).tasks
-    {'bar': bar_task = EmptyOperator(task_id='bar')}
-
-    >>> OrbiterDAG(file_path="", dag_id="foo").add_tasks([OrbiterEmptyOperator(task_id="bar")]).tasks
-    {'bar': bar_task = EmptyOperator(task_id='bar')}
-
-    ```
-
-    !!! tip
-
-        Validation requires a `OrbiterTaskGroup`, `OrbiterOperator` (or subclass), or list of either to be passed
-        ```pycon
-        >>> # noinspection PyTypeChecker
-        ... OrbiterDAG(file_path="", dag_id="foo").add_tasks("bar")
-        ... # doctest: +IGNORE_EXCEPTION_DETAIL
-        Traceback (most recent call last):
-        AttributeError: ...
-        >>> # noinspection PyTypeChecker
-        ... OrbiterDAG(file_path="", dag_id="foo").add_tasks(["bar"])
-        ... # doctest: +IGNORE_EXCEPTION_DETAIL
-        Traceback (most recent call last):
-        AttributeError: ...
-
-        ```
-    :param tasks: List of [OrbiterOperator][orbiter.objects.task.OrbiterOperator], or OrbiterTaskGroup or subclass
-    :type tasks: OrbiterOperator | OrbiterTaskGroup | Iterable[OrbiterOperator | OrbiterTaskGroup]
-    :return: self
-    :rtype: OrbiterProject
-    """
-    if (
-        isinstance(tasks, OrbiterOperator)
-        or isinstance(tasks, OrbiterTaskGroup)
-        or issubclass(type(tasks), OrbiterOperator)
-    ):
-        tasks = [tasks]
-
-    for task in tasks:
-        try:
-            task_id = getattr(task, "task_id", None) or getattr(task, "task_group_id")
-        except AttributeError:
-            raise AttributeError(f"Task {task} does not have a task_id or task_group_id attribute")
-        self.tasks[task_id] = task
-    return self
 
 
 class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
@@ -277,8 +230,11 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
             setattr(self, key, getattr(self, key) or getattr(other, key))
         return self
 
-    def add_tasks(self, tasks) -> OrbiterDAG:
+    def add_tasks(self, tasks) -> Self:
         return _add_tasks(self, tasks)
+
+    def get_task_dependency_parent(self, task_dependency) -> Self | None:
+        return _get_task_dependency_parent(self, task_dependency)
 
     def _dag_to_ast(self) -> ast.Expr:
         """
@@ -421,10 +377,6 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         ]
 
 
-# https://github.com/pydantic/pydantic/issues/8790
-OrbiterDAG.add_tasks = validate_call()(OrbiterDAG.add_tasks)
-
-
 @validate_call
 def to_dag_id(dag_id: str) -> str:
     return clean_value(dag_id)
@@ -432,6 +384,6 @@ def to_dag_id(dag_id: str) -> str:
 
 # This needs to be here, specifically after OrbiterDAG is defined
 # to avoid circular imports
-from orbiter.objects.task_group import OrbiterTaskGroup  # noqa: E402
+from orbiter.objects.task_group import TasksType  # noqa: E402
 
 OrbiterDAG.model_rebuild()

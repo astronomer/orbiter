@@ -11,7 +11,10 @@ from orbiter.objects import ImportList, RenderAttributes
 from orbiter.objects.task import OrbiterOperator
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    try:
+        from typing import Self  # py3.11
+    except ImportError:
+        from typing_extensions import Self
 
     # noinspection PyUnresolvedReferences
     from kubernetes.client.models import V1EnvVar  # noqa: F401
