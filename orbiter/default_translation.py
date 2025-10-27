@@ -32,7 +32,7 @@ def validate_translate_function_inputs(translation_ruleset: TranslationRuleset, 
 
         ```
 
-    :raises RuntimeError: if input is an invalid type
+    :raises TypeError: if input is an invalid type
     """
     from orbiter.rules.rulesets import TranslationRuleset
 
