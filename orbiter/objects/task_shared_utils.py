@@ -67,7 +67,7 @@ def task_add_downstream(self, task_id: str | List[str] | OrbiterTaskDependency) 
 @validate_call
 def to_task_id(task_id: str, assignment_suffix: str = "") -> str:
     # noinspection PyTypeChecker
-    """General utiltty function - turns MyTaskId into my_task_id (or my_task_id_task suffix is `_task`)
+    """General utility function - turns MyTaskId into my_task_id (or my_task_id_task suffix is `_task`)
     ```pycon
     >>> to_task_id("MyTaskId")
     'my_task_id'
