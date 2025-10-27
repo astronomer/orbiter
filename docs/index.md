@@ -25,7 +25,7 @@ from an [Origin](./origins.md) system to an Airflow project.
 
 ## Installation
 
-Install the [`orbiter` CLI](./cli.md), if you have Python >= 3.10 installed via `pip`:
+Install the [`orbiter` CLI](./cli.md) via `pip` (requires Python >= 3.10):
 ```shell
 pip install astronomer-orbiter
 ```

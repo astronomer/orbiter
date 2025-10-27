@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import ast
 from abc import ABC
-from typing import Annotated, Optional, List, Any, Set, Literal, Self
+from typing import Annotated, Optional, List, Any, Set, Literal
+
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
 
 from pydantic import field_validator, Field
 

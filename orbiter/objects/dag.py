@@ -4,7 +4,12 @@ import ast
 from datetime import datetime, timedelta
 from functools import reduce
 from pathlib import Path
-from typing import Annotated, Any, Dict, Iterable, List, Callable, ClassVar, TYPE_CHECKING, Self
+from typing import Annotated, Any, Dict, Iterable, List, Callable, ClassVar, TYPE_CHECKING
+
+try:
+    from typing import Self  # py3.11
+except ImportError:
+    from typing_extensions import Self
 
 from pydantic_extra_types.pendulum_dt import DateTime
 from pydantic import AfterValidator, validate_call
