@@ -8,7 +8,7 @@ jobs:
   build:
     strategy:
       matrix:
-        python-version: [ "3.11" ]
+        python-version: [ "3.10" ]
         os:
           # --8<-- [start:oses]
           - "ubuntu-22.04"
