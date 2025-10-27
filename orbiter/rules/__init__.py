@@ -59,6 +59,7 @@ from pydantic import BaseModel, Field
 from loguru import logger
 
 from orbiter.config import TRIM_LOG_OBJECT_LENGTH
+from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
 
 if TYPE_CHECKING:
@@ -83,8 +84,9 @@ def trim_dict(v):
 
 def rule(
     func=None, *, priority=None
-) -> Rule | "DAGFilterRule" | "DAGRule" | "TaskFilterRule" | "TaskRule" | "TaskDependencyRule" | "PostProcessingRule":
+) -> "Rule | DAGFilterRule | DAGRule | TaskFilterRule | TaskRule | TaskDependencyRule | PostProcessingRule":
     if func is None:
+        # noinspection PyTypeChecker
         return functools.partial(rule, priority=priority)
 
     priority = priority or 1
@@ -203,7 +205,7 @@ class DAGRule(Rule):
     @dag_rule
     def foo(val: dict) -> OrbiterDAG | None:
         if "id" in val:
-            return OrbiterDAG(dag_id=val["id"], file_path=f"{val["id"]}.py")
+            return OrbiterDAG(dag_id=val["id"], file_path=f"{val['id']}.py")
         else:
             return None
     ```
@@ -319,26 +321,27 @@ class PostProcessingRule(Rule):
 post_processing_rule: Callable[[...], PostProcessingRule] = rule
 
 
-@task_rule(priority=1)
-def cannot_map_rule(val: dict) -> OrbiterOperator | None:
-    """Can be used in a TaskRuleset.
-    Returns an `OrbiterEmptyOperator` with a doc string that says it cannot map the task.
-    Useful to ensure that tasks that cannot be mapped are still visible in the output.
-    """
-    from orbiter.objects.operators.empty import OrbiterEmptyOperator
+def create_cannot_map_rule_with_task_id_fn(task_id_fn: Callable[[dict], str]) -> TaskRule | Callable:
+    """Inject a `task_id` generator function into the "Cannot Map" Rule."""
 
-    # noinspection PyArgumentList
-    return OrbiterEmptyOperator(
-        task_id="UNKNOWN",
-        doc_md=f"""[task_type=UNKNOWN] Input did not translate: `{trim_dict(val)}`""",
-    )
+    @task_rule(priority=1)
+    def cannot_map_rule(val: dict) -> OrbiterUnmappedOperator | None:
+        """Can be used in a TaskRuleset.
+        Returns an `OrbiterUnmappedOperator` with a doc string that says it cannot map the task.
+        Useful to ensure that tasks that cannot be mapped are still visible in the output.
+        """
+        from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
 
+        return OrbiterUnmappedOperator(
+            task_id=task_id_fn(val),
+            doc_md="""[task_type=UNKNOWN] Input did not translate""",
+            source=str(trim_dict(val)),
+        )
+
+    return cannot_map_rule
+
+
+cannot_map_rule = create_cannot_map_rule_with_task_id_fn(lambda val: "UNKNOWN")
 
 EMPTY_RULE = Rule(rule=lambda val: None, priority=0)
 """Empty rule, for testing"""
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)

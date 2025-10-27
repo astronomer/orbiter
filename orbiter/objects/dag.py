@@ -4,18 +4,24 @@ import ast
 from datetime import datetime, timedelta
 from functools import reduce
 from pathlib import Path
-from typing import Annotated, Any, Dict, Iterable, List, Callable, Union
+from typing import Annotated, Any, Dict, Iterable, List, Callable, ClassVar, TYPE_CHECKING
 
-from pendulum import DateTime
+from pydantic_extra_types.pendulum_dt import DateTime
 from pydantic import AfterValidator, validate_call
 
 from orbiter import clean_value
 from orbiter.ast_helper import OrbiterASTBase, py_object, py_with
 from orbiter.objects import ImportList, OrbiterBase, CALLBACK_KEYS
+from orbiter.objects.callbacks.callback_type import CallbackType
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
-from orbiter.objects.task_group import OrbiterTaskGroup
-from orbiter.objects.timetables import OrbiterTimetable
+from orbiter.objects.timetables import TimetableType
+from orbiter.objects.task_group import TasksType
+
+if TYPE_CHECKING:
+    from orbiter.objects.task import OrbiterOperator
+    from orbiter.objects.task_group import OrbiterTaskGroup
+
 
 __mermaid__ = """
 --8<-- [start:mermaid-project-relationships]
@@ -30,6 +36,7 @@ OrbiterDAG --> "many" OrbiterVariable
 OrbiterDAG --> "many" OrbiterOperator
 OrbiterDAG --> "many" OrbiterTaskGroup
 OrbiterDAG --> "many" OrbiterRequirement
+OrbiterDAG --> "many" OrbiterCallback
 --8<-- [end:mermaid-dag-relationships]
 """
 
@@ -85,6 +92,7 @@ def _get_imports_recursively(
         imports |= reduce(reduce_imports_from_callback, CALLBACK_KEYS, set())
         if hasattr(task, "tasks"):
             # descend, for a task group
+            # noinspection PyUnresolvedReferences
             imports |= set(_get_imports_recursively(task.tasks.values()))
     return list(sorted(imports, key=str))
 
@@ -92,7 +100,7 @@ def _get_imports_recursively(
 def _add_tasks(
     self,
     tasks: (OrbiterOperator | OrbiterTaskGroup | Iterable[OrbiterOperator | OrbiterTaskGroup]),
-) -> "OrbiterDAG" | OrbiterTaskGroup:
+) -> "OrbiterDAG | OrbiterTaskGroup":
     """Add one or more [`OrbiterOperators`][orbiter.objects.task.OrbiterOperator] to the DAG or Task Group
 
     ```pycon
@@ -191,9 +199,16 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     orbiter_vars: Set[OrbiterVariable]
     orbiter_env_vars: Set[OrbiterEnvVar]
     orbiter_includes: Set[OrbiterInclude]
+    on_failure_callback: OrbiterCallback
+    on_success_callback: OrbiterCallback
+    on_retry_callback: OrbiterCallback
+    on_skipped_callback: OrbiterCallback
+    on_execute_callback: OrbiterCallback
+    sla_miss_callback: OrbiterCallback
     --8<-- [end:mermaid-props]
     """
 
+    # noinspection PyTypeHints
     imports: ImportList = [
         OrbiterRequirement(package="apache-airflow", module="airflow", names=["DAG"]),
         OrbiterRequirement(package="pendulum", module="pendulum", names=["DateTime", "Timezone"]),
@@ -201,18 +216,24 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     file_path: str | Path
 
     dag_id: DagId
-    schedule: str | timedelta | OrbiterTimetable | None = None
-    catchup: bool = False
-    start_date: DateTime | datetime = DateTime(1970, 1, 1)
-    tags: List[str] = None
-    default_args: Dict[str, Any] = dict()
-    params: Dict[str, Any] = dict()
+    schedule: str | timedelta | TimetableType | None = None
+    catchup: bool | None = None
+    start_date: datetime | DateTime | None = None
+    tags: List[str] | None = None
+    default_args: Dict[str, Any] | None = None
+    params: Dict[str, Any] | None = None
     doc_md: str | None = None
 
-    tasks: Dict[str, Union[OrbiterOperator, OrbiterTaskGroup]] = dict()
+    on_success_callback: CallbackType
+    on_failure_callback: CallbackType
+    on_retry_callback: CallbackType
+    on_execute_callback: CallbackType
+    on_skipped_callback: CallbackType
+    sla_miss_callback: CallbackType
 
-    nullable_attributes: List[str] = ["catchup", "schedule"]
-    render_attributes: List[str] = [
+    tasks: TasksType
+
+    render_attributes: ClassVar[List[str]] = [
         "dag_id",
         "schedule",
         "start_date",
@@ -221,7 +242,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         "default_args",
         "params",
         "doc_md",
-    ]
+    ] + CALLBACK_KEYS
 
     def repr(self):
         return (
@@ -232,7 +253,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
             f"catchup={self.catchup})"
         )
 
-    # noinspection t
+    # noinspection t,D
     def __add__(self, other):
         if other.tasks:
             for task in other.tasks.values():
@@ -267,7 +288,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         ```pycon
         >>> from orbiter.ast_helper import render_ast
         >>> render_ast(OrbiterDAG(dag_id="dag_id", file_path="")._dag_to_ast())
-        "DAG(dag_id='dag_id', schedule=None, start_date=DateTime(1970, 1, 1, 0, 0, 0), catchup=False)"
+        "DAG(dag_id='dag_id')"
 
         ```
 
@@ -275,29 +296,33 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         >>> render_ast(OrbiterDAG(
         ...    dag_id="dag_id",
         ...    file_path="",
-        ...    default_args={},
+        ...    default_args=None,
         ...    params={},
         ...    schedule="@hourly",
         ...    start_date=datetime(2000, 1, 1),
-        ...    description="foo"
+        ...    description="foo",
         ... )._dag_to_ast())
-        "DAG(dag_id='dag_id', schedule='@hourly', start_date=datetime.datetime(2000, 1, 1, 0, 0), catchup=False, description='foo')"
+        "DAG(dag_id='dag_id', schedule='@hourly', start_date=datetime.datetime(2000, 1, 1, 0, 0), params={}, description='foo')"
+
+        >>> from orbiter.objects.callbacks.smtp import OrbiterSmtpNotifierCallback
+        >>> render_ast(
+        ...   OrbiterDAG(file_path="", dag_id="foo", catchup=False, on_retry_callback=OrbiterSmtpNotifierCallback(to="")
+        ... )._dag_to_ast())
+        "DAG(dag_id='foo', catchup=False, on_retry_callback=send_smtp_notification(from_email=None, smtp_conn_id='SMTP'))"
 
         ```
         :return: `DAG(...)` as an ast.Expr
         """  # noqa: E501
 
         def prop(k):
-            # special case - nullable_attributes can be False / None
-            if k in self.nullable_attributes:
-                return getattr(self, k)
-            attr = getattr(self, k, None) or getattr(self.model_extra, k, None)
+            attr = getattr(self, k, None)
+            if attr is None:
+                # Try model_extra, if we couldn't find it on the main object
+                attr = getattr(self.model_extra, k, None)
             return ast.Name(id=attr.__name__) if isinstance(attr, Callable) else attr
 
         index_map = {v: i for i, v in enumerate(self.render_attributes)}
-        rendered_params = {
-            k: prop(k) for k in self.render_attributes if getattr(self, k) or k in self.nullable_attributes
-        }
+        rendered_params = {k: prop(k) for k in self.render_attributes if (getattr(self, k) is not None)}
         extra_params = {k: prop(k) for k in (self.model_extra.keys() or [])}
         return py_object(
             name="DAG",
@@ -310,7 +335,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
             **extra_params,
         )
 
-    # noinspection PyProtectedMember
+    # noinspection PyProtectedMember,D
     def _to_ast(self) -> List[ast.stmt]:
         """
         Renders the DAG to an AST, including imports, tasks, and task dependencies
@@ -331,8 +356,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         from airflow import DAG
         from airflow.operators.bash import BashOperator
         from airflow.utils.task_group import TaskGroup
-        from pendulum import DateTime, Timezone
-        with DAG(dag_id='foo', schedule=None, start_date=DateTime(1970, 1, 1, 0, 0, 0), catchup=False):
+        with DAG(dag_id='foo'):
             a_task = BashOperator(task_id='a', bash_command='a')
             with TaskGroup(group_id='b') as b:
                 c_task = BashOperator(task_id='c', bash_command='c')
@@ -344,6 +368,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
         ```
         """
+        from orbiter.objects.timetables.timetable import OrbiterTimetable
 
         def dedupe_callable(ast_collection):
             items = []
@@ -364,12 +389,15 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         # DAG Imports, e.g. `from airflow import DAG`
         # Task/TaskGroup Imports, e.g. `from airflow.operators.bash import BashOperator`
         pre_imports = list(
-            set(self.imports)
+            # Ignore the pendulum import if start_date is None
+            set(i for i in self.imports if not (i.package == "pendulum" and self.start_date is None))
+            # Get imports from tasks, and descend into task groups
             | set(_get_imports_recursively(self.tasks.values()))
+            # Get imports from Schedule, if it's a timetable
             | (set(self.schedule.imports) if isinstance(self.schedule, OrbiterTimetable) else set())
             | reduce(
-                # Look for e.g. on_failure_callback in model_extra, get imports, merge them all
-                lambda old, item: old | set(getattr(self.model_extra.get(item, {}), "imports", set())),
+                # Look for e.g. on_failure_callback, get imports, merge them all
+                lambda old, item: old | set(getattr(getattr(self, item, {}), "imports", set())),
                 CALLBACK_KEYS,
                 set(),
             )
@@ -402,7 +430,8 @@ def to_dag_id(dag_id: str) -> str:
     return clean_value(dag_id)
 
 
-if __name__ == "__main__":
-    import doctest
+# This needs to be here, specifically after OrbiterDAG is defined
+# to avoid circular imports
+from orbiter.objects.task_group import OrbiterTaskGroup  # noqa: E402
 
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)
+OrbiterDAG.model_rebuild()

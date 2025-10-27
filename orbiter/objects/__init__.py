@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import List, Annotated, Set
+from typing import List, Set, ClassVar, Annotated
 
 from pydantic import BaseModel, AfterValidator
 from orbiter.objects.requirement import OrbiterRequirement
@@ -19,6 +19,8 @@ CALLBACK_KEYS = [
     "on_execute_callback",
     "on_skipped_callback",
 ]
+
+RenderAttributes = ClassVar[list[str]]
 
 
 def validate_imports(v):
@@ -49,7 +51,7 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
     """
 
     imports: ImportList
-    orbiter_kwargs: dict = None
+    orbiter_kwargs: dict | None = None
 
     orbiter_conns: Set[OrbiterConnection] | None = None
     orbiter_env_vars: Set[OrbiterEnvVar] | None = None

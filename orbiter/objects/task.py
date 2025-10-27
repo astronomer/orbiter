@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import ast
 from abc import ABC
-from typing import Set, List, ClassVar, Annotated, Callable
+from typing import Set, List, Annotated, Callable, Literal, TYPE_CHECKING
 
 from loguru import logger
 from pydantic import AfterValidator, BaseModel, validate_call
@@ -15,9 +15,13 @@ from orbiter.ast_helper import (
 )
 from orbiter.ast_helper import py_assigned_object
 from orbiter.config import ORBITER_TASK_SUFFIX
-from orbiter.objects import ImportList
+from orbiter.objects import ImportList, RenderAttributes, CALLBACK_KEYS
 from orbiter.objects import OrbiterBase
+from orbiter.objects.callbacks.callback_type import CallbackType
 from orbiter.objects.pool import OrbiterPool
+
+if TYPE_CHECKING:
+    from orbiter.objects.task_group import OrbiterTaskGroup
 
 __mermaid__ = """
 --8<-- [start:mermaid-dag-relationships]
@@ -34,13 +38,10 @@ OrbiterOperator --> "many" OrbiterCallback
 --8<-- [end:mermaid-task-relationships]
 """
 
-RenderAttributes = ClassVar[List[str]]
 TaskId = Annotated[str, AfterValidator(lambda t: to_task_id(t))]
 
 
-def task_add_downstream(
-    self, task_id: str | List[str] | OrbiterTaskDependency
-) -> "OrbiterOperator" | "OrbiterTaskGroup":  # noqa: F821
+def task_add_downstream(self, task_id: str | List[str] | OrbiterTaskDependency) -> "OrbiterOperator | OrbiterTaskGroup":
     # noinspection PyProtectedMember
     """
     Add a downstream task dependency
@@ -179,6 +180,8 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
     """
 
+    orbiter_type: Literal["OrbiterOperator"] = "OrbiterOperator"
+
     imports: ImportList
 
     operator: str
@@ -191,12 +194,19 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     orbiter_pool: OrbiterPool | None = None
     downstream: Set[str] = set()
 
+    on_success_callback: CallbackType
+    on_failure_callback: CallbackType
+    on_retry_callback: CallbackType
+    on_execute_callback: CallbackType
+    on_skipped_callback: CallbackType
+    sla_miss_callback: CallbackType
+
     render_attributes: RenderAttributes = [
         "task_id",
         "pool",
         "pool_slots",
         "trigger_rule",
-    ]
+    ] + CALLBACK_KEYS
 
     __mermaid__ = """
     --8<-- [start:mermaid-op-props]
@@ -206,6 +216,12 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     pool: str | None
     pool_slots: int | None
     trigger_rule: str | None
+    on_failure_callback: OrbiterCallback
+    on_success_callback: OrbiterCallback
+    on_retry_callback: OrbiterCallback
+    on_skipped_callback: OrbiterCallback
+    on_execute_callback: OrbiterCallback
+    sla_miss_callback: OrbiterCallback
     downstream: Set[str]
     add_downstream(str | List[str] | OrbiterTaskDependency)
     --8<-- [end:mermaid-op-props]
@@ -281,6 +297,8 @@ class OrbiterTask(OrbiterOperator, extra="allow"):
     :type imports: List[OrbiterRequirement]
     :param **kwargs: Any other keyword arguments to be passed to the operator
     """
+
+    orbiter_type: Literal["OrbiterTask"] = "OrbiterTask"
 
     imports: ImportList
     task_id: TaskId

@@ -1,9 +1,8 @@
 import ast
 
 from orbiter.ast_helper import OrbiterASTBase, py_object, py_reference
-from orbiter.objects import OrbiterBase, ImportList, OrbiterRequirement
-from orbiter.objects.task import RenderAttributes
-
+from orbiter.objects import OrbiterBase, ImportList, RenderAttributes
+from orbiter.objects.requirement import OrbiterRequirement
 
 __mermaid__ = """
 --8<-- [start:mermaid-relationships]
@@ -29,8 +28,7 @@ class OrbiterCallback(OrbiterASTBase, OrbiterBase, extra="forbid"):
     ... # doctest: +ELLIPSIS
     from airflow import DAG
     from my_callback import my_callback
-    ...
-    with DAG(... on_failure_callback=my_callback):
+    with DAG(dag_id='', on_failure_callback=my_callback):
 
     ```
 

@@ -7,7 +7,8 @@ from typing import Any, Tuple
 
 from loguru import logger
 
-__version__ = "1.5.10"
+
+__version__ = "1.8.0"
 
 version = __version__
 
@@ -81,9 +82,3 @@ def import_from_qualname(qualname) -> Tuple[str, Any]:
         name,
         getattr(imported_module, name) if "." in qualname else imported_module,
     )
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)

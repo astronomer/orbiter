@@ -2,14 +2,15 @@ from pathlib import Path
 
 import yaml
 
+from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.connection import OrbiterConnection
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.env_var import OrbiterEnvVar
 from orbiter.objects.pool import OrbiterPool
 from orbiter.objects.project import OrbiterProject
-from orbiter.objects.task import OrbiterTask
-from orbiter.objects.timetables.multi_cron_timetable import OrbiterMultiCronTimetable
+from orbiter.objects.task import OrbiterTask, OrbiterTaskDependency
+from orbiter.objects.timetables.multiple_cron_trigger_timetable import OrbiterMultipleCronTriggerTimetable
 from orbiter.objects.variable import OrbiterVariable
 
 
@@ -21,7 +22,7 @@ def test_project_render(tmpdir):
             OrbiterDAG(
                 dag_id="foo",
                 file_path="foo.py",
-                schedule=OrbiterMultiCronTimetable(cron_defs=["0 1 * * *", "*/5 0 * * *"]),
+                schedule=OrbiterMultipleCronTriggerTimetable(crons=["0 1 * * *", "*/5 0 * * *"]),
                 doc_md="foo",
             ).add_tasks(
                 tasks=[
@@ -44,7 +45,10 @@ def test_project_render(tmpdir):
                             ),
                             OrbiterRequirement(sys_package="git"),
                         ],
-                    )
+                    ).add_downstream(
+                        OrbiterTaskDependency(task_id="foo", downstream="bar"),
+                    ),
+                    OrbiterUnmappedOperator(task_id="bar", source="foo"),
                 ]
             )
         ]
@@ -52,7 +56,7 @@ def test_project_render(tmpdir):
     project.render(tmpdir)
 
     actual_requirements = (tmpdir / "requirements.txt").read_text()
-    expected_requirements = "apache-airflow\ncroniter\npendulum"
+    expected_requirements = "apache-airflow\npendulum"
     assert actual_requirements == expected_requirements
 
     actual_packages = (tmpdir / "packages.txt").read_text()
@@ -83,18 +87,15 @@ def test_project_render(tmpdir):
     actual_dag = actual_dag.read_text()
     expected_dag = """from airflow import DAG
 from airflow.operators.empty import EmptyOperator
-from include.multi_cron_timetable import MultiCronTimetable
-from pendulum import DateTime, Timezone
-with DAG(dag_id='foo', schedule=MultiCronTimetable(cron_defs=['0 1 * * *', '*/5 0 * * *']), start_date=DateTime(1970, 1, 1, 0, 0, 0), catchup=False, doc_md='foo'):
-    foo_task = EmptyOperator(task_id='foo', doc='some other thing')"""
+from airflow.timetables.trigger import MultipleCronTriggerTimetable
+from include.unmapped import UnmappedOperator
+with DAG(dag_id='foo', schedule=MultipleCronTriggerTimetable('0 1 * * *', '*/5 0 * * *', timezone='UTC'), doc_md='foo'):
+    foo_task = EmptyOperator(task_id='foo', doc='some other thing')
+    bar_task = UnmappedOperator(task_id='bar', source='foo')
+    foo_task >> bar_task"""
     assert actual_dag == expected_dag
 
-    actual_include = tmpdir / "include/multi_cron_timetable.py"
+    actual_include = tmpdir / "include/unmapped.py"
     assert actual_include.exists(), actual_include
     actual_include = actual_include.read_text()
-    assert "class MultiCronTimetable(Timetable):" in actual_include
-
-    actual_plugin = tmpdir / "plugins/multi_cron_timetable.py"
-    assert actual_plugin.exists(), actual_plugin
-    actual_plugin = actual_plugin.read_text()
-    assert "class MultiCronTimetablePlugin(AirflowPlugin)" in actual_plugin
+    assert "class UnmappedOperator(EmptyOperator):" in actual_include

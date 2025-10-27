@@ -5,7 +5,7 @@ default_stages: [ pre-commit, pre-push ]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -31,18 +31,18 @@ repos:
         args: [ '--baseline', '.secrets.baseline' ]
 
   - repo: https://github.com/sirosen/texthooks
-    rev: 0.6.7
+    rev: 0.7.1
     hooks: [ { id: fix-smartquotes }, { id: fix-ligatures } ]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.7.3'
+    rev: 'v0.14.1'
     hooks:
       - id: ruff
         args: [ --fix, --exit-non-zero-on-fix ]
       - id: ruff-format
 
   - repo: https://github.com/PyCQA/bandit/
-    rev: 1.7.10
+    rev: 1.8.6
     hooks:
       - id: bandit
         args: [ "-c", "pyproject.toml" ]

@@ -10,20 +10,22 @@ from itertools import chain
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import (
-    List,
-    Any,
-    Collection,
     Annotated,
+    Any,
     Callable,
-    Union,
+    Collection,
     Generator,
+    List,
     Set,
     Type,
     Mapping,
+    Union,
+    Tuple,
 )
 
 from loguru import logger
-from pydantic import BaseModel, AfterValidator, validate_call
+from pydantic import AfterValidator, BaseModel, validate_call
+from pydantic_settings import BaseSettings
 
 from orbiter import import_from_qualname
 from orbiter.file_types import FileType, FileTypeJSON
@@ -32,14 +34,14 @@ from orbiter.objects.project import OrbiterProject
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
 from orbiter.objects.task_group import OrbiterTaskGroup
 from orbiter.rules import (
-    Rule,
+    EMPTY_RULE,
     DAGFilterRule,
     DAGRule,
+    PostProcessingRule,
+    Rule,
+    TaskDependencyRule,
     TaskFilterRule,
     TaskRule,
-    TaskDependencyRule,
-    PostProcessingRule,
-    EMPTY_RULE,
     trim_dict,
 )
 
@@ -219,7 +221,7 @@ def _get_parent_for_task_dependency(
     return None
 
 
-# noinspection t
+# noinspection t,D
 @validate_call
 def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     """
@@ -273,10 +275,10 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
         logger.info(f"Translating [File {i}]={file.resolve()}")
 
         # DAG FILTER Ruleset - filter down to keys suspected of being translatable to a DAG, in priority order.
-        # Add __file DAG FILTER inputs and outputs, so it's available for both DAG and DAG FILTER rules
+        # Add __file and __input_dir DAG FILTER inputs and outputs, so it's available for both DAG and DAG FILTER rules
         def with_file(d: dict) -> dict:
             try:
-                __file_addition = {"__file": (input_dir / file.relative_to(input_dir))}
+                __file_addition = {"__file": (input_dir / file.relative_to(input_dir)), "__input_dir": input_dir}
                 return __file_addition | d
             except Exception as e:
                 logger.opt(exception=e).debug("Unable to add __file")
@@ -601,6 +603,10 @@ EMPTY_RULESET = {"ruleset": [EMPTY_RULE]}
 """Empty ruleset, for testing"""
 
 
+class TranslationConfig(BaseSettings):
+    pass
+
+
 class TranslationRuleset(BaseModel, ABC, extra="forbid"):
     """
     A `Ruleset` is a collection of [`Rules`][orbiter.rules.Rule] that are
@@ -651,6 +657,7 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
     """  # noqa: E501
 
     file_type: Set[Type[FileType]]
+    config: TranslationConfig = TranslationConfig()
     dag_filter_ruleset: DAGFilterRuleset | dict
     dag_ruleset: DAGRuleset | dict
     task_filter_ruleset: TaskFilterRuleset | dict
@@ -708,7 +715,7 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
                 return file_type.dump_fn(input_dict)
         raise TypeError(f"Invalid file_type={ext}")
 
-    def get_files_with_extension(self, input_dir: Path) -> Generator[Path, dict]:
+    def get_files_with_extension(self, input_dir: Path) -> Generator[Tuple[Path, dict]]:
         """
         A generator that yields files with a specific extension(s) in a directory
 
@@ -748,7 +755,7 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
         """
         with TemporaryDirectory() as tempdir:
             file = Path(tempdir) / f"{uuid.uuid4()}.{self.get_ext()}"
-            file.write_text(self.dumps(input_value) if isinstance(input_value, dict) else input_value)
+            file.write_text(self.dumps(input_dict=input_value) if isinstance(input_value, dict) else input_value)
             return self.translate_fn(translation_ruleset=self, input_dir=file.parent)
 
 
@@ -762,9 +769,3 @@ EMPTY_TRANSLATION_RULESET = TranslationRuleset(
     post_processing_ruleset=EMPTY_RULESET,
     translate_fn=fake_translate,
 )
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.IGNORE_EXCEPTION_DETAIL)

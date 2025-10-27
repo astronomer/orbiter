@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from typing import Set, TYPE_CHECKING, Union, Any
+from typing import Set, TYPE_CHECKING, Union, Any, Literal
 
+from orbiter.objects.requirement import OrbiterRequirement
+
+from orbiter.objects.connection import OrbiterConnection
 from pydantic import model_validator
 
-from orbiter.objects import ImportList, OrbiterRequirement, OrbiterConnection
-from orbiter.objects.task import OrbiterOperator, RenderAttributes
+from orbiter.objects import ImportList, RenderAttributes
+from orbiter.objects.task import OrbiterOperator
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -79,6 +82,7 @@ class OrbiterKubernetesPodOperator(OrbiterOperator):
     pod_template_dict: dict | None
     --8<-- [end:mermaid-props]
     """
+    orbiter_type: Literal["OrbiterKubernetesPodOperator"] = "OrbiterKubernetesPodOperator"
 
     imports: ImportList = [
         OrbiterRequirement(
@@ -115,9 +119,3 @@ class OrbiterKubernetesPodOperator(OrbiterOperator):
         if not any(map(bool, (self.image, self.pod_template_dict))):
             raise ValueError("At least one of `image` or `pod_template_dict` must be set.")
         return self
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()

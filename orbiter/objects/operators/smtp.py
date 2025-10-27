@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from typing import Set
+from typing import Set, Literal
 
-from orbiter.objects import OrbiterRequirement, ImportList, OrbiterConnection
-from orbiter.objects.task import OrbiterOperator, RenderAttributes
+from orbiter.objects.requirement import OrbiterRequirement
+
+from orbiter.objects.connection import OrbiterConnection
+
+from orbiter.objects import ImportList, RenderAttributes
+from orbiter.objects.task import OrbiterOperator
 
 
 class OrbiterEmailOperator(OrbiterOperator):
@@ -47,6 +51,7 @@ class OrbiterEmailOperator(OrbiterOperator):
     conn_id: str
     --8<-- [end:mermaid-props]
     """
+    orbiter_type: Literal["OrbiterEmailOperator"] = "OrbiterEmailOperator"
 
     imports: ImportList = [
         OrbiterRequirement(

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-from orbiter.objects import ImportList, OrbiterRequirement
-from orbiter.objects.task import OrbiterOperator, RenderAttributes
+from typing import Literal
+
+from orbiter.objects import ImportList, RenderAttributes
+from orbiter.objects.requirement import OrbiterRequirement
+from orbiter.objects.task import OrbiterOperator
 
 
 class OrbiterLivyOperator(OrbiterOperator):
@@ -32,6 +35,7 @@ class OrbiterLivyOperator(OrbiterOperator):
     kwargs: Any
     --8<-- [end:mermaid-props]
     """
+    orbiter_type: Literal["OrbiterLivyOperator"] = "OrbiterLivyOperator"
 
     imports: ImportList = [
         OrbiterRequirement(
@@ -45,9 +49,3 @@ class OrbiterLivyOperator(OrbiterOperator):
 
     # noinspection Pydantic
     render_attributes: RenderAttributes = OrbiterOperator.render_attributes + ["livy_conn_id"]
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()

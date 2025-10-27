@@ -43,15 +43,15 @@ def py_assigned_object(ast_name: str, obj: str, **kwargs) -> ast.Assign:
     )
 
 
-def py_object(name: str, **kwargs) -> ast.Expr:
+def py_object(name: str, *args, **kwargs) -> ast.Expr:
     """
-    >>> render_ast(py_object("Bar", baz="bop"))
-    "Bar(baz='bop')"
+    >>> render_ast(py_object("Bar", "boom", "bing", baz="bop"))
+    "Bar('boom', 'bing', baz='bop')"
     """
     return ast.Expr(
         value=ast.Call(
             func=ast.Name(id=name),
-            args=[],
+            args=[ast.Constant(value=value) for value in args],
             keywords=[ast.keyword(arg=arg, value=ast.Constant(value=value)) for arg, value in kwargs.items()],
         )
     )
@@ -62,10 +62,11 @@ def py_root(*args) -> ast.Module:
     :param args: ast objects, such as ast.Expr
     :return: root ast.Module, which can be `ast.unparse`d
     """
+    # noinspection PyTypeChecker
     return ast.Module(body=args, type_ignores=[])
 
 
-def py_import(names: List[str], module: str = None) -> ast.ImportFrom | ast.Import | list:
+def py_import(names: List[str], module: str | None = None) -> ast.ImportFrom | ast.Import | list:
     """
     :param module: e.g. `airflow.operators.bash` for `from airflow.operators.bash import BashOperator`
     :param names: e.g. `BashOperator` for `from airflow.operators.bash import BashOperator`
@@ -107,6 +108,7 @@ def py_with(item: ast.expr, body: List[ast.stmt], assignment: str | None = None)
     """
     if isinstance(item, ast.Expr):
         item = item.value
+    # noinspection PyTypeChecker
     return ast.With(
         items=[
             ast.withitem(
@@ -119,7 +121,9 @@ def py_with(item: ast.expr, body: List[ast.stmt], assignment: str | None = None)
     )
 
 
-def py_function(c: Callable | str, decorator_names: List[str] = None, decorator_kwargs: List[dict] = None):
+def py_function(
+    c: Callable | str, decorator_names: List[str] | None = None, decorator_kwargs: List[dict] | None = None
+):
     """
     ```pycon
     >>> def foo(a, b):

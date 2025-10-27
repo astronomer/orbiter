@@ -4,9 +4,8 @@ from typing import Set, Sequence
 
 from orbiter.objects.connection import OrbiterConnection
 
-from orbiter.objects import OrbiterRequirement, ImportList
+from orbiter.objects import OrbiterRequirement, ImportList, RenderAttributes
 from orbiter.objects.callbacks import OrbiterCallback
-from orbiter.objects.task import RenderAttributes
 
 
 __mermaid__ = """
