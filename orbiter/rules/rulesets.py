@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import functools
 import inspect
-import re
 import uuid
-from _operator import add
-from abc import ABC
+from abc import ABC, abstractmethod
 from itertools import chain
+from operator import add
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import (
@@ -27,7 +26,8 @@ from loguru import logger
 from pydantic import AfterValidator, BaseModel, validate_call
 from pydantic_settings import BaseSettings
 
-from orbiter import import_from_qualname
+from orbiter import import_from_qualname, trim_dict, QualifiedImport, validate_qualified_imports, _backport_walk
+from orbiter.default_translation import translate, fake_translate
 from orbiter.file_types import FileType, FileTypeJSON
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.project import OrbiterProject
@@ -42,20 +42,7 @@ from orbiter.rules import (
     TaskDependencyRule,
     TaskFilterRule,
     TaskRule,
-    trim_dict,
 )
-
-
-def _backport_walk(input_dir: Path):
-    """Path.walk() is only available in Python 3.12+, so, backport"""
-    import os
-
-    for result in os.walk(input_dir):
-        yield Path(result[0]), result[1], result[2]
-
-
-qualname_validator_regex = r"^[\w.]+$"
-qualname_validator = re.compile(qualname_validator_regex)
 
 
 def validate_translate_fn(
@@ -97,265 +84,13 @@ def validate_translate_fn(
     return translate_fn
 
 
-def validate_qualified_imports(qualified_imports: List[str]) -> List[str]:
-    """
-    ```pycon
-    >>> validate_qualified_imports(["json", "package.module.Class"])
-    ['json', 'package.module.Class']
-
-    ```
-    """
-    for _qualname in qualified_imports:
-        assert qualname_validator.match(_qualname), (
-            f"Import Qualified Name='{_qualname}' is not valid."
-            f"Qualified Names must match regex {qualname_validator_regex}"
-        )
-    return qualified_imports
-
-
-QualifiedImport = Annotated[str, AfterValidator(validate_qualified_imports)]
-
 TranslateFn = Annotated[
     Union[QualifiedImport, Callable[["TranslationRuleset", Path], OrbiterProject]],
     AfterValidator(validate_translate_fn),
 ]
 
 
-def _add_task_deduped(_task, _tasks, n=""):
-    """
-    If this task_id doesn't already exist, add it as normal to the tasks dictionary.
-    If this task_id does exist - add a number to the end and try again
-
-    ```pycon
-    >>> from pydantic import BaseModel
-    >>> class Task(BaseModel):
-    ...   task_id: str
-    >>> tasks = {}
-    >>> _add_task_deduped(Task(task_id="foo"), tasks); tasks
-    {'foo': Task(task_id='foo')}
-    >>> _add_task_deduped(Task(task_id="foo"), tasks); tasks
-    {'foo': Task(task_id='foo'), 'foo1': Task(task_id='foo1')}
-    >>> _add_task_deduped(Task(task_id="foo"), tasks); tasks
-    {'foo': Task(task_id='foo'), 'foo1': Task(task_id='foo1'), 'foo2': Task(task_id='foo2')}
-
-    ```
-    """
-    if hasattr(_task, "task_id"):
-        _id = "task_id"
-    elif hasattr(_task, "task_group_id"):
-        _id = "task_group_id"
-    else:
-        raise TypeError("Attempting to add a task without a `task_id` or `task_group_id` attribute")
-
-    old_task_id = getattr(_task, _id)
-    new_task_id = old_task_id + n
-    if new_task_id not in _tasks:
-        if n != "":
-            logger.warning(
-                f"{old_task_id} encountered more than once, task IDs must be unique! "
-                f"Modifying task ID to '{new_task_id}'!"
-            )
-        setattr(_task, _id, new_task_id)
-        _tasks[new_task_id] = _task
-    else:
-        try:
-            n = str(int(n) + 1)
-        except ValueError:
-            n = "1"
-        _add_task_deduped(_task, _tasks, n)
-
-
-def _get_parent_for_task_dependency(
-    task_dependency: OrbiterTaskDependency, this: OrbiterDAG | OrbiterTaskGroup
-) -> OrbiterDAG | OrbiterTaskGroup | None:
-    """Look through any children in the `.tasks` property for a matching task_id, recursing into anything that contains
-    `.tasks`. Return the parent object that contains the task_id, or None if it's not found.
-
-    ```pycon
-    >>> from orbiter.objects.operators.empty import OrbiterEmptyOperator
-    >>> _get_parent_for_task_dependency(
-    ...     OrbiterTaskDependency(task_id="bar", downstream="baz"),
-    ...     OrbiterDAG(dag_id="foo", file_path='', tasks={"bar": OrbiterEmptyOperator(task_id="bar")})
-    ... ).dag_id  # returns the dag
-    'foo'
-    >>> _get_parent_for_task_dependency(
-    ...     OrbiterTaskDependency(task_id="bar", downstream="qux"),
-    ...     OrbiterDAG(dag_id="foo", file_path='', tasks={
-    ...         "bar": OrbiterTaskGroup(task_group_id="bar", tasks={"bop": OrbiterEmptyOperator(task_id="bop")})
-    ...     })
-    ... ).dag_id  # returns the parent dag, even if a task group is the target
-    'foo'
-    >>> _get_parent_for_task_dependency(
-    ...     OrbiterTaskDependency(task_id="baz", downstream="qux"),
-    ...     OrbiterDAG(dag_id="foo", file_path='', tasks={
-    ...         "bar": OrbiterTaskGroup(task_group_id="bar").add_tasks(OrbiterEmptyOperator(task_id="baz"))
-    ...     })
-    ... ).task_group_id  # returns a child task group, if it contains the task
-    'bar'
-    >>> _get_parent_for_task_dependency(
-    ...     OrbiterTaskDependency(task_id="bonk", downstream="end"),
-    ...     OrbiterTaskGroup(task_group_id="foo").add_tasks([
-    ...         OrbiterTaskGroup(task_group_id="bar").add_tasks(OrbiterEmptyOperator(task_id="baz")),
-    ...         OrbiterTaskGroup(task_group_id="qux").add_tasks(OrbiterEmptyOperator(task_id="bonk"))
-    ...     ])
-    ... ).task_group_id  # returns a nested task group that contains the task
-    'qux'
-    >>> _get_parent_for_task_dependency(
-    ...     OrbiterTaskDependency(task_id="qux", downstream="qop"),
-    ...     OrbiterDAG(dag_id="foo", file_path='', tasks={
-    ...         "bar": OrbiterTaskGroup(task_group_id="bar").add_tasks(OrbiterEmptyOperator(task_id="baz"))
-    ...     })
-    ... ) # returns nothing if the task was never found
-
-    ```
-    """
-    for task in getattr(this, "tasks", {}).values():
-        found = None
-        if getattr(task, "task_id", "") == task_dependency.task_id:
-            found = this
-        elif isinstance(task, OrbiterTaskGroup):
-            if _found := _get_parent_for_task_dependency(task_dependency, task):
-                found = _found
-        if found:
-            return found
-    return None
-
-
-# noinspection t,D
-@validate_call
-def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
-    """
-    Orbiter expects a folder containing text files which may have a structure like:
-    ```json
-    {"<workflow name>": { ...<workflow properties>, "<task name>": { ...<task properties>} }}
-    ```
-
-    The standard translation function performs the following steps:
-
-    ![Diagram of Orbiter Translation](../orbiter_diagram.png)
-
-    1. [**Find all files**][orbiter.rules.rulesets.TranslationRuleset.get_files_with_extension] with the expected
-        [`TranslationRuleset.file_type`][orbiter.rules.rulesets.TranslationRuleset]
-        (`.json`, `.xml`, `.yaml`, etc.) in the input folder.
-        - [**Load each file**][orbiter.rules.rulesets.TranslationRuleset.loads] and turn it into a Python Dictionary.
-    2. **For each file:** Apply the [`TranslationRuleset.dag_filter_ruleset`][orbiter.rules.rulesets.DAGFilterRuleset]
-        to filter down to entries that can translate to a DAG, in priority order.
-        The file name is added under a `__file` key to both input and output dictionaries for the DAG Filter rule.
-        - **For each dictionary**: Apply the [`TranslationRuleset.dag_ruleset`][orbiter.rules.rulesets.DAGRuleset],
-        to convert the object to an [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG],
-        in priority-order, stopping when the first rule returns a match.
-        If no rule returns a match, the entry is filtered.
-    3. Apply the [`TranslationRuleset.task_filter_ruleset`][orbiter.rules.rulesets.TaskFilterRuleset]
-        to filter down to entries in the DAG that can translate to a Task, in priority-order.
-        - **For each:** Apply the [`TranslationRuleset.task_ruleset`][orbiter.rules.rulesets.TaskRuleset],
-            to convert the object to a specific Task, in priority-order, stopping when the first rule returns a match.
-            If no rule returns a match, the entry is filtered.
-    4. After the DAG and Tasks are mapped, the
-        [`TranslationRuleset.task_dependency_ruleset`][orbiter.rules.rulesets.TaskDependencyRuleset]
-        is applied in priority-order, stopping when the first rule returns a match,
-        to create a list of
-        [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency],
-        which are then added to each task in the
-        [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG]
-    5. Apply the [`TranslationRuleset.post_processing_ruleset`][orbiter.rules.rulesets.PostProcessingRuleset],
-        against the [`OrbiterProject`][orbiter.objects.project.OrbiterProject], which can make modifications after all
-        other rules have been applied.
-    6. After translation - the [`OrbiterProject`][orbiter.objects.project.OrbiterProject]
-        is rendered to the output folder.
-    """
-    if not isinstance(translation_ruleset, TranslationRuleset):
-        raise RuntimeError(
-            f"Error! type(translation_ruleset)=={type(translation_ruleset)}!=TranslationRuleset! Exiting!"
-        )
-
-    # Create an initial OrbiterProject
-    project = OrbiterProject()
-
-    for i, (file, input_dict) in enumerate(translation_ruleset.get_files_with_extension(input_dir)):
-        logger.info(f"Translating [File {i}]={file.resolve()}")
-
-        # DAG FILTER Ruleset - filter down to keys suspected of being translatable to a DAG, in priority order.
-        # Add __file and __input_dir DAG FILTER inputs and outputs, so it's available for both DAG and DAG FILTER rules
-        def with_file(d: dict) -> dict:
-            try:
-                __file_addition = {"__file": (input_dir / file.relative_to(input_dir)), "__input_dir": input_dir}
-                return __file_addition | d
-            except Exception as e:
-                logger.opt(exception=e).debug("Unable to add __file")
-                return d
-
-        dag_dicts: List[dict] = [
-            with_file(dag_dict)
-            for dag_dict in functools.reduce(
-                add,
-                translation_ruleset.dag_filter_ruleset.apply(val=with_file(input_dict)),
-                [],
-            )
-        ]
-        logger.debug(f"Found {len(dag_dicts)} DAG candidates in {file.resolve()}")
-        for dag_dict in dag_dicts:
-            # DAG Ruleset - convert the object to an `OrbiterDAG` via `dag_ruleset`,
-            #         in priority-order, stopping when the first rule returns a match
-            dag: OrbiterDAG | None = translation_ruleset.dag_ruleset.apply(
-                val=dag_dict,
-                take_first=True,
-            )
-            if dag is None:
-                logger.warning(
-                    f"Couldn't extract DAG from dag_dict={dag_dict} with dag_ruleset={translation_ruleset.dag_ruleset}"
-                )
-                continue
-            dag.orbiter_kwargs["file_path"] = file.relative_to(input_dir)
-
-            tasks = {}
-            # TASK FILTER Ruleset - Many entries in dag_dict -> Many task_dict
-            task_dicts = functools.reduce(
-                add,
-                translation_ruleset.task_filter_ruleset.apply(val=dag_dict),
-                [],
-            )
-            logger.debug(f"Found {len(task_dicts)} Task candidates in {dag.dag_id} in {file.resolve()}")
-            for task_dict in task_dicts:
-                # TASK Ruleset one -> one
-                task: OrbiterOperator = translation_ruleset.task_ruleset.apply(val=task_dict, take_first=True)
-                if task is None:
-                    logger.warning(f"Couldn't extract task from expected task_dict={task_dict}")
-                    continue
-
-                _add_task_deduped(task, tasks)
-            logger.debug(f"Adding {len(tasks)} tasks to DAG {dag.dag_id}")
-            dag.add_tasks(tasks.values())
-
-            # Dag-Level TASK DEPENDENCY Ruleset
-            task_dependencies: List[OrbiterTaskDependency] = (
-                list(chain(*translation_ruleset.task_dependency_ruleset.apply(val=dag))) or []
-            )
-            if not len(task_dependencies):
-                logger.warning(f"Couldn't find task dependencies in dag={trim_dict(dag_dict)}")
-            for task_dependency in task_dependencies:
-                task_dependency: OrbiterTaskDependency
-                if parent := _get_parent_for_task_dependency(task_dependency, dag):
-                    parent.tasks[task_dependency.task_id].add_downstream(task_dependency)
-                else:
-                    logger.warning(f"Couldn't find task_id={task_dependency.task_id} in tasks for dag_id={dag.dag_id}")
-                    continue
-
-            logger.debug(f"Adding DAG {dag.dag_id} to project")
-            project.add_dags(dag)
-
-    # POST PROCESSING Ruleset
-    translation_ruleset.post_processing_ruleset.apply(val=project, take_first=False)
-
-    return project
-
-
-def fake_translate(translation_ruleset: TranslationRuleset, input_dir: Path) -> OrbiterProject:
-    """Fake translate function, for testing"""
-    _ = (translation_ruleset, input_dir)
-    return OrbiterProject()
-
-
-class Ruleset(BaseModel, frozen=True, extra="forbid"):
+class Ruleset(BaseModel, ABC, frozen=True, extra="forbid"):
     """A list of rules, which are evaluated to generate different types of output
 
     You must pass a [`Rule`][orbiter.rules.Rule] (or `dict` with the schema of [`Rule`][orbiter.rules.Rule])
@@ -364,9 +99,9 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
     >>> @rule
     ... def x(val):
     ...    return None
-    >>> Ruleset(ruleset=[x, {"rule": lambda: None}])
+    >>> GenericRuleset(ruleset=[x, {"rule": lambda: None}])
     ... # doctest: +ELLIPSIS
-    Ruleset(ruleset=[Rule(...), Rule(...)])
+    GenericRuleset(ruleset=[Rule(...), ...])
 
     ```
 
@@ -375,7 +110,7 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         You can't pass non-Rules
         ```pycon
         >>> # noinspection PyTypeChecker
-        ... Ruleset(ruleset=[None])
+        ... GenericRuleset(ruleset=[None])
         ... # doctest: +ELLIPSIS
         Traceback (most recent call last):
         pydantic_core._pydantic_core.ValidationError: ...
@@ -406,7 +141,7 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         ... def filter_for_type_folder(val):
         ...   (key, val) = val
         ...   return (key, val) if val.get('Type', '') == 'Folder' else None
-        >>> ruleset = Ruleset(ruleset=[filter_for_type_folder])
+        >>> ruleset = GenericRuleset(ruleset=[filter_for_type_folder])
         >>> input_dict = {
         ...    "a": {"Type": "Folder"},
         ...    "b": {"Type": "File"},
@@ -453,7 +188,7 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
     def _sorted(self) -> List[Rule]:
         """Return a copy of the ruleset, sorted by priority
         ```pycon
-        >>> sorted_rules = Ruleset(ruleset=[
+        >>> sorted_rules = GenericRuleset(ruleset=[
         ...   Rule(rule=lambda x: 1, priority=1),
         ...   Rule(rule=lambda x: 99, priority=99)]
         ... )._sorted()
@@ -478,7 +213,7 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         >>> @rule
         ... def gt_4(val):
         ...     return str(val) if val > 4 else None
-        >>> Ruleset(ruleset=[gt_4]).apply(val=5)
+        >>> GenericRuleset(ruleset=[gt_4]).apply(val=5)
         ['5']
 
         ```
@@ -488,14 +223,14 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         >>> @rule
         ... def gt_3(val):
         ...    return str(val) if val > 3 else None
-        >>> Ruleset(ruleset=[gt_4, gt_3]).apply(val=5)
+        >>> GenericRuleset(ruleset=[gt_4, gt_3]).apply(val=5)
         ['5', '5']
 
         ```
 
         The `take_first` flag will evaluate rules in the ruleset and return the first match
         ```pycon
-        >>> Ruleset(ruleset=[gt_4, gt_3]).apply(val=5, take_first=True)
+        >>> GenericRuleset(ruleset=[gt_4, gt_3]).apply(val=5, take_first=True)
         '5'
 
         ```
@@ -508,14 +243,14 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
         >>> @rule
         ... def more_always_none(val):
         ...     return None
-        >>> Ruleset(ruleset=[always_none, more_always_none]).apply(val=5)
+        >>> GenericRuleset(ruleset=[always_none, more_always_none]).apply(val=5)
         []
 
         ```
 
         If nothing matched, and `take_first=True`, `None` is returned
         ```pycon
-        >>> Ruleset(ruleset=[always_none, more_always_none]).apply(val=5, take_first=True)
+        >>> GenericRuleset(ruleset=[always_none, more_always_none]).apply(val=5, take_first=True)
         ... # None
 
         ```
@@ -524,7 +259,7 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
 
             If no input is given, an error is returned
             ```pycon
-            >>> Ruleset(ruleset=[always_none]).apply()
+            >>> GenericRuleset(ruleset=[always_none]).apply()
             Traceback (most recent call last):
             RuntimeError: No values provided! Supply at least one key=val pair as kwargs!
 
@@ -562,11 +297,39 @@ class Ruleset(BaseModel, frozen=True, extra="forbid"):
                     return result
         return None if take_first and not len(results) else results
 
+    @abstractmethod
+    def apply_ruleset(self, **kwargs) -> Any:
+        pass
+
 
 class DAGFilterRuleset(Ruleset):
     """Ruleset of [`DAGFilterRule`][orbiter.rules.DAGFilterRule]"""
 
     ruleset: List[DAGFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict]
+
+    def apply_ruleset(self, input_dict: dict, file: Path, input_dir: Path) -> list[dict]:
+        """Apply all rules from [DAG Filter Ruleset][orbiter.rules.ruleset.DAGFilterRuleset] to filter down to keys
+        that look like they can be translated to a DAG, in priority order.
+
+        !!! note
+
+            The file is added under a `__file` key to both input and output dictionaries, for use in future rules.
+            The input dir is added under a `__input_dir` key to both input and output dictionaries, for use in future rules.
+
+        :param input_dict: The input dictionary to filter, e.g. the file that was loaded and converted into a python dict
+        :param file: The file relative to the input directory's parent (is added under '__file' key)
+        :param input_dir: The input directory (is added under '__input_dir' key)
+        :return: A list of dictionaries that look like they can be translated to a DAG
+        """
+
+        def with_file(d: dict) -> dict:
+            try:
+                return {"__file": file, "__input_dir": input_dir} | d
+            except TypeError as e:
+                logger.opt(exception=e).debug("Unable to add one or both of `__file` or `__input_dir` keys")
+                return d
+
+        return [with_file(dag_dict) for dag_dict in functools.reduce(add, self.apply(val=with_file(input_dict)), [])]
 
 
 class DAGRuleset(Ruleset):
@@ -574,11 +337,36 @@ class DAGRuleset(Ruleset):
 
     ruleset: List[DAGRule | Rule | Callable[[dict], OrbiterDAG | None] | dict]
 
+    def apply_ruleset(self, dag_dict: dict) -> OrbiterDAG | None:
+        """Apply all rules from `DAGRuleset` to convert the object to an `OrbiterDAG`,
+        in priority order, stopping when the first rule returns a match.
+        If no rule returns a match, the entry is filtered.
+
+        !!! note
+
+            The file is retained via `OrbiterDAG.orbiter_kwargs['val']['__file']`, for use in future rules.
+
+        :param dag_dict: DAG Candidate, filtered via @dag_filter_rules
+        :return: An `OrbiterDAG` object
+        """
+        return self.apply(val=dag_dict, take_first=True)
+
 
 class TaskFilterRuleset(Ruleset):
     """Ruleset of [`TaskFilterRule`][orbiter.rules.TaskFilterRule]"""
 
     ruleset: List[TaskFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict]
+
+    def apply_ruleset(self, dag_dict: dict) -> list[dict]:
+        """Apply all rules from `TaskFilterRuleset` to filter down to keys that look like they can be translated
+         to a Task, in priority order.
+
+        Many entries in the dag_dict result in many task_dicts.
+
+        :param dag_dict: The dict to filter - the same dict that was passed to the DAG ruleset
+        :return: A list of dictionaries that look like they can be translated to a Task
+        """
+        return functools.reduce(add, self.apply(val=dag_dict), [])
 
 
 class TaskRuleset(Ruleset):
@@ -586,17 +374,54 @@ class TaskRuleset(Ruleset):
 
     ruleset: List[TaskRule | Rule | Callable[[dict], OrbiterOperator | OrbiterTaskGroup | None] | dict]
 
+    def apply_ruleset(self, task_dict: dict) -> OrbiterOperator | OrbiterTaskGroup:
+        """Apply all rules from `TaskRuleset` to convert the object to a Task, in priority order,
+        stopping when the first rule returns a match.
+
+        One task_dict makes up to one task (unless it produces a TaskGroup, which can contain many tasks).
+        If no rule returns a match, the entry is filtered.
+
+        :param task_dict: A dict to translate - what was returned from the Task Filter ruleset
+        :return: An [OrbiterOperator][orbiter.objects.task.OrbiterOperator] (or descendant) or [OrbiterTaskGroup][orbiter.objects.task.OrbiterTaskGroup]
+        """
+        return self.apply(val=task_dict, take_first=True)
+
 
 class TaskDependencyRuleset(Ruleset):
     """Ruleset of [`TaskDependencyRule`][orbiter.rules.TaskDependencyRule]"""
 
     ruleset: List[TaskDependencyRule | Rule | Callable[[OrbiterDAG], List[OrbiterTaskDependency] | None] | dict]
 
+    def apply_ruleset(self, dag: OrbiterDAG) -> list[OrbiterTaskDependency]:
+        """Apply all rules from `TaskDependencyRuleset` to create a list of
+        [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency],
+        which are then added in-place to each task in the [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG].
+
+        :param dag: The DAG to add the task dependencies to
+        :return: A list of [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency]
+        """
+        return list(chain(*self.apply(val=dag))) or []
+
 
 class PostProcessingRuleset(Ruleset):
     """Ruleset of [`PostProcessingRule`][orbiter.rules.PostProcessingRule]"""
 
     ruleset: List[PostProcessingRule | Rule | Callable[[OrbiterProject], None] | dict]
+
+    def apply_ruleset(self, project: OrbiterProject) -> None:
+        """Apply all rules from `PostProcessingRuleset` to modify project in-place
+
+        :param project: The OrbiterProject to modify
+        :return: None
+        """
+        self.apply(val=project, take_first=False)
+
+
+class GenericRuleset(Ruleset):
+    """Generic ruleset, for testing"""
+
+    def apply_ruleset(self, **kwargs) -> Any:
+        pass
 
 
 EMPTY_RULESET = {"ruleset": [EMPTY_RULE]}

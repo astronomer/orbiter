@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Tuple
+from typing import Any, Tuple, Mapping, List, Annotated
 
 from loguru import logger
+from pydantic import AfterValidator
+
+from orbiter.config import TRIM_LOG_OBJECT_LENGTH
 
 __version__ = "1.8.1"
 
@@ -81,3 +85,44 @@ def import_from_qualname(qualname) -> Tuple[str, Any]:
         name,
         getattr(imported_module, name) if "." in qualname else imported_module,
     )
+
+
+def _backport_walk(input_dir: Path):
+    """Path.walk() is only available in Python 3.12+, so, backport"""
+    import os
+
+    for result in os.walk(input_dir):
+        yield Path(result[0]), result[1], result[2]
+
+
+def trim_dict(v):
+    """Stringify and trim a dictionary if it's greater than a certain length
+    (used to trim down overwhelming log output)"""
+    if TRIM_LOG_OBJECT_LENGTH != -1 and isinstance(v, Mapping):
+        if len(str(v)) > TRIM_LOG_OBJECT_LENGTH:
+            return json.dumps(v, default=str)[:TRIM_LOG_OBJECT_LENGTH] + "..."
+    if isinstance(v, list):
+        return [trim_dict(_v) for _v in v]
+    return v
+
+
+def validate_qualified_imports(qualified_imports: List[str]) -> List[str]:
+    """
+    ```pycon
+    >>> validate_qualified_imports(["json", "package.module.Class"])
+    ['json', 'package.module.Class']
+
+    ```
+    """
+    for _qualname in qualified_imports:
+        assert qualname_validator.match(_qualname), (
+            f"Import Qualified Name='{_qualname}' is not valid."
+            f"Qualified Names must match regex {qualname_validator_regex}"
+        )
+    return qualified_imports
+
+
+QualifiedImport = Annotated[str, AfterValidator(validate_qualified_imports)]
+
+qualname_validator_regex = r"^[\w.]+$"
+qualname_validator = re.compile(qualname_validator_regex)

@@ -4,7 +4,12 @@ import ast
 from abc import ABC
 from typing import Annotated, Optional, List, Any, Set, Literal
 
-from pydantic import field_validator, validate_call, Field
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
+
+from pydantic import field_validator, Field
 
 from orbiter.config import ORBITER_TASK_SUFFIX
 from orbiter.ast_helper import (
@@ -13,7 +18,8 @@ from orbiter.ast_helper import (
     py_object,
     py_bitshift,
 )
-from orbiter.objects import OrbiterBase, ImportList, OrbiterRequirement
+from orbiter.objects import OrbiterBase, ImportList
+from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.operators.bash import OrbiterBashOperator
 from orbiter.objects.operators.empty import OrbiterEmptyOperator
 from orbiter.objects.operators.kubernetes_pod import OrbiterKubernetesPodOperator
@@ -25,13 +31,11 @@ from orbiter.objects.operators.ssh import OrbiterSSHOperator
 from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
 from orbiter.objects.operators.win_rm import OrbiterWinRMOperator
 from orbiter.objects.task import (
-    TaskId,
     OrbiterTaskDependency,
     OrbiterTask,
     OrbiterOperator,
-    task_add_downstream,
-    to_task_id,
 )
+from orbiter.objects.task_shared_utils import TaskId, task_add_downstream, to_task_id
 
 __mermaid__ = """
 --8<-- [start:mermaid-dag-relationships]
@@ -41,6 +45,8 @@ OrbiterTaskGroup --> "many" OrbiterRequirement
 --8<-- [start:mermaid-task-relationships]
 --8<-- [end:mermaid-task-relationships]
 """
+
+from orbiter.objects.tasks_parent_shared_utils import _get_task_dependency_parent, _add_tasks
 
 
 class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
@@ -111,10 +117,11 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
             )
         return tasks
 
-    def add_tasks(self, tasks):
-        from orbiter.objects.dag import _add_tasks
-
+    def add_tasks(self, tasks) -> Self:
         return _add_tasks(self, tasks)
+
+    def get_task_dependency_parent(self, task_dependency) -> Self | None:
+        return _get_task_dependency_parent(self, task_dependency)
 
     def add_downstream(self, task_id: str | List[str] | OrbiterTaskDependency) -> "OrbiterTaskGroup":
         return task_add_downstream(self, task_id)
@@ -156,9 +163,6 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
             self.task_group_id,
         )
 
-
-# https://github.com/pydantic/pydantic/issues/8790
-OrbiterTaskGroup.add_tasks = validate_call()(OrbiterTaskGroup.add_tasks)
 
 # This needs to be **here**, specifically,
 # to handle circular reference with OrbiterDAG
