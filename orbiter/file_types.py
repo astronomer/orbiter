@@ -13,9 +13,6 @@ from pydantic import (
 )
 from pydantic.v1 import validator
 
-from jilutil.jil_parser import JilParser
-from ast2json import str2json
-
 
 class FileType(BaseModel, ABC, arbitrary_types_allowed=True):
     """**Abstract Base** File Type
@@ -35,6 +32,7 @@ class FileType(BaseModel, ABC, arbitrary_types_allowed=True):
     def __hash__(self):
         return hash(tuple(self.extension))
 
+    # noinspection PyNestedDecorators
     @validator("extension", pre=True)
     @classmethod
     def ext_validate(cls, v: Set[str]):
@@ -207,56 +205,3 @@ class FileTypeYAML(FileType):
     extension: ClassVar[Set[str]] = {"YAML", "YML"}
     load_fn: ClassVar[Callable[[str], dict]] = lambda s: _s if len(_s := list(yaml.full_load_all(s))) > 1 else _s[0]
     dump_fn: ClassVar[Callable[[dict], str]] = yaml.safe_dump
-
-
-def unimplemented_dump(_: dict) -> str:
-    raise NotImplementedError("Dumping is not implemented yet.")
-
-
-def parse_jil(s: str) -> dict[str, list[dict]]:
-    """Parses JIL string into a dictionary.
-
-    ```pycon
-    >>> parse_jil(r'''insert_job: TEST.ECHO  job_type: CMD  /* INLINE COMMENT */
-    ... owner: foo
-    ... /* MULTILINE
-    ...     COMMENT */
-    ... machine: bar
-    ... command: echo "Hello World"''')
-    {'jobs': [{'insert_job': 'TEST.ECHO', 'job_type': 'CMD', 'owner': 'foo', 'machine': 'bar', 'command': 'echo "Hello World"'}]}
-
-    ```
-    """
-    return {k: [dict(job) for job in v] for k, v in JilParser(None).parse_jobs_from_str(s).items()}
-
-
-class FileTypeJIL(FileType):
-    """JIL File Type
-
-    :param extension: JIL
-    :type extension: Set[str]
-    :param load_fn: custom JIL loading function
-    :type load_fn: Callable[[str], dict]
-    :param dump_fn: JIL dumping function not yet implemented, raises an error
-    :type dump_fn: Callable[[dict], str]
-    """
-
-    extension: ClassVar[Set[str]] = {"JIL"}
-    load_fn: ClassVar[Callable[[str], dict]] = parse_jil
-    dump_fn: ClassVar[Callable[[dict], str]] = unimplemented_dump
-
-
-class FileTypePython(FileType):
-    """Python File Type
-
-    :param extension: PY
-    :type extension: Set[str]
-    :param load_fn: Python AST loading function (via `ast2json`)
-    :type load_fn: Callable[[str], dict]
-    :param dump_fn: Python dumping function not yet implemented, raises an error
-    :type dump_fn: Callable[[dict], str]
-    """
-
-    extension: ClassVar[Set[str]] = {"PY"}
-    load_fn: ClassVar[Callable[[str], dict]] = str2json
-    dump_fn: ClassVar[Callable[[dict], str]] = unimplemented_dump

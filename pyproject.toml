@@ -66,13 +66,6 @@ dependencies = [
     # alternative
     # "ruamel.yaml"
 
-    # for parsing JIL - fork
-    # original @ https://github.com/mscribellito/jilutil
-    "jilutil",
-
-    # for parsing python
-    "ast2json",
-
     # to render timezone-aware DAGs
     "pendulum",
     "tzdata", # for timezone data, if system doesn't have it?
