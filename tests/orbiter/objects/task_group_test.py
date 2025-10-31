@@ -21,6 +21,5 @@ with DAG(dag_id='dag', schedule=None, start_date=DateTime(1970, 1, 1, 0, 0, 0), 
         a_task = EmptyOperator(task_id='a')
     with TaskGroup(group_id='bar') as bar:
         b_task = EmptyOperator(task_id='b')
-    foo >> bar
-"""
+    foo >> bar"""  # noqa
     assert str(actual) == expected
