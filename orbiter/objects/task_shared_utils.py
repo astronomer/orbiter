@@ -1,16 +1,45 @@
 from __future__ import annotations
 
+import ast
 from typing import Annotated, List, TYPE_CHECKING
 
 from loguru import logger
 from pydantic import AfterValidator, validate_call
 
-if TYPE_CHECKING:
-    from orbiter.objects.task import OrbiterTaskDependency, OrbiterOperator
-    from orbiter.objects.task_group import OrbiterTaskGroup
+from orbiter.ast_helper import py_bitshift
+from orbiter.config import ORBITER_TASK_SUFFIX
 
+if TYPE_CHECKING:
+    from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
+    from orbiter.objects.task_group import OrbiterTaskGroup, TaskType
 
 TaskId = Annotated[str, AfterValidator(lambda t: to_task_id(t))]
+
+
+def downstream_to_ast(self: OrbiterTaskGroup | OrbiterOperator) -> List[ast.stmt] | None:
+    downstream: set[TaskType] | set[str] = self._dereferenced_downstream or self.downstream
+    if not downstream or not len(downstream):
+        return None
+    elif len(downstream) == 1:
+        (t,) = tuple(downstream)
+        return py_bitshift(
+            self.get_rendered_task_id(),
+            to_task_id(getattr(t, "task_id", t), ORBITER_TASK_SUFFIX)
+            if isinstance(t, str)
+            else t.get_rendered_task_id(),
+        )
+    else:
+        return py_bitshift(
+            self.get_rendered_task_id(),
+            sorted(
+                [
+                    to_task_id(getattr(t, "task_id", t), ORBITER_TASK_SUFFIX)
+                    if isinstance(t, str)
+                    else t.get_rendered_task_id()
+                    for t in downstream
+                ]
+            ),
+        )
 
 
 def task_add_downstream(self, task_id: str | List[str] | OrbiterTaskDependency) -> "OrbiterOperator | OrbiterTaskGroup":

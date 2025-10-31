@@ -103,6 +103,22 @@ def _get_imports_recursively(
     return list(sorted(imports, key=str))
 
 
+def dereference_downstream(
+    self: "OrbiterDAG | OrbiterTaskGroup", root_orbiter_dag: "OrbiterDAG | None" = None
+) -> "OrbiterDAG | OrbiterTaskGroup":
+    """Turn "downstream" references into the actual `OrbiterOperator` objects
+    via `_dereferenced_downstream`. Recursively descends into task groups
+    """
+    for task_id, task in self.tasks.items():
+        task._dereferenced_downstream = {
+            (root_orbiter_dag or self).get_task_dependency_parent(task_dependency).tasks[task_dependency]
+            for task_dependency in task.downstream
+        }
+        if hasattr(task, "tasks"):
+            dereference_downstream(task, (root_orbiter_dag or self))
+    return self
+
+
 class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     """Represents an Airflow [DAG](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html),
     with its tasks and dependencies.
@@ -319,7 +335,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
                 d_task = BashOperator(task_id='d', bash_command='d')
                 c_task >> d_task
             e_task = BashOperator(task_id='e', bash_command='e')
-            a_task >> b_task
+            a_task >> b
             b >> e_task
 
         ```
@@ -341,6 +357,10 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
                         continue
                     seen.add(item.name)
                 yield item
+
+        # Turn "downstream" references into the actual OrbiterOperator objects via _dereferenced_downstream
+        # Recursively descends into task groups
+        dereference_downstream(self)
 
         # DAG Imports, e.g. `from airflow import DAG`
         # Task/TaskGroup Imports, e.g. `from airflow.operators.bash import BashOperator`

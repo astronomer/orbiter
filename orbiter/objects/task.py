@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import ast
 from abc import ABC
-from typing import Set, List, Callable, Literal
+from typing import Set, List, Callable, Literal, TYPE_CHECKING
 
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
 from pydantic import BaseModel
-
 from orbiter.ast_helper import (
     OrbiterASTBase,
     py_function,
-    py_bitshift,
 )
 from orbiter.ast_helper import py_assigned_object
 from orbiter.config import ORBITER_TASK_SUFFIX
@@ -17,7 +19,10 @@ from orbiter.objects import ImportList, RenderAttributes, CALLBACK_KEYS
 from orbiter.objects import OrbiterBase
 from orbiter.objects.callbacks.callback_type import CallbackType
 from orbiter.objects.pool import OrbiterPool
-from orbiter.objects.task_shared_utils import TaskId, task_add_downstream, to_task_id
+from orbiter.objects.task_shared_utils import TaskId, task_add_downstream, to_task_id, downstream_to_ast
+
+if TYPE_CHECKING:
+    from orbiter.objects.task_group import TaskType
 
 __mermaid__ = """
 --8<-- [start:mermaid-dag-relationships]
@@ -153,6 +158,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
         "trigger_rule",
     ] + CALLBACK_KEYS
 
+    _dereferenced_downstream: Set["TaskType"] = set()
     __mermaid__ = """
     --8<-- [start:mermaid-op-props]
     imports: List[OrbiterRequirement]
@@ -172,23 +178,14 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     --8<-- [end:mermaid-op-props]
     """
 
-    def add_downstream(self, task_id: str | List[str] | OrbiterTaskDependency) -> "OrbiterOperator":
+    def get_rendered_task_id(self) -> str:
+        return to_task_id(self.task_id, ORBITER_TASK_SUFFIX)
+
+    def add_downstream(self, task_id: "str | List[str] | OrbiterTaskDependency") -> Self:
         return task_add_downstream(self, task_id)
 
-    def _downstream_to_ast(self) -> List[ast.stmt]:
-        if not self.downstream:
-            return []
-        elif len(self.downstream) == 1:
-            (t,) = tuple(self.downstream)
-            return py_bitshift(
-                to_task_id(self.task_id, ORBITER_TASK_SUFFIX),
-                to_task_id(t, ORBITER_TASK_SUFFIX),
-            )
-        else:
-            return py_bitshift(
-                to_task_id(self.task_id, ORBITER_TASK_SUFFIX),
-                sorted([to_task_id(t, ORBITER_TASK_SUFFIX) for t in self.downstream]),
-            )
+    def _downstream_to_ast(self):
+        return downstream_to_ast(self)
 
     def _to_ast(self) -> ast.stmt:
         def prop(k):
