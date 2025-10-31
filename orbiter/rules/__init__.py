@@ -159,10 +159,11 @@ class Rule(BaseModel, Callable, extra="forbid"):
     rule: Callable[[dict | Any], Any | None]
     priority: int = Field(0, ge=0)
 
-    def __call__(self, **kwargs):
+    def __call__(self, *args, **kwargs):
         try:
+            tracked_args = [VisitTrackedDict(v) if isinstance(v, dict) else v for v in args]
             tracked_kwargs = {k: VisitTrackedDict(v) if isinstance(v, dict) else v for k, v in kwargs.items()}
-            result = self.rule(**tracked_kwargs)
+            result = self.rule(*tracked_args, **tracked_kwargs)
             if result:
                 # Save the original kwargs under orbiter_kwargs
                 if kwargs and hasattr(result, "orbiter_kwargs"):
@@ -180,7 +181,7 @@ class Rule(BaseModel, Callable, extra="forbid"):
                             matched_rule_source=dedent(inspect.getsource(self.rule)),
                             visited_keys=functools.reduce(
                                 lambda acc, v: acc + (v.get_visited() if isinstance(v, VisitTrackedDict) else []),
-                                tracked_kwargs.values(),
+                                tracked_args + list(tracked_kwargs.values()),
                                 [],
                             ),
                         ),
