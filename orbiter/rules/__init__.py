@@ -34,7 +34,7 @@ Different [`Rules`][orbiter.rules.Rule] are applied in different scenarios, such
 
     ```python
     @task_rule
-    def my_rule(val):
+    def my_rule(val: dict):
         if 'command' in val:
             return OrbiterBashOperator(task_id=val['id'], bash_command=val['command'])
         else:
@@ -50,6 +50,8 @@ Different [`Rules`][orbiter.rules.Rule] are applied in different scenarios, such
 from __future__ import annotations
 
 import functools
+import inspect
+from textwrap import dedent
 from typing import Callable, Any, Collection, TYPE_CHECKING, List
 
 from pydantic import BaseModel, Field
@@ -57,6 +59,7 @@ from pydantic import BaseModel, Field
 from loguru import logger
 
 from orbiter import trim_dict
+from orbiter.meta import OrbiterMeta, VisitTrackedDict
 from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
 
@@ -98,24 +101,39 @@ class Rule(BaseModel, Callable, extra="forbid"):
 
     The function in a rule takes one parameter (`val`), and **must always evaluate to *something* or *nothing*.**
     ```pycon
-    >>> Rule(rule=lambda val: 4)({})
+    >>> Rule(rule=lambda val: 4)(val={})
     4
-    >>> Rule(rule=lambda val: None)({})
+    >>> Rule(rule=lambda val: None)(val={})
 
     ```
+    Depending on the type of rule, the input `val` may be a dictionary or a different type.
+    Refer to each type of rule for more details.
 
     !!! tip
 
         If the returned value is an [Orbiter Object](../objects/index.md),
-        the passed `kwargs` are saved in a special `orbiter_kwargs` property
+        the input `kwargs` are saved in a special `orbiter_kwargs` property,
+        along with information about the matching rule in an `orbiter_meta` property.
 
         ```pycon
-        >>> from orbiter.objects.dag import OrbiterDAG
-        >>> @rule
-        ... def my_rule(foo):
-        ...     return OrbiterDAG(dag_id="", file_path="")
-        >>> my_rule(foo="bar").orbiter_kwargs
-        {'foo': 'bar'}
+        >>> from orbiter.rules import task_rule
+        >>> @task_rule
+        ... def my_rule(val: dict):
+        ...     '''This rule takes that and gives this'''
+        ...     from orbiter.objects.operators.bash import OrbiterBashOperator
+        ...     if 'command' in val:
+        ...         return OrbiterBashOperator(task_id=val['id'], bash_command=val['command'])
+        ...     else:
+        ...         return None
+        >>> kwargs = {"id": "foo", "command": "echo 'hello world'", "unvisited_key": "bar"}
+        >>> match = my_rule(val=kwargs)
+        >>> type(match)
+        <class 'orbiter.objects.operators.bash.OrbiterBashOperator'>
+        >>> match.orbiter_kwargs
+        {'val': {'id': 'foo', 'command': "echo 'hello world'", 'unvisited_key': 'bar'}}
+        >>> match.orbiter_meta
+        ... # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+        OrbiterMeta(matched_rule_source="@task_rule...", matched_rule_docstring='This rule takes that and gives this', matched_rule_name='my_rule', matched_rule_priority=1, visited_keys=['command', 'id'])
 
         ```
 
@@ -141,18 +159,35 @@ class Rule(BaseModel, Callable, extra="forbid"):
     rule: Callable[[dict | Any], Any | None]
     priority: int = Field(0, ge=0)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, **kwargs):
         try:
-            result = self.rule(*args, **kwargs)
-            # Save the original kwargs under orbiter_kwargs
+            tracked_kwargs = {k: VisitTrackedDict(v) if isinstance(v, dict) else v for k, v in kwargs.items()}
+            result = self.rule(**tracked_kwargs)
             if result:
+                # Save the original kwargs under orbiter_kwargs
                 if kwargs and hasattr(result, "orbiter_kwargs"):
                     setattr(result, "orbiter_kwargs", kwargs)
+
+                # Save meta information about the match
+                if hasattr(result, "orbiter_meta"):
+                    setattr(
+                        result,
+                        "orbiter_meta",
+                        OrbiterMeta(
+                            matched_rule_name=self.rule.__name__,
+                            matched_rule_priority=self.priority,
+                            matched_rule_docstring=self.rule.__doc__,
+                            matched_rule_source=dedent(inspect.getsource(self.rule)),
+                            visited_keys=functools.reduce(
+                                lambda acc, v: acc + (v.get_visited() if isinstance(v, VisitTrackedDict) else []),
+                                tracked_kwargs.values(),
+                                [],
+                            ),
+                        ),
+                    )
         except Exception as e:
             logger.warning(
-                f"[RULE]: {self.rule.__name__}\n"
-                f"[ERROR]:\n{type(e)} - {trim_dict(e)}\n"
-                f"[INPUT]:\n{trim_dict(args)}\n{trim_dict(kwargs)}"
+                f"[RULE]: {self.rule.__name__}\n[ERROR]:\n{type(e)} - {trim_dict(e)}\n[INPUT]:\n{trim_dict(kwargs)}"
             )
             result = None
         return result
