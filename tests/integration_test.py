@@ -9,5 +9,5 @@ def test_integration():
     output = run("just docker-run-binary", shell=True, capture_output=True, text=True)
     assert "Available Origins" in output.stdout
     assert "Adding local .pyz files ['/data/orbiter_translations.pyz'] to sys.path" in output.stdout
-    assert "Translating [File 0]=workflow/demo.xml" in output.stdout
+    assert "[File 0=workflow/demo.xml] Translating file" in output.stdout
     assert "Writing /data/output/dags" in output.stdout
