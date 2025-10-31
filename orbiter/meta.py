@@ -16,7 +16,7 @@ class OrbiterMeta(BaseModel):
         str | None, Field(default=None, description="The name of the rule that matched the input.")
     ]
     matched_rule_priority: Annotated[
-        int | None, Field(default=None, description="Keys that have been visited, dot separated for nested inputs")
+        int | None, Field(default=None, description="The priority of the rule that matched the input.")
     ]
     visited_keys: Annotated[
         list[str] | None,
