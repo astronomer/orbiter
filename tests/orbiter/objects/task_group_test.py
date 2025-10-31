@@ -15,8 +15,7 @@ def test_task_group_rendering():
     expected = r"""from airflow import DAG
 from airflow.operators.empty import EmptyOperator
 from airflow.utils.task_group import TaskGroup
-from pendulum import DateTime, Timezone
-with DAG(dag_id='dag', schedule=None, start_date=DateTime(1970, 1, 1, 0, 0, 0), catchup=False):
+with DAG(dag_id='dag'):
     with TaskGroup(group_id='foo') as foo:
         a_task = EmptyOperator(task_id='a')
     with TaskGroup(group_id='bar') as bar:
