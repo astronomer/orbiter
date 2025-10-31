@@ -40,7 +40,7 @@ class VisitTrackedDict(dict):
     ['a']
     >>> b: VisitTrackedDict = v.get("b", {})
     ... v.get_visited()
-    ... # when we pull 'b' out into a var, it added to the visited set
+    ... # when we pull 'b' out into a var, it is added to the visited set
     ['a', 'b']
     >>> b.get_visited()
     ... # nothing has been visited yet, for b
