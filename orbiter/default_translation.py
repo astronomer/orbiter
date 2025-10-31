@@ -57,7 +57,7 @@ def file_relative_to_parent(file: Path, parent: Path) -> Path:
     """
     file_resolved = file.resolve()
     try:
-        file_relative_to_input_dir_parent = file_resolved.relative_to(parent.parent)
+        file_relative_to_input_dir_parent = file_resolved.relative_to(parent.parent.resolve())
     except ValueError as e:
         logger.opt(exception=e).warning(f"File {file_resolved} is not relative to {parent.parent}")
         file_relative_to_input_dir_parent = file_resolved
