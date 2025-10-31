@@ -163,6 +163,8 @@ def py_reference(name: str) -> ast.Expr:
 
 
 def render_ast(ast_object) -> str:
+    if ast_object is None:
+        return ""
     return ast.unparse(ast_object)
 
 

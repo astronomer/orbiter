@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import ast
 from abc import ABC
-from typing import Annotated, Optional, List, Any, Set, Literal
+from typing import List, Any, Set, Literal, TYPE_CHECKING, Annotated, Optional
 
 try:
     from typing import Self
@@ -11,12 +11,10 @@ except ImportError:
 
 from pydantic import field_validator, Field
 
-from orbiter.config import ORBITER_TASK_SUFFIX
 from orbiter.ast_helper import (
     OrbiterASTBase,
     py_with,
     py_object,
-    py_bitshift,
 )
 from orbiter.objects import OrbiterBase, ImportList
 from orbiter.objects.requirement import OrbiterRequirement
@@ -31,11 +29,14 @@ from orbiter.objects.operators.ssh import OrbiterSSHOperator
 from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
 from orbiter.objects.operators.win_rm import OrbiterWinRMOperator
 from orbiter.objects.task import (
-    OrbiterTaskDependency,
-    OrbiterTask,
     OrbiterOperator,
+    OrbiterTask,
 )
-from orbiter.objects.task_shared_utils import TaskId, task_add_downstream, to_task_id
+from orbiter.objects.task_shared_utils import TaskId, task_add_downstream, downstream_to_ast
+from orbiter.objects.tasks_parent_shared_utils import _get_task_dependency_parent, _add_tasks
+
+if TYPE_CHECKING:
+    from orbiter.objects.task import OrbiterTaskDependency
 
 __mermaid__ = """
 --8<-- [start:mermaid-dag-relationships]
@@ -45,8 +46,6 @@ OrbiterTaskGroup --> "many" OrbiterRequirement
 --8<-- [start:mermaid-task-relationships]
 --8<-- [end:mermaid-task-relationships]
 """
-
-from orbiter.objects.tasks_parent_shared_utils import _get_task_dependency_parent, _add_tasks
 
 
 class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
@@ -97,6 +96,8 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
     tasks: "TasksType"
     downstream: Set[str] = set()
 
+    _dereferenced_downstream: Set["TaskType"] = set()
+
     @property
     def task_id(self):
         # task_id property, so it can be treated like an OrbiterOperator more easily
@@ -123,20 +124,14 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
     def get_task_dependency_parent(self, task_dependency) -> Self | None:
         return _get_task_dependency_parent(self, task_dependency)
 
-    def add_downstream(self, task_id: str | List[str] | OrbiterTaskDependency) -> "OrbiterTaskGroup":
+    def get_rendered_task_id(self) -> str:
+        return self.task_id
+
+    def add_downstream(self, task_id: "str | List[str] | OrbiterTaskDependency") -> "OrbiterTaskGroup":
         return task_add_downstream(self, task_id)
 
     def _downstream_to_ast(self):
-        if not self.downstream:
-            return
-        elif len(self.downstream) == 1:
-            (t,) = tuple(self.downstream)
-            return py_bitshift(to_task_id(self.task_id), to_task_id(t, ORBITER_TASK_SUFFIX))
-        else:
-            return py_bitshift(
-                to_task_id(self.task_id),
-                sorted([to_task_id(t, ORBITER_TASK_SUFFIX) for t in self.downstream]),
-            )
+        return downstream_to_ast(self)
 
     def _to_ast(self) -> ast.stmt:
         """

@@ -54,10 +54,13 @@ def _get_task_dependency_parent(
     ```
     """
     from orbiter.objects.task_group import OrbiterTaskGroup
+    from orbiter.objects.task import OrbiterTaskDependency
+
+    task_id = task_dependency.task_id if isinstance(task_dependency, OrbiterTaskDependency) else task_dependency
 
     for task in getattr(self, "tasks", {}).values():
         found = None
-        if getattr(task, "task_id", "") == task_dependency.task_id:
+        if getattr(task, "task_id", "") == task_id:
             found = self
         elif isinstance(task, OrbiterTaskGroup):
             if _found := _get_task_dependency_parent(task, task_dependency):

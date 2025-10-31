@@ -6,6 +6,8 @@ from functools import reduce
 from pathlib import Path
 from typing import Annotated, Any, Dict, Iterable, List, Callable, ClassVar, TYPE_CHECKING
 
+from loguru import logger
+
 try:
     from typing import Self  # py3.11
 except ImportError:
@@ -26,7 +28,7 @@ from orbiter.objects.timetables import TimetableType
 if TYPE_CHECKING:
     from orbiter.objects.task import OrbiterOperator
     from orbiter.objects.task_group import OrbiterTaskGroup
-    from orbiter.objects.task_group import TasksType
+    from orbiter.objects.task_group import TasksType, TaskType
 
 
 __mermaid__ = """
@@ -101,6 +103,32 @@ def _get_imports_recursively(
             # noinspection PyUnresolvedReferences
             imports |= set(_get_imports_recursively(task.tasks.values()))
     return list(sorted(imports, key=str))
+
+
+def dereference_downstream(
+    self: "OrbiterDAG | OrbiterTaskGroup", root_orbiter_dag: "OrbiterDAG | None" = None
+) -> "OrbiterDAG | OrbiterTaskGroup":
+    """Turn "downstream" references into the actual `OrbiterOperator` objects
+    via `_dereferenced_downstream`. Recursively descends into task groups
+    """
+    root_orbiter_dag = root_orbiter_dag or self
+
+    def _find_dereferenced_task(task_dependency: str) -> TaskType | str | None:
+        if (parent := root_orbiter_dag.get_task_dependency_parent(task_dependency)) is not None and (
+            child := parent.tasks.get(task_dependency)
+        ) is not None:
+            return child
+        else:
+            logger.warning(f"Unable to find {task_dependency=} in {root_orbiter_dag.dag_id=}.")
+            return task_dependency
+
+    for task_id, task in self.tasks.items():
+        task._dereferenced_downstream = {
+            _find_dereferenced_task(task_dependency) for task_dependency in task.downstream
+        }
+        if hasattr(task, "tasks"):
+            dereference_downstream(task, (root_orbiter_dag or self))
+    return self
 
 
 class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
@@ -319,7 +347,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
                 d_task = BashOperator(task_id='d', bash_command='d')
                 c_task >> d_task
             e_task = BashOperator(task_id='e', bash_command='e')
-            a_task >> b_task
+            a_task >> b
             b >> e_task
 
         ```
@@ -341,6 +369,10 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
                         continue
                     seen.add(item.name)
                 yield item
+
+        # Turn "downstream" references into the actual OrbiterOperator objects via _dereferenced_downstream
+        # Recursively descends into task groups
+        dereference_downstream(self)
 
         # DAG Imports, e.g. `from airflow import DAG`
         # Task/TaskGroup Imports, e.g. `from airflow.operators.bash import BashOperator`
