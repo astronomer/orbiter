@@ -6,6 +6,8 @@ from functools import reduce
 from pathlib import Path
 from typing import Annotated, Any, Dict, Iterable, List, Callable, ClassVar, TYPE_CHECKING
 
+from loguru import logger
+
 try:
     from typing import Self  # py3.11
 except ImportError:
@@ -26,7 +28,7 @@ from orbiter.objects.timetables import TimetableType
 if TYPE_CHECKING:
     from orbiter.objects.task import OrbiterOperator
     from orbiter.objects.task_group import OrbiterTaskGroup
-    from orbiter.objects.task_group import TasksType
+    from orbiter.objects.task_group import TasksType, TaskType
 
 
 __mermaid__ = """
@@ -109,10 +111,20 @@ def dereference_downstream(
     """Turn "downstream" references into the actual `OrbiterOperator` objects
     via `_dereferenced_downstream`. Recursively descends into task groups
     """
+    root_orbiter_dag = root_orbiter_dag or self
+
+    def _find_dereferenced_task(task_dependency: str) -> TaskType | str | None:
+        if (parent := root_orbiter_dag.get_task_dependency_parent(task_dependency)) is not None and (
+            child := parent.tasks.get(task_dependency)
+        ) is not None:
+            return child
+        else:
+            logger.warning(f"Unable to find {task_dependency=} in {root_orbiter_dag.dag_id=}.")
+            return task_dependency
+
     for task_id, task in self.tasks.items():
         task._dereferenced_downstream = {
-            (root_orbiter_dag or self).get_task_dependency_parent(task_dependency).tasks[task_dependency]
-            for task_dependency in task.downstream
+            _find_dereferenced_task(task_dependency) for task_dependency in task.downstream
         }
         if hasattr(task, "tasks"):
             dereference_downstream(task, (root_orbiter_dag or self))
