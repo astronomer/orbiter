@@ -32,14 +32,14 @@ class VisitTrackedDict(dict):
     ... # nothing has been visited yet
     []
     >>> v["a"] = "foo"
-    ... v.get_visited()
+    >>> v.get_visited()
     ... # when we assign a value to a key, it is not visited yet
     []
     >>> v["a"] and v.get_visited()
     ... # when we access 'a', it is added to the visited set
     ['a']
     >>> b: VisitTrackedDict = v.get("b", {})
-    ... v.get_visited()
+    >>> v.get_visited()
     ... # when we pull 'b' out into a var, it is added to the visited set
     ['a', 'b']
     >>> b.get_visited()
