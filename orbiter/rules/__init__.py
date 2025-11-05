@@ -70,14 +70,14 @@ if TYPE_CHECKING:
 
 
 def rule(
-    func=None, *, priority=None
+    func=None, *, priority=None, params_doc=None
 ) -> "Rule | DAGFilterRule | DAGRule | TaskFilterRule | TaskRule | TaskDependencyRule | PostProcessingRule":
     if func is None:
         # noinspection PyTypeChecker
-        return functools.partial(rule, priority=priority)
+        return functools.partial(rule, priority=priority, params_doc=params_doc)
 
     priority = priority or 1
-    _rule = Rule(priority=priority, rule=func)
+    _rule = Rule(priority=priority, rule=func, params_doc=params_doc)
     functools.update_wrapper(_rule, func)
     return _rule
 
@@ -133,7 +133,11 @@ class Rule(BaseModel, Callable, extra="forbid"):
         {'val': {'id': 'foo', 'command': "echo 'hello world'", 'unvisited_key': 'bar'}}
         >>> match.orbiter_meta
         ... # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-        OrbiterMeta(matched_rule_source="@task_rule...", matched_rule_docstring='This rule takes that and gives this', matched_rule_name='my_rule', matched_rule_priority=1, visited_keys=['command', 'id'])
+        OrbiterMeta(matched_rule_source="@task_rule...",
+            matched_rule_docstring='This rule takes that and gives this',
+            matched_rule_params_doc=None, matched_rule_name='my_rule',
+            matched_rule_priority=1,
+            visited_keys=['command', 'id'])
 
         ```
 
@@ -158,6 +162,7 @@ class Rule(BaseModel, Callable, extra="forbid"):
 
     rule: Callable[[dict | Any], Any | None]
     priority: int = Field(0, ge=0)
+    params_doc: dict[str, str] | None = None
 
     def __call__(self, *args, **kwargs):
         try:
@@ -177,6 +182,7 @@ class Rule(BaseModel, Callable, extra="forbid"):
                         OrbiterMeta(
                             matched_rule_name=self.rule.__name__,
                             matched_rule_priority=self.priority,
+                            matched_rule_params_doc=self.params_doc,
                             matched_rule_docstring=self.rule.__doc__,
                             matched_rule_source=dedent(inspect.getsource(self.rule)),
                             visited_keys=functools.reduce(
