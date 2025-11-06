@@ -101,9 +101,11 @@ class Rule(BaseModel, Callable, extra="forbid"):
 
     The function in a rule takes one parameter (`val`), and **must always evaluate to *something* or *nothing*.**
     ```pycon
-    >>> Rule(rule=lambda val: 4)(val={})
+    >>> some_rule = Rule(rule=lambda val: 4)  # returns something
+    >>> some_rule(val={})  # always takes "val", in this case a dict
     4
-    >>> Rule(rule=lambda val: None)(val={})
+    >>> other_rule = Rule(rule=lambda val: None)  # returns nothing
+    >>> other_rule(val={})
 
     ```
     Depending on the type of rule, the input `val` may be a dictionary or a different type.
@@ -117,7 +119,7 @@ class Rule(BaseModel, Callable, extra="forbid"):
 
         ```pycon
         >>> from orbiter.rules import task_rule
-        >>> @task_rule
+        >>> @task_rule(params_doc={"id": "BashOperator.task_id", "command": "BashOperator.bash_command"})
         ... def my_rule(val: dict):
         ...     '''This rule takes that and gives this'''
         ...     from orbiter.objects.operators.bash import OrbiterBashOperator
@@ -133,9 +135,10 @@ class Rule(BaseModel, Callable, extra="forbid"):
         {'val': {'id': 'foo', 'command': "echo 'hello world'", 'unvisited_key': 'bar'}}
         >>> match.orbiter_meta
         ... # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-        OrbiterMeta(matched_rule_source="@task_rule...",
+        OrbiterMeta(matched_rule_source='@task_rule...',
             matched_rule_docstring='This rule takes that and gives this',
-            matched_rule_params_doc=None, matched_rule_name='my_rule',
+            matched_rule_params_doc={'id': 'BashOperator.task_id', 'command': 'BashOperator.bash_command'},
+            matched_rule_name='my_rule',
             matched_rule_priority=1,
             visited_keys=['command', 'id'])
 
