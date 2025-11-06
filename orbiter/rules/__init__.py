@@ -70,14 +70,14 @@ if TYPE_CHECKING:
 
 
 def rule(
-    func=None, *, priority=None
+    func=None, *, priority=None, params_doc=None
 ) -> "Rule | DAGFilterRule | DAGRule | TaskFilterRule | TaskRule | TaskDependencyRule | PostProcessingRule":
     if func is None:
         # noinspection PyTypeChecker
-        return functools.partial(rule, priority=priority)
+        return functools.partial(rule, priority=priority, params_doc=params_doc)
 
     priority = priority or 1
-    _rule = Rule(priority=priority, rule=func)
+    _rule = Rule(priority=priority, rule=func, params_doc=params_doc)
     functools.update_wrapper(_rule, func)
     return _rule
 
@@ -101,9 +101,11 @@ class Rule(BaseModel, Callable, extra="forbid"):
 
     The function in a rule takes one parameter (`val`), and **must always evaluate to *something* or *nothing*.**
     ```pycon
-    >>> Rule(rule=lambda val: 4)(val={})
+    >>> some_rule = Rule(rule=lambda val: 4)  # returns something
+    >>> some_rule(val={})  # always takes "val", in this case a dict
     4
-    >>> Rule(rule=lambda val: None)(val={})
+    >>> other_rule = Rule(rule=lambda val: None)  # returns nothing
+    >>> other_rule(val={})
 
     ```
     Depending on the type of rule, the input `val` may be a dictionary or a different type.
@@ -117,7 +119,7 @@ class Rule(BaseModel, Callable, extra="forbid"):
 
         ```pycon
         >>> from orbiter.rules import task_rule
-        >>> @task_rule
+        >>> @task_rule(params_doc={"id": "BashOperator.task_id", "command": "BashOperator.bash_command"})
         ... def my_rule(val: dict):
         ...     '''This rule takes that and gives this'''
         ...     from orbiter.objects.operators.bash import OrbiterBashOperator
@@ -133,7 +135,12 @@ class Rule(BaseModel, Callable, extra="forbid"):
         {'val': {'id': 'foo', 'command': "echo 'hello world'", 'unvisited_key': 'bar'}}
         >>> match.orbiter_meta
         ... # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-        OrbiterMeta(matched_rule_source="@task_rule...", matched_rule_docstring='This rule takes that and gives this', matched_rule_name='my_rule', matched_rule_priority=1, visited_keys=['command', 'id'])
+        OrbiterMeta(matched_rule_source='@task_rule...',
+            matched_rule_docstring='This rule takes that and gives this',
+            matched_rule_params_doc={'id': 'BashOperator.task_id', 'command': 'BashOperator.bash_command'},
+            matched_rule_name='my_rule',
+            matched_rule_priority=1,
+            visited_keys=['command', 'id'])
 
         ```
 
@@ -154,10 +161,13 @@ class Rule(BaseModel, Callable, extra="forbid"):
     :type rule: Callable[[dict | Any], Any | None]
     :param priority: Higher priority rules are evaluated first, must be greater than 0. Default is 0
     :type priority: int, optional
+    :param params_doc: What the rule takes as input (key), and gives as output (value)
+    :type params_doc: dict[str, str], optional
     """
 
     rule: Callable[[dict | Any], Any | None]
     priority: int = Field(0, ge=0)
+    params_doc: dict[str, str] | None = None
 
     def __call__(self, *args, **kwargs):
         try:
@@ -177,6 +187,7 @@ class Rule(BaseModel, Callable, extra="forbid"):
                         OrbiterMeta(
                             matched_rule_name=self.rule.__name__,
                             matched_rule_priority=self.priority,
+                            matched_rule_params_doc=self.params_doc,
                             matched_rule_docstring=self.rule.__doc__,
                             matched_rule_source=dedent(inspect.getsource(self.rule)),
                             visited_keys=functools.reduce(

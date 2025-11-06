@@ -12,6 +12,10 @@ class OrbiterMeta(BaseModel):
     matched_rule_docstring: Annotated[
         str | None, Field(default=None, description="The documentation of the rule that matched the input.")
     ]
+    matched_rule_params_doc: Annotated[
+        dict[str, str] | None,
+        Field(default=None, description="The documentation of parameters that the rule consumed and emitted."),
+    ]
     matched_rule_name: Annotated[
         str | None, Field(default=None, description="The name of the rule that matched the input.")
     ]
