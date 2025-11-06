@@ -158,6 +158,8 @@ class Rule(BaseModel, Callable, extra="forbid"):
     :type rule: Callable[[dict | Any], Any | None]
     :param priority: Higher priority rules are evaluated first, must be greater than 0. Default is 0
     :type priority: int, optional
+    :param params_doc: What the rule takes as input (key), and gives as output (value)
+    :type params_doc: dict[str, str], optional
     """
 
     rule: Callable[[dict | Any], Any | None]
