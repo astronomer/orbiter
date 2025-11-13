@@ -1,7 +1,9 @@
 from pathlib import Path
 
+import pytest
 import yaml
 
+from orbiter.meta import OrbiterMeta
 from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.connection import OrbiterConnection
@@ -14,16 +16,23 @@ from orbiter.objects.timetables.multiple_cron_trigger_timetable import OrbiterMu
 from orbiter.objects.variable import OrbiterVariable
 
 
-def test_project_render(tmpdir):
-    tmpdir = Path(tmpdir)
-    # noinspection PyArgumentList
-    project = OrbiterProject().add_dags(
+@pytest.fixture(scope="function")
+def project():
+    return OrbiterProject().add_dags(
         dags=[
             OrbiterDAG(
                 dag_id="foo",
                 file_path="foo.py",
                 schedule=OrbiterMultipleCronTriggerTimetable(crons=["0 1 * * *", "*/5 0 * * *"]),
                 doc_md="foo",
+                orbiter_meta=OrbiterMeta(
+                    matched_rule_source="src",
+                    matched_rule_name="rule",
+                    matched_rule_params_doc={"a": "b"},
+                    matched_rule_docstring="docstring",
+                    matched_rule_priority=1,
+                    visited_keys=["foo"],
+                ),
             ).add_tasks(
                 tasks=[
                     OrbiterTask(
@@ -37,6 +46,14 @@ def test_project_render(tmpdir):
                         orbiter_env_vars={OrbiterEnvVar(key="foo", value="bar")},
                         orbiter_conns={OrbiterConnection(conn_id="foo", host="bar", password="baz")},
                         orbiter_kwargs={"SOME_INPUT": "FOOBAR"},
+                        orbiter_meta=OrbiterMeta(
+                            matched_rule_source="src",
+                            matched_rule_name="rule",
+                            matched_rule_params_doc={"a": "b"},
+                            matched_rule_docstring="docstring",
+                            matched_rule_priority=1,
+                            visited_keys=["foo"],
+                        ),
                         imports=[
                             OrbiterRequirement(
                                 package="apache-airflow",
@@ -53,6 +70,20 @@ def test_project_render(tmpdir):
             )
         ]
     )
+
+
+def test_project_serde(project):
+    # Test serialization
+    actual_json = project.model_dump_json()
+    actual_reserialized = OrbiterProject.model_validate_json(actual_json, strict=True)
+    assert actual_reserialized == project
+
+
+def test_project_render(tmpdir, project):
+    tmpdir = Path(tmpdir)
+    # noinspection PyArgumentList
+
+    # Test render
     project.render(tmpdir)
 
     actual_requirements = (tmpdir / "requirements.txt").read_text()

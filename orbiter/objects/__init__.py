@@ -4,6 +4,8 @@ from abc import ABC
 from typing import List, Set, ClassVar, Annotated
 
 from pydantic import BaseModel, AfterValidator
+
+from orbiter.meta import OrbiterMeta
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.connection import OrbiterConnection
 from orbiter.objects.env_var import OrbiterEnvVar
@@ -52,7 +54,7 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
 
     imports: ImportList
     orbiter_kwargs: dict | None = None
-    orbiter_meta: dict | None = None
+    orbiter_meta: OrbiterMeta | None = None
 
     orbiter_conns: Set[OrbiterConnection] | None = None
     orbiter_env_vars: Set[OrbiterEnvVar] | None = None
