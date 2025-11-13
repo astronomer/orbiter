@@ -81,7 +81,6 @@ def test_project_serde(project):
 
 def test_project_render(tmpdir, project):
     tmpdir = Path(tmpdir)
-    # noinspection PyArgumentList
 
     # Test render
     project.render(tmpdir)
