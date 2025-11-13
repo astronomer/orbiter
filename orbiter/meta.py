@@ -6,6 +6,22 @@ from pydantic import BaseModel, Field
 
 
 class OrbiterMeta(BaseModel):
+    """Records information about the rule that matched an input to create an object.
+
+    :param matched_rule_source: The source code of the rule that matched the input.
+    :type matched_rule_source: str | None
+    :param matched_rule_docstring: The documentation of the rule that matched the input.
+    :type matched_rule_docstring: str | None
+    :param matched_rule_params_doc: The documentation of parameters that the rule consumed and emitted.
+    :type matched_rule_params_doc: dict[str, str] | None
+    :param matched_rule_name: The name of the rule that matched the input.
+    :type matched_rule_name: str | None
+    :param matched_rule_priority: The priority of the rule that matched the input.
+    :type matched_rule_priority: int | None
+    :param visited_keys: Keys that have been visited, dot separated for nested inputs.
+    :type visited_keys: list[str] | None
+    """
+
     matched_rule_source: Annotated[
         str | None, Field(default=None, description="The source code of the rule that matched the input.")
     ]
@@ -30,6 +46,8 @@ class OrbiterMeta(BaseModel):
 
 class VisitTrackedDict(dict):
     """A Dictionary which tracks if a given key has been accessed via `__getitem__`
+
+    ```pycon
     >>> v = VisitTrackedDict({"a": 1, "b": {"c": 2}, "d": 3})
     ... # when we initialize a dict with a child dict
     >>> v.get_visited()
@@ -77,6 +95,7 @@ class VisitTrackedDict(dict):
     ... # if we stop the loop part-way we didn't visit everything
     ['a']
 
+    ```
     """
 
     def get_visited(self, recursive: bool = True, prefix: str = ""):

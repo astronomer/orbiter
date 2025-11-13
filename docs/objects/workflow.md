@@ -15,7 +15,7 @@ classDiagram
     click OrbiterDAG href "#orbiter.objects.dag.OrbiterDAG" "OrbiterDAG Documentation"
 
     --8<-- "orbiter/objects/task_group.py:mermaid-dag-relationships"
-    class OrbiterTaskGroup["orbiter.objects.task.OrbiterTaskGroup"] {
+    class OrbiterTaskGroup["orbiter.objects.task_group.OrbiterTaskGroup"] {
         --8<-- "orbiter/objects/task_group.py:mermaid-op-props"
     }
     click OrbiterTaskGroup href "../tasks/#orbiter.objects.task_group.OrbiterTaskGroup" "OrbiterTaskGroup Documentation"

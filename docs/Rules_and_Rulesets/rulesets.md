@@ -6,6 +6,17 @@
         signature_crossrefs: true
 
 ::: orbiter.file_types
+    options:
+        separate_signature: true
+        show_signature_annotations: true
+        signature_crossrefs: true
+
+::: orbiter.meta
+    options:
+        separate_signature: true
+        show_signature_annotations: true
+        signature_crossrefs: true
+        show_bases: true
 
 ## Rulesets
 ::: orbiter.rules.rulesets.Ruleset

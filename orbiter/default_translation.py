@@ -84,7 +84,6 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
         - [**Load each file**][orbiter.rules.rulesets.TranslationRuleset.loads] and turn it into a Python Dictionary.
     2. **For each file:** Apply the [`TranslationRuleset.dag_filter_ruleset`][orbiter.rules.rulesets.DAGFilterRuleset]
         to filter down to entries that can translate to a DAG, in priority order.
-        The file name is added under a `__file` key to both input and output dictionaries for the DAG Filter rule.
         - **For each dictionary**: Apply the [`TranslationRuleset.dag_ruleset`][orbiter.rules.rulesets.DAGRuleset],
         to convert the object to an [`OrbiterDAG`][orbiter.objects.dag.OrbiterDAG],
         in priority-order, stopping when the first rule returns a match.
@@ -106,6 +105,23 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
         other rules have been applied.
     6. After translation - the [`OrbiterProject`][orbiter.objects.project.OrbiterProject]
         is rendered to the output folder.
+
+    !!! info
+
+        Two modifications are made to both input and output dictionaries for a
+        [`@dag_filter_rule`][orbiter.rules.DAGFilterRule]:
+
+        - the initial input directory is added under a `__input_dir` key to each dictionary
+        - the relative file name is added under a `__file` key
+
+    !!! info
+        Information about matching rules is saved in an `orbiter_meta` property on each resulting orbiter object, via
+        an [`OrbiterMeta`][orbiter.meta.OrbiterMeta] object.
+
+    !!! info
+        Input is saved via an `orbiter_kwargs` property on each object. This can be useful for later
+        [`OrbiterTaskDependency`][orbiter.objects.task.OrbiterTaskDependency] or
+        [`TranslationRuleset.post_processing_ruleset`][orbiter.rules.rulesets.PostProcessingRuleset] modifications.
     """
     validate_translate_function_inputs(translation_ruleset, input_dir)
 

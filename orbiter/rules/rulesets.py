@@ -308,7 +308,7 @@ class DAGFilterRuleset(Ruleset):
     ruleset: List[DAGFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict]
 
     def apply_ruleset(self, input_dict: dict, file: Path, input_dir: Path) -> list[dict]:
-        """Apply all rules from [DAG Filter Ruleset][orbiter.rules.ruleset.DAGFilterRuleset] to filter down to keys
+        """Apply all rules from [DAG Filter Ruleset][orbiter.rules.rulesets.DAGFilterRuleset] to filter down to keys
         that look like they can be translated to a DAG, in priority order.
 
         !!! note
@@ -382,7 +382,7 @@ class TaskRuleset(Ruleset):
         If no rule returns a match, the entry is filtered.
 
         :param task_dict: A dict to translate - what was returned from the Task Filter ruleset
-        :return: An [OrbiterOperator][orbiter.objects.task.OrbiterOperator] (or descendant) or [OrbiterTaskGroup][orbiter.objects.task.OrbiterTaskGroup]
+        :return: An [OrbiterOperator][orbiter.objects.task.OrbiterOperator] (or descendant) or [OrbiterTaskGroup][orbiter.objects.task_group.OrbiterTaskGroup]
         """
         return self.apply(val=task_dict, take_first=True)
 
