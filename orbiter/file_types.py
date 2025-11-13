@@ -1,3 +1,11 @@
+"""FileTypes for Orbiter Translations.
+!!! note
+
+    Additional FileTypes are available in the
+    [orbiter-parsers](https://github.com/astronomer/orbiter-parsers) repository.
+
+"""
+
 from __future__ import annotations
 
 import json
@@ -15,7 +23,10 @@ from pydantic.v1 import validator
 
 
 class FileType(BaseModel, ABC, arbitrary_types_allowed=True):
-    """**Abstract Base** File Type
+    """**Abstract Base** File Type.
+
+    FileTypes configure the initial filtering of files in a directory via the `extension` list,
+    and the conversion of input into a Python Dictionary for later mapping via `load_fn`
 
     :param extension: The file extension(s) for this file type
     :type extension: Set[str]
