@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List
+
+import pytest
 
 from orbiter.file_types import FileTypeYAML
 from orbiter.objects.dag import OrbiterDAG
@@ -9,7 +10,7 @@ from orbiter.objects.operators.empty import OrbiterEmptyOperator
 from orbiter.objects.project import OrbiterProject
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
 from orbiter.rules import dag_rule, dag_filter_rule, task_filter_rule, task_rule, task_dependency_rule
-from orbiter.rules.rulesets import TranslationRuleset, EMPTY_RULESET
+from orbiter.rules.rulesets import TranslationRuleset, EMPTY_RULESET, TranslationConfig
 from orbiter.default_translation import translate
 
 
@@ -56,14 +57,9 @@ def test__get_files_with_extension(project_root):
     assert sorted(list(actual)) == sorted(expected)
 
 
-def test_translate():
+@pytest.fixture(scope="function")
+def test_ruleset_and_fake_path():
     fake_path = Path(__file__)
-
-    expected = OrbiterProject().add_dags(
-        OrbiterDAG(dag_id="dag_a", file_path=fake_path).add_tasks(
-            [OrbiterEmptyOperator(task_id="task_a").add_downstream("task_b"), OrbiterEmptyOperator(task_id="task_b")]
-        )
-    )
 
     def test_file_generator(_, __):
         yield (
@@ -98,7 +94,7 @@ def test_translate():
         return OrbiterEmptyOperator(task_id=val.get("task_id"))
 
     @task_dependency_rule
-    def test_task_dependency_rule(val: OrbiterDAG) -> List[OrbiterTaskDependency]:
+    def test_task_dependency_rule(val: OrbiterDAG) -> list[OrbiterTaskDependency]:
         return [
             OrbiterTaskDependency(task_id=task["task_id"], downstream=to)
             for task in val.orbiter_kwargs["val"].get("tasks", [])
@@ -116,6 +112,48 @@ def test_translate():
         translate_fn=translate,
     )
     TranslationRuleset.get_files_with_extension = test_file_generator
+
+    return test_ruleset, fake_path
+
+
+def test_translate(test_ruleset_and_fake_path):
+    (test_ruleset, fake_path) = test_ruleset_and_fake_path
+    expected = OrbiterProject().add_dags(
+        OrbiterDAG(dag_id="dag_a", file_path=fake_path).add_tasks(
+            [OrbiterEmptyOperator(task_id="task_a").add_downstream("task_b"), OrbiterEmptyOperator(task_id="task_b")]
+        )
+    )
+
+    actual = test_ruleset.translate_fn(translation_ruleset=test_ruleset, input_dir=fake_path)
+    assert actual == expected
+    assert actual.dags["dag_a"].tasks == expected.dags["dag_a"].tasks
+    assert actual.dags["dag_a"].tasks["task_a"].downstream == expected.dags["dag_a"].tasks["task_a"].downstream
+
+
+def test_translate_upfront(test_ruleset_and_fake_path):
+    (test_ruleset, fake_path) = test_ruleset_and_fake_path
+    test_ruleset.model_copy(update=dict(config=TranslationConfig(upfront=True)))
+    expected = OrbiterProject().add_dags(
+        OrbiterDAG(dag_id="dag_a", file_path=fake_path).add_tasks(
+            [OrbiterEmptyOperator(task_id="task_a").add_downstream("task_b"), OrbiterEmptyOperator(task_id="task_b")]
+        )
+    )
+
+    actual = test_ruleset.translate_fn(translation_ruleset=test_ruleset, input_dir=fake_path)
+    assert actual == expected
+    assert actual.dags["dag_a"].tasks == expected.dags["dag_a"].tasks
+    assert actual.dags["dag_a"].tasks["task_a"].downstream == expected.dags["dag_a"].tasks["task_a"].downstream
+
+
+def test_translate_parallel(test_ruleset_and_fake_path):
+    (test_ruleset, fake_path) = test_ruleset_and_fake_path
+    test_ruleset.model_copy(update=dict(config=TranslationConfig(parallel=True)))
+    expected = OrbiterProject().add_dags(
+        OrbiterDAG(dag_id="dag_a", file_path=fake_path).add_tasks(
+            [OrbiterEmptyOperator(task_id="task_a").add_downstream("task_b"), OrbiterEmptyOperator(task_id="task_b")]
+        )
+    )
+
     actual = test_ruleset.translate_fn(translation_ruleset=test_ruleset, input_dir=fake_path)
     assert actual == expected
     assert actual.dags["dag_a"].tasks == expected.dags["dag_a"].tasks
