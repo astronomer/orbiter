@@ -167,7 +167,7 @@ class Rule(BaseModel, Callable, extra="forbid"):
 
     rule: Callable[[dict | Any], Any | None]
     priority: int = Field(0, ge=0)
-    params_doc: dict[str, str] | None = None
+    params_doc: dict[str, str | list[str]] | None = None
 
     def __call__(self, *args, **kwargs):
         try:
