@@ -141,7 +141,7 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     logger.info("Finding all files with the expected file type")
     files: enumerate[tuple[Path, dict]] = enumerate(translation_ruleset.get_files_with_extension(input_dir))
 
-    def filter_dags(file: Path, input_dict: dict) -> tuple[list[dict], str]:
+    def filter_dags(i: int, file: Path, input_dict: dict) -> tuple[list[dict], str]:
         """Step 1) Filter Dags from a file"""
         file_relative_to_input_dir_parent = file_relative_to_parent(file, input_dir)
         file_log_prefix = f"[File {i}={file_relative_to_input_dir_parent}]"
@@ -205,7 +205,7 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     # Translate each file individually - Default
     if not getattr(translation_ruleset.config, "upfront", False):
         for i, (file, input_dict) in files:
-            dag_dicts, file_log_prefix = filter_dags(file, input_dict)
+            dag_dicts, file_log_prefix = filter_dags(i, file, input_dict)
             for dag_dict in dag_dicts:
                 dag, dag_log_prefix = extract_dag(dag_dict, file_log_prefix)
                 if dag is None:
@@ -224,7 +224,9 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
 
         def filter_dag_candidates_in_file(candidate_input: CandidateInput) -> list[tuple[str, dict, list[dict]]]:
             """Filter Dag and Task candidates from a file, upfront"""
-            dag_dicts, file_log_prefix = filter_dags(candidate_input.file, candidate_input.input_dict)
+            dag_dicts, file_log_prefix = filter_dags(
+                candidate_input.i, candidate_input.file, candidate_input.input_dict
+            )
             return [
                 (file_log_prefix, dag_dict, filter_tasks(dag_dict, f"{file_log_prefix}[DAG=???]"))
                 for dag_dict in dag_dicts
