@@ -71,6 +71,10 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
     ```
     :param task_group_id: The id of the TaskGroup
     :type task_group_id: str
+    :param tooltip: The tooltip for the TaskGroup
+    :type tooltip: str | None
+    :param default_args: The default arguments for the TaskGroup
+    :type default_args: dict | None
     :param tasks: The tasks in the TaskGroup
     :type tasks: Dict[str, OrbiterOperator | OrbiterTaskGroup]
     :param **OrbiterBase: [OrbiterBase][orbiter.objects.OrbiterBase] inherited properties
@@ -79,6 +83,8 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
     __mermaid__ = """
        --8<-- [start:mermaid-op-props]
     task_group_id: str
+    tooltip: str
+    default_args: dict
     tasks: Dict[str, OrbiterOperator | OrbiterTaskGroup]
     add_downstream(str | List[str] | OrbiterTaskDependency)
     --8<-- [end:mermaid-op-props]
@@ -92,8 +98,12 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
             names=["TaskGroup"],
         )
     ]
+
     task_group_id: TaskId
+    tooltip: str | None = None
+    default_args: dict | None = None
     tasks: "TasksType"
+
     downstream: Set[str] = set()
 
     _dereferenced_downstream: Set["TaskType"] = set()
