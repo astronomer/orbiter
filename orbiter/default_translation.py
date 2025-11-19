@@ -154,12 +154,15 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
         logger.debug(f"{file_log_prefix} Found {len(dag_dicts)} DAG candidates")
         return dag_dicts, file_log_prefix
 
-    def extract_dag(dag_dict: dict, file_log_prefix: str) -> tuple[OrbiterDAG, str]:
+    def extract_dag(dag_dict: dict, file_log_prefix: str) -> tuple[OrbiterDAG | None, str]:
         """Step 2) Extract Dag from filtered Dag"""
         logger.debug(f"{file_log_prefix} Translating DAG Candidate to DAG")
         dag: OrbiterDAG = translation_ruleset.dag_ruleset.apply_ruleset(dag_dict=dag_dict)
-        dag_log_prefix = f"{file_log_prefix}[DAG={dag.dag_id}]"
-        return dag, dag_log_prefix
+        if dag:
+            dag_log_prefix = f"{file_log_prefix}[DAG={dag.dag_id}]"
+            return dag, dag_log_prefix
+        else:
+            return None, file_log_prefix
 
     def filter_tasks(
         dag_dict: dict,
