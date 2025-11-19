@@ -105,6 +105,8 @@ def pools(name: str, slots: int | None = None, pool_kwargs: dict[str, str | int]
     ```
     :param name: The pool name
     :type name: str
+    :param slots: The number of slots in the pool. Defaults to 128
+    :type slots: int, optional
     :param pool_kwargs: Optional dictionary of keyword arguments for the OrbiterPool
     :type pool_kwargs: dict[str, str | int], optional
     :return: Dictionary to unpack (e.g. `**pools(...)`)
