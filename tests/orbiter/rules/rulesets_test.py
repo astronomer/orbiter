@@ -132,7 +132,7 @@ def test_translate(test_ruleset_and_fake_path):
 
 def test_translate_upfront(test_ruleset_and_fake_path):
     (test_ruleset, fake_path) = test_ruleset_and_fake_path
-    test_ruleset.model_copy(update=dict(config=TranslationConfig(upfront=True)))
+    test_ruleset = test_ruleset.model_copy(update=dict(config=TranslationConfig(upfront=True)))
     expected = OrbiterProject().add_dags(
         OrbiterDAG(dag_id="dag_a", file_path=fake_path).add_tasks(
             [OrbiterEmptyOperator(task_id="task_a").add_downstream("task_b"), OrbiterEmptyOperator(task_id="task_b")]
