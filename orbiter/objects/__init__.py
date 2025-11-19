@@ -94,10 +94,11 @@ def pools(name: str, slots: int | None = None, pool_kwargs: dict[str, str | int]
     ```python
     >>> from orbiter.objects.operators.bash import OrbiterBashOperator
     >>> OrbiterBashOperator(
-    ...     task_id="foo", bash_command="bar", **pools("my_pool", {"slots": 1})
+    ...     task_id="foo", bash_command="bar", **pools(name="my_pool", slots=1, pool_kwargs={"slots": 1})
     ... ) # doctest: +NORMALIZE_WHITESPACE
     foo_task = BashOperator(task_id='foo',
         pool='my_pool',
+        pool_slots=1,
         bash_command='bar',
         orbiter_pools={OrbiterPool(name='my_pool', description='', slots=1)})
 
