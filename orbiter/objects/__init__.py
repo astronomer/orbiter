@@ -106,7 +106,7 @@ def pools(name: str, pool_kwargs: dict[str, str | int] | None = None) -> dict:
     :type name: str
     :param pool_kwargs: Optional dictionary of keyword arguments for the OrbiterPool
     :type pool_kwargs: dict[str, str | int], optional
-    :return: Dictionary to unpack (e.g. `**pool(...)`)
+    :return: Dictionary to unpack (e.g. `**pools(...)`)
     :rtype: dict
     """
     from orbiter.objects.pool import OrbiterPool

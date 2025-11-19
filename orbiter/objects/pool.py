@@ -21,15 +21,15 @@ class OrbiterPool(BaseModel, AirflowSettingsRender, extra="forbid"):
 
     !!! note
 
-        Use the utility `pool` function to easily generate both an `OrbiterPool`
+        Use the utility `pools` function to easily generate both an `OrbiterPool`
         and `pool` property for an operator
 
         ```python
-        from orbiter.objects import pool
+        from orbiter.objects import pools
 
         OrbiterTask(
             ...,
-            **pool("my_pool"),
+            **pools("my_pool"),
         )
         ```
 
