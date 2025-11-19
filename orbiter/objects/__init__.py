@@ -87,7 +87,7 @@ def conn_id(conn_id: str, prefix: str = "", conn_type: str = "generic") -> dict:
     }
 
 
-def pools(name: str, pool_kwargs: dict[str, str | int] | None = None) -> dict:
+def pools(name: str, slots: int | None = None, pool_kwargs: dict[str, str | int] | None = None) -> dict:
     """Helper function to add a [OrbiterPool][orbiter.objects.pool.OrbiterPool] when adding a `pool`
 
     Usage:
@@ -116,5 +116,6 @@ def pools(name: str, pool_kwargs: dict[str, str | int] | None = None) -> dict:
 
     return {
         "pool": name,
+        **({"pool_slots": slots} if slots else {}),
         "orbiter_pools": {OrbiterPool(name=name, **pool_kwargs)},
     }
