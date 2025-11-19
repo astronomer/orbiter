@@ -87,12 +87,20 @@ def conn_id(conn_id: str, prefix: str = "", conn_type: str = "generic") -> dict:
     }
 
 
-def pool(name: str, pool_kwargs: dict[str, str | int] | None = None) -> dict:
+def pools(name: str, pool_kwargs: dict[str, str | int] | None = None) -> dict:
     """Helper function to add a [OrbiterPool][orbiter.objects.pool.OrbiterPool] when adding a `pool`
 
     Usage:
     ```python
-    OrbiterBashOperator(**pool("my_pool"))
+    >>> from orbiter.objects.operators.bash import OrbiterBashOperator
+    >>> OrbiterBashOperator(
+    ...     task_id="foo", bash_command="bar", **pools("my_pool", {"slots": 1})
+    ... ) # doctest: +NORMALIZE_WHITESPACE
+    foo_task = BashOperator(task_id='foo',
+        pool='my_pool',
+        bash_command='bar',
+        orbiter_pools={OrbiterPool(name='my_pool', description='', slots=1)})
+
     ```
     :param name: The pool name
     :type name: str
