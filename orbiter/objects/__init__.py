@@ -96,11 +96,7 @@ def pools(name: str, slots: int | None = None, pool_kwargs: dict[str, str | int]
     >>> OrbiterBashOperator(
     ...     task_id="foo", bash_command="bar", **pools(name="my_pool", slots=1, pool_kwargs={"slots": 1})
     ... ) # doctest: +NORMALIZE_WHITESPACE
-    foo_task = BashOperator(task_id='foo',
-        pool='my_pool',
-        pool_slots=1,
-        bash_command='bar',
-        orbiter_pools={OrbiterPool(name='my_pool', description='', slots=1)})
+    foo_task = BashOperator(task_id='foo', pool='my_pool', pool_slots=1, bash_command='bar')
 
     ```
     :param name: The pool name
@@ -120,5 +116,5 @@ def pools(name: str, slots: int | None = None, pool_kwargs: dict[str, str | int]
     return {
         "pool": name,
         **({"pool_slots": slots} if slots else {}),
-        "orbiter_pool": {OrbiterPool(name=name, **pool_kwargs)},
+        "orbiter_pool": OrbiterPool(name=name, **pool_kwargs),
     }
