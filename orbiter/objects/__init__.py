@@ -120,5 +120,5 @@ def pools(name: str, slots: int | None = None, pool_kwargs: dict[str, str | int]
     return {
         "pool": name,
         **({"pool_slots": slots} if slots else {}),
-        "orbiter_pools": {OrbiterPool(name=name, **pool_kwargs)},
+        "orbiter_pool": {OrbiterPool(name=name, **pool_kwargs)},
     }
