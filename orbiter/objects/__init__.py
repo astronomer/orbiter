@@ -87,23 +87,22 @@ def conn_id(conn_id: str, prefix: str = "", conn_type: str = "generic") -> dict:
     }
 
 
-def pools(name: str, pool_kwargs: dict[str, str | int] | None = None) -> dict:
+def pools(name: str, slots: int | None = None, pool_kwargs: dict[str, str | int] | None = None) -> dict:
     """Helper function to add a [OrbiterPool][orbiter.objects.pool.OrbiterPool] when adding a `pool`
 
     Usage:
     ```python
     >>> from orbiter.objects.operators.bash import OrbiterBashOperator
     >>> OrbiterBashOperator(
-    ...     task_id="foo", bash_command="bar", **pools("my_pool", {"slots": 1})
+    ...     task_id="foo", bash_command="bar", **pools(name="my_pool", slots=1, pool_kwargs={"slots": 1})
     ... ) # doctest: +NORMALIZE_WHITESPACE
-    foo_task = BashOperator(task_id='foo',
-        pool='my_pool',
-        bash_command='bar',
-        orbiter_pools={OrbiterPool(name='my_pool', description='', slots=1)})
+    foo_task = BashOperator(task_id='foo', pool='my_pool', pool_slots=1, bash_command='bar')
 
     ```
     :param name: The pool name
     :type name: str
+    :param slots: The number of slots in the pool. Defaults to 128
+    :type slots: int, optional
     :param pool_kwargs: Optional dictionary of keyword arguments for the OrbiterPool
     :type pool_kwargs: dict[str, str | int], optional
     :return: Dictionary to unpack (e.g. `**pools(...)`)
@@ -116,5 +115,6 @@ def pools(name: str, pool_kwargs: dict[str, str | int] | None = None) -> dict:
 
     return {
         "pool": name,
-        "orbiter_pools": {OrbiterPool(name=name, **pool_kwargs)},
+        **({"pool_slots": slots} if slots else {}),
+        "orbiter_pool": OrbiterPool(name=name, **pool_kwargs),
     }
