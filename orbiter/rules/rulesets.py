@@ -23,7 +23,7 @@ from typing import (
 )
 
 from loguru import logger
-from pydantic import AfterValidator, BaseModel, validate_call
+from pydantic import AfterValidator, BaseModel, validate_call, Field
 from pydantic_settings import BaseSettings
 
 from orbiter import import_from_qualname, trim_dict, QualifiedImport, validate_qualified_imports, _backport_walk
@@ -429,7 +429,25 @@ EMPTY_RULESET = {"ruleset": [EMPTY_RULE]}
 
 
 class TranslationConfig(BaseSettings):
-    pass
+    """
+    :param parallel: Whether to run filter steps with parallel processing, default False
+    :type parallel: bool
+    :param upfront: Whether to run filter steps upfront, prior to all other steps, default False
+    :type upfront: bool
+    """
+
+    parallel: Annotated[
+        bool,
+        Field(
+            default=False,
+            description="Whether to run filter rulesets in parallel, via multi-processing. "
+            "This may cause unexpected results if rulesets share global state. "
+            "A threadpool is used if running via binary.",
+        ),
+    ]
+    upfront: Annotated[
+        bool, Field(default=False, description="Whether to run filter rulesets upfront, prior to all other rulesets")
+    ]
 
 
 class TranslationRuleset(BaseModel, ABC, extra="forbid"):

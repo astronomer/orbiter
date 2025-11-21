@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from loguru import logger
 from pydantic import validate_call
 
+from orbiter import trim_dict
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.project import OrbiterProject
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
-from orbiter import trim_dict
 
 if TYPE_CHECKING:
     from orbiter.rules.rulesets import TranslationRuleset
@@ -62,6 +63,15 @@ def file_relative_to_parent(file: Path, parent: Path) -> Path:
         logger.opt(exception=e).warning(f"File {file_resolved} is not relative to {parent.parent}")
         file_relative_to_input_dir_parent = file_resolved
     return file_relative_to_input_dir_parent
+
+
+@dataclass
+class CandidateInput:
+    i: int
+    input_dict: dict
+    file: Path
+    input_dir: Path
+    translation_ruleset: TranslationRuleset
 
 
 # noinspection t,D
@@ -128,7 +138,11 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
     logger.debug("Creating an empty OrbiterProject")
     project = OrbiterProject()
 
-    for i, (file, input_dict) in enumerate(translation_ruleset.get_files_with_extension(input_dir)):
+    logger.info("Finding all files with the expected file type")
+    files: enumerate[tuple[Path, dict]] = enumerate(translation_ruleset.get_files_with_extension(input_dir))
+
+    def filter_dags(i: int, file: Path, input_dict: dict) -> tuple[list[dict], str]:
+        """Step 1) Filter Dags from a file"""
         file_relative_to_input_dir_parent = file_relative_to_parent(file, input_dir)
         file_log_prefix = f"[File {i}={file_relative_to_input_dir_parent}]"
         logger.info(f"{file_log_prefix} Translating file")
@@ -138,50 +152,130 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
             input_dict=input_dict, file=file_relative_to_input_dir_parent, input_dir=input_dir
         )
         logger.debug(f"{file_log_prefix} Found {len(dag_dicts)} DAG candidates")
+        return dag_dicts, file_log_prefix
 
-        for dag_dict in dag_dicts:
-            logger.debug(f"{file_log_prefix} Translating DAG Candidate to DAG")
-            dag: OrbiterDAG = translation_ruleset.dag_ruleset.apply_ruleset(dag_dict=dag_dict)
+    def extract_dag(dag_dict: dict, file_log_prefix: str) -> tuple[OrbiterDAG | None, str]:
+        """Step 2) Extract Dag from filtered Dag"""
+        logger.debug(f"{file_log_prefix} Translating DAG Candidate to DAG")
+        dag: OrbiterDAG = translation_ruleset.dag_ruleset.apply_ruleset(dag_dict=dag_dict)
+        if dag:
+            dag_log_prefix = f"{file_log_prefix}[DAG={dag.dag_id}]"
+            return dag, dag_log_prefix
+        else:
+            return None, file_log_prefix
+
+    def filter_tasks(
+        dag_dict: dict,
+        dag_log_prefix: str,
+    ) -> list[dict]:
+        """Step 3) Filter tasks from a filtered Dag"""
+        logger.debug(f"{dag_log_prefix} Extracting Task Candidates to Tasks")
+        task_dicts: list[dict] = translation_ruleset.task_filter_ruleset.apply_ruleset(dag_dict=dag_dict)
+        logger.debug(f"{dag_log_prefix} Found {len(task_dicts)} Task candidates")
+        return task_dicts
+
+    def extract_tasks(task_dicts: list[dict], dag_log_prefix: str) -> list[OrbiterOperator | OrbiterTaskGroup]:
+        logger.debug(f"{dag_log_prefix} Translating Task Candidates to Tasks")
+        tasks = []
+        for task_dict in task_dicts:
+            task: OrbiterOperator | OrbiterTaskGroup = translation_ruleset.task_ruleset.apply_ruleset(
+                task_dict=task_dict
+            )
+            if task is None:
+                logger.warning(f"{dag_log_prefix} Couldn't extract task from expected task_dict={task_dict}")
+                continue
+            tasks.append(task)
+        logger.debug(f"{dag_log_prefix} Adding {len(tasks)} tasks")
+        return tasks
+
+    def extract_task_dependencies(dag: OrbiterDAG, dag_log_prefix: str) -> None:
+        """Step 4) Extract task dependencies from a filtered dag, add in-place"""
+        logger.debug(f"{dag_log_prefix} Extracting Task Dependencies to apply to Tasks")
+        task_dependencies: list[OrbiterTaskDependency] = translation_ruleset.task_dependency_ruleset.apply_ruleset(
+            dag=dag
+        )
+        if not len(task_dependencies):
+            logger.warning(f"{dag_log_prefix} Couldn't find task dependencies in dag={trim_dict(dag.orbiter_kwargs)}")
+
+        logger.debug(f"{dag_log_prefix} Adding Task Dependencies to Tasks")
+        for task_dependency in task_dependencies:
+            if parent := dag.get_task_dependency_parent(task_dependency):
+                parent.tasks[task_dependency.task_id].add_downstream(task_dependency)
+            else:
+                logger.warning(f"{dag_log_prefix} Couldn't find task_id={task_dependency.task_id} in tasks")
+                continue
+
+    # Translate each file individually - Default
+    if not getattr(translation_ruleset.config, "upfront", False):
+        for i, (file, input_dict) in files:
+            dag_dicts, file_log_prefix = filter_dags(i, file, input_dict)
+            for dag_dict in dag_dicts:
+                dag, dag_log_prefix = extract_dag(dag_dict, file_log_prefix)
+                if dag is None:
+                    logger.warning(f"{file_log_prefix} Couldn't extract DAG from dag_dict={dag_dict}")
+                    continue
+
+                dag.add_tasks(extract_tasks(filter_tasks(dag_dict, dag_log_prefix), dag_log_prefix))
+                extract_task_dependencies(dag, dag_log_prefix)
+
+                logger.debug(f"{dag_log_prefix} Adding DAG {dag.dag_id} to project")
+                project.add_dags(dag)
+
+    # Filter against all files upfront
+    else:
+        import itertools
+
+        def filter_dag_candidates_in_file(candidate_input: CandidateInput) -> list[tuple[str, dict, list[dict]]]:
+            """Filter Dag and Task candidates from a file, upfront"""
+            dag_dicts, file_log_prefix = filter_dags(
+                candidate_input.i, candidate_input.file, candidate_input.input_dict
+            )
+            return [
+                (file_log_prefix, dag_dict, filter_tasks(dag_dict, f"{file_log_prefix}[DAG=???]"))
+                for dag_dict in dag_dicts
+            ]
+
+        if getattr(translation_ruleset.config, "parallel", False):
+            import sys
+            import pathos
+
+            logger.info("Filtering DAG and Task Candidates from all files in parallel")
+            with (  # noqa
+                # pyinstaller/exe can't do multiproc
+                pathos.multiprocessing.ThreadPool
+                if getattr(sys, "frozen", False)
+                else pathos.multiprocessing.ProcessingPool
+            )() as pool:
+                dag_and_task_candidates_all_files = pool.map(
+                    filter_dag_candidates_in_file,
+                    (
+                        CandidateInput(i, input_dict, file, input_dir, translation_ruleset)
+                        for i, (file, input_dict) in files
+                    ),
+                )
+        else:
+            logger.info("Filtering DAG and Task Candidates from all files in serial")
+            dag_and_task_candidates_all_files = map(
+                filter_dag_candidates_in_file,
+                (
+                    CandidateInput(i, input_dict, file, input_dir, translation_ruleset)
+                    for i, (file, input_dict) in files
+                ),
+            )
+
+        logger.info("Extracting Dags and Tasks in serial")
+        for file_log_prefix, dag_dict, task_dicts in itertools.chain(*dag_and_task_candidates_all_files):
+            dag, dag_log_prefix = extract_dag(dag_dict, file_log_prefix)
             if dag is None:
                 logger.warning(f"{file_log_prefix} Couldn't extract DAG from dag_dict={dag_dict}")
                 continue
-
-            dag_log_prefix = f"{file_log_prefix}[DAG={dag.dag_id}]"
-            logger.debug(f"{dag_log_prefix} Extracting Task candidates")
-            task_dicts: list[dict] = translation_ruleset.task_filter_ruleset.apply_ruleset(dag_dict=dag_dict)
-            logger.debug(f"{dag_log_prefix} Found {len(task_dicts)} Task candidates")
-
-            logger.debug(f"{dag_log_prefix} Translating Task Candidates to Tasks")
-            tasks = []
-            for task_dict in task_dicts:
-                task: OrbiterOperator | OrbiterTaskGroup = translation_ruleset.task_ruleset.apply_ruleset(
-                    task_dict=task_dict
-                )
-                if task is None:
-                    logger.warning(f"{dag_log_prefix} Couldn't extract task from expected task_dict={task_dict}")
-                    continue
-                tasks.append(task)
-            logger.debug(f"{dag_log_prefix} Adding {len(tasks)} tasks")
-            dag.add_tasks(tasks)
-
-            logger.debug(f"{dag_log_prefix} Extracting Task Dependencies to apply to Tasks")
-            task_dependencies: list[OrbiterTaskDependency] = translation_ruleset.task_dependency_ruleset.apply_ruleset(
-                dag=dag
-            )
-            if not len(task_dependencies):
-                logger.warning(f"{dag_log_prefix} Couldn't find task dependencies in dag={trim_dict(dag_dict)}")
-
-            logger.debug(f"{dag_log_prefix} Adding Task Dependencies to Tasks")
-            for task_dependency in task_dependencies:
-                if parent := dag.get_task_dependency_parent(task_dependency):
-                    parent.tasks[task_dependency.task_id].add_downstream(task_dependency)
-                else:
-                    logger.warning(f"{dag_log_prefix} Couldn't find task_id={task_dependency.task_id} in tasks")
-                    continue
+            dag.add_tasks(extract_tasks(task_dicts, dag_log_prefix))
+            extract_task_dependencies(dag, dag_log_prefix)
 
             logger.debug(f"{dag_log_prefix} Adding DAG {dag.dag_id} to project")
             project.add_dags(dag)
 
+    logger.debug("Applying post-processing ruleset")
     translation_ruleset.post_processing_ruleset.apply_ruleset(project=project)
 
     return project
