@@ -205,6 +205,51 @@ class Rule(BaseModel, Callable, extra="forbid"):
         return result
 
 
+def pattern(func=None, *, params_doc: dict | None = None) -> "Pattern":
+    if func is None:
+        # noinspection PyTypeChecker
+        return functools.partial(pattern, params_doc=params_doc)
+    _pattern = Pattern(pattern=func, params_doc=params_doc)
+    functools.update_wrapper(_pattern, func)
+    return _pattern
+
+
+class Pattern(BaseModel, Callable, extra="forbid"):
+    """Rules can contain many patterns, which represent a subset of specific input matched to a specific output.
+
+    Patterns are just functions that can have a `params_doc` property,
+    which is used to document the input and output of the pattern.
+
+    Patterns provide overall composability and reusability.
+
+    ```pycon
+    >>> from orbiter.objects.operators.bash import OrbiterBashOperator
+    >>> @pattern(params_doc={"command": "Operator.bash_command"})
+    ... def command_pattern(val: dict) -> dict:
+    ...   if 'command' in val:
+    ...     return {"bash_command": val['command']}
+    ...   else:
+    ...     return {}
+    ...
+    >>> @rule(params_doc={"id": "Operator.task_id"} | command_pattern.params_doc)
+    ... def bash_rule(val: dict) -> OrbiterBashOperator | None:
+    ...     return OrbiterBashOperator(
+    ...         task_id=val['id'],
+    ...         **command_pattern(val),
+    ...     ) if 'id' in val and 'command' in val else None
+    >>> bash_rule(val={"id": "foo", "command": "echo 'hello world'"})
+    foo_task = BashOperator(task_id='foo', bash_command="echo 'hello world'")
+
+    ```
+    """
+
+    pattern: Callable[[dict | Any, ...], dict | Any | None]
+    params_doc: dict[str, str] | None = None
+
+    def __call__(self, *args, **kwargs):
+        return self.pattern(*args, **kwargs)
+
+
 class DAGFilterRule(Rule):
     """The `@dag_filter_rule` decorator creates a [`DAGFilterRule`][orbiter.rules.DAGFilterRule]
 
