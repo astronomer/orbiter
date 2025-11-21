@@ -243,7 +243,7 @@ class Pattern(BaseModel, Callable, extra="forbid"):
     ```
     """
 
-    pattern: Callable[[dict | Any, ...], dict | Any | None]
+    pattern: Callable[..., dict | Any | None]
     params_doc: dict[str, str] | None = None
 
     def __call__(self, *args, **kwargs):
