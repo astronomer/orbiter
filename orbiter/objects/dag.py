@@ -310,7 +310,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
         index_map = {v: i for i, v in enumerate(self.render_attributes)}
         rendered_params = {k: prop(k) for k in self.render_attributes if (getattr(self, k) is not None)}
-        extra_params = {k: prop(k) for k in self.model_extra.keys()}
+        extra_params = {k: prop(k) for k in (self.model_extra.keys() or [])}
         return py_object(
             name="DAG",
             **dict(
