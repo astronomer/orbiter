@@ -40,5 +40,3 @@ def test_dag_schedule_with_multiple_datasets():
 from airflow.datasets import Dataset
 with DAG(dag_id='foo', schedule=[Dataset('db://table1'), Dataset('db://table2')]):"""
     assert actual == expected
-
-
