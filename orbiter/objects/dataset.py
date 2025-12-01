@@ -86,7 +86,7 @@ class OrbiterDataset(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
             dataset,
             self.uri,
             # Any additional model fields (from model_extra) should be forwarded
-            **{k: getattr(self, k) for k in self.model_extra.keys()},
+            **{k: getattr(self, k) for k in (self.model_extra.keys() or [])},
         )
 
 

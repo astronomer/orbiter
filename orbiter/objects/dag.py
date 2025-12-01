@@ -399,6 +399,17 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
                 if isinstance(item, OrbiterDataset):
                     schedule_imports |= set(item.imports)
 
+        # Collect imports from schedule (timetables and/or datasets)
+        schedule_imports = set()
+        if isinstance(self.schedule, OrbiterTimetable):
+            schedule_imports |= set(self.schedule.imports)
+        elif isinstance(self.schedule, OrbiterDataset):
+            schedule_imports |= set(self.schedule.imports)
+        elif isinstance(self.schedule, list):
+            for item in self.schedule:
+                if isinstance(item, OrbiterDataset):
+                    schedule_imports |= set(item.imports)
+
         # DAG Imports, e.g. `from airflow import DAG`
         # Task/TaskGroup Imports, e.g. `from airflow.operators.bash import BashOperator`
         pre_imports = list(
@@ -406,7 +417,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
             set(i for i in _self.imports if not (i.package == "pendulum" and _self.start_date is None))
             # Get imports from tasks, and descend into task groups
             | set(_get_imports_recursively(_self.tasks.values()))
-            # Get imports from Schedule, if it's a timetable
+            # Get imports from Schedule, if it's a timetable or dataset
             | schedule_imports
             | reduce(
                 # Look for e.g. on_failure_callback, get imports, merge them all
