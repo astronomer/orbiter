@@ -308,7 +308,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
         index_map = {v: i for i, v in enumerate(self.render_attributes)}
         rendered_params = {k: prop(k) for k in self.render_attributes if (getattr(self, k) is not None)}
-        extra_params = {k: prop(k) for k in (self.model_extra.keys() or [])}
+        extra_params = {k: prop(k) for k in self.model_extra.keys()}
         return py_object(
             name="DAG",
             **dict(
@@ -354,7 +354,6 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         ```
         """
         from orbiter.objects.timetables.timetable import OrbiterTimetable
-        from orbiter.objects.dataset import OrbiterDataset
 
         def dedupe_callable(ast_collection):
             items = []
