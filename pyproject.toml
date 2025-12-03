@@ -101,7 +101,8 @@ dev = [
     "mkdocs",
     "mkdocs-click",
     "mkdocs-material",
-    "mkdocstrings-python",
+    "mkdocstrings~=0.30",
+    "mkdocstrings-python~=1.18",
     "markdown-exec",  # for rendering the csv table of origins to share w/ CLI
     "pygments",
     "griffe-inherited-docstrings",
