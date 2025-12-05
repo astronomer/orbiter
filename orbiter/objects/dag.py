@@ -392,9 +392,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
         # Collect imports from schedule (timetables and/or datasets)
         schedule_imports = set()
-        if isinstance(self.schedule, OrbiterTimetable):
-            schedule_imports |= set(self.schedule.imports)
-        elif isinstance(self.schedule, OrbiterDataset):
+        if isinstance(self.schedule, OrbiterTimetable) or isinstance(self.schedule, OrbiterDataset):
             schedule_imports |= set(self.schedule.imports)
         elif isinstance(self.schedule, list):
             for item in self.schedule:
