@@ -83,9 +83,9 @@ class OrbiterInclude(BaseModel, extra="forbid"):
         :type import_names: list[str]
         :param include_filepath: Optional filepath to write the include to creating the file as `include/???.py`
         :type include_filepath: str, optional
-        :param import_package: Optional Python package, to add the the project if specified.
+        :param import_package: Optional Python package, to add to the project if specified.
         :type import_package: str, optional
-        :param import_sys_package: Optional Debian package, to add the the project if specified.
+        :param import_sys_package: Optional Debian package, to add to the project if specified.
         :type import_sys_package: str, optional
         :return: A tuple of the [OrbiterInclude][orbiter.objects.include.OrbiterInclude] and [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement]
         """
