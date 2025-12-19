@@ -103,9 +103,16 @@ class OrbiterInclude(BaseModel, extra="forbid"):
         else:
             file_extension = include_filepath.rsplit(".", maxsplit=1)[-1]
 
+        spec = find_spec(include_module_qualname)
+        if spec is None or spec.origin is None:
+            raise ImportError(
+                f"Cannot find module specification for '{include_module_qualname}'. "
+                "Ensure the module is importable and available on PYTHONPATH."
+            )
+
         return OrbiterInclude(
             filepath=include_filepath,
-            contents=Path(find_spec(include_module_qualname).origin).read_text(),
+            contents=Path(spec.origin).read_text(),
         ), OrbiterRequirement(
             module=include_filepath.replace("/", ".").replace("." + file_extension, ""),
             names=import_names,
