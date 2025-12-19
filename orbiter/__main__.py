@@ -437,7 +437,10 @@ def _bin_install(repo: str, key: str):
     else:
         _get_gh_pyz()
     _add_pyz()
-    (_, _version) = import_from_qualname("orbiter_translations.version")
+    try:
+        (_, _version) = import_from_qualname("orbiter_translations.version")
+    except AttributeError:
+        (_, _version) = import_from_qualname("orbiter_translations.version.version")
     logger.info(f"Successfully installed {repo}, version: {_version}")
 
 
