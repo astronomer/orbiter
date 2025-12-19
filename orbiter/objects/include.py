@@ -1,4 +1,9 @@
+from typing import TYPE_CHECKING
+
 from pydantic import BaseModel
+
+if TYPE_CHECKING:
+    from orbiter.objects.requirement import OrbiterRequirement
 
 
 class OrbiterInclude(BaseModel, extra="forbid"):
@@ -47,6 +52,66 @@ class OrbiterInclude(BaseModel, extra="forbid"):
 
     filepath: str
     contents: str
+
+    @staticmethod
+    def get_include_and_requirement(
+        include_module_qualname: str,
+        import_names: list[str],
+        include_filepath: str | None = None,
+        import_package: str | None = None,
+        import_sys_package: str | None = None,
+    ) -> "tuple[OrbiterInclude, OrbiterRequirement]":
+        """Create an [OrbiterInclude][orbiter.objects.include.OrbiterInclude]
+        and [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement] from a qualified name
+        to a python module within the translation.
+
+        This allows you to store python that will be included into the Airflow Project as a normal python file,
+        and inject it for inclusion by looking up the relative path via the import system.
+
+        ```pycon
+        >>> OrbiterInclude.get_include_and_requirement(
+        ...   include_module_qualname="orbiter.objects.include",
+        ...   import_names=["OrbiterInclude"]
+        ... ) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+        (OrbiterInclude(filepath='include/include.py', contents='...'),
+            OrbiterRequirement(names=[OrbiterInclude], package=None, module=include.include, sys_package=None))
+
+        ```
+        :param include_module_qualname: The qualified name of the module to include, e.g. `orbiter.objects.include` for this module.
+        :type include_module_qualname: str
+        :param import_names: The names to import from the module, e.g. `["OrbiterInclude"]` for the `OrbiterInclude` class.
+        :type import_names: list[str]
+        :param include_filepath: Optional filepath to write the include to creating the file as `include/???.py`
+        :type include_filepath: str, optional
+        :param import_package: Optional Python package, to add the the project if specified.
+        :type import_package: str, optional
+        :param import_sys_package: Optional Debian package, to add the the project if specified.
+        :type import_sys_package: str, optional
+        :return: A tuple of the [OrbiterInclude][orbiter.objects.include.OrbiterInclude] and [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement]
+        """
+        from orbiter.objects.requirement import OrbiterRequirement
+        from importlib.util import find_spec
+        from pathlib import Path
+
+        default_include_filepath = "include"
+        default_include_file_extension = "py"
+
+        file_name = include_module_qualname.rsplit(".", maxsplit=1)[-1]
+        if not include_filepath:
+            include_filepath = f"{default_include_filepath}/{file_name}.{default_include_file_extension}"
+            file_extension = default_include_file_extension
+        else:
+            file_extension = include_filepath.rsplit(".", maxsplit=1)[-1]
+
+        return OrbiterInclude(
+            filepath=include_filepath,
+            contents=Path(find_spec(include_module_qualname).origin).read_text(),
+        ), OrbiterRequirement(
+            module=include_filepath.replace("/", ".").replace("." + file_extension, ""),
+            names=import_names,
+            package=import_package,
+            sys_package=import_sys_package,
+        )
 
     def __hash__(self):
         return hash(self.contents + self.filepath)
