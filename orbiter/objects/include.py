@@ -79,7 +79,7 @@ class OrbiterInclude(BaseModel, extra="forbid"):
         ```
         :param include_module_qualname: The qualified name of the module to include, e.g. `orbiter.objects.include` for this module.
         :type include_module_qualname: str
-        :param import_names: The names to import from the module, e.g. `["OrbiterInclude"]` for the `OrbiterInclude` class.
+        :param import_names: The names to import from the module, e.g. `["OrbiterInclude"]` for this class.
         :type import_names: list[str]
         :param include_filepath: Optional filepath to write the include to creating the file as `include/???.py`
         :type include_filepath: str, optional
