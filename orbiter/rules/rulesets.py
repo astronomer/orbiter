@@ -455,7 +455,7 @@ class TranslationConfig(BaseSettings):
     ]
 
 
-class TranslationRuleset(ABC):
+class TranslationRuleset:
     """
     A `Ruleset` is a collection of [`Rules`][orbiter.rules.Rule] that are
     evaluated in priority order
