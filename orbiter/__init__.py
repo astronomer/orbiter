@@ -11,7 +11,7 @@ from pydantic import AfterValidator
 
 from orbiter.config import TRIM_LOG_OBJECT_LENGTH
 
-__version__ = "1.10.1"
+__version__ = "1.10.2"
 
 version = __version__
 

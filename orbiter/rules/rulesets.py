@@ -23,7 +23,7 @@ from typing import (
 )
 
 from loguru import logger
-from pydantic import AfterValidator, BaseModel, validate_call, Field
+from pydantic import AfterValidator, validate_call, Field
 from pydantic_settings import BaseSettings
 
 from orbiter import import_from_qualname, trim_dict, QualifiedImport, validate_qualified_imports, _backport_walk
@@ -90,7 +90,7 @@ TranslateFn = Annotated[
 ]
 
 
-class Ruleset(BaseModel, ABC, frozen=True, extra="forbid"):
+class Ruleset(ABC):
     """A list of rules, which are evaluated to generate different types of output
 
     You must pass a [`Rule`][orbiter.rules.Rule] (or `dict` with the schema of [`Rule`][orbiter.rules.Rule])
@@ -121,7 +121,12 @@ class Ruleset(BaseModel, ABC, frozen=True, extra="forbid"):
     :type ruleset: List[Rule | Callable[[Any], Any | None]]
     """
 
-    ruleset: List[Rule | Callable[[dict | Any], Any | None]]
+    @validate_call()
+    def __init__(self, ruleset: List[Rule | Callable[[dict | Any], Any | None]]):
+        self.ruleset = ruleset
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(ruleset={self.ruleset})"
 
     def apply_many(
         self,
@@ -450,7 +455,7 @@ class TranslationConfig(BaseSettings):
     ]
 
 
-class TranslationRuleset(BaseModel, ABC, extra="forbid"):
+class TranslationRuleset:
     """
     A `Ruleset` is a collection of [`Rules`][orbiter.rules.Rule] that are
     evaluated in priority order
@@ -499,15 +504,58 @@ class TranslationRuleset(BaseModel, ABC, extra="forbid"):
     :type translate_fn: Callable[[TranslationRuleset, Path], OrbiterProject] | str | TranslateFn
     """  # noqa: E501
 
-    file_type: Set[Type[FileType]]
-    config: TranslationConfig = TranslationConfig()
-    dag_filter_ruleset: DAGFilterRuleset | dict
-    dag_ruleset: DAGRuleset | dict
-    task_filter_ruleset: TaskFilterRuleset | dict
-    task_ruleset: TaskRuleset | dict
-    task_dependency_ruleset: TaskDependencyRuleset | dict
-    post_processing_ruleset: PostProcessingRuleset | dict
-    translate_fn: TranslateFn = translate
+    def __init__(
+        self,
+        file_type: Set[Type[FileType]],
+        dag_filter_ruleset: DAGFilterRuleset | dict,
+        dag_ruleset: DAGRuleset | dict,
+        task_filter_ruleset: TaskFilterRuleset | dict,
+        task_ruleset: TaskRuleset | dict,
+        task_dependency_ruleset: TaskDependencyRuleset | dict,
+        post_processing_ruleset: PostProcessingRuleset | dict,
+        config: TranslationConfig = TranslationConfig(),
+        translate_fn: TranslateFn = translate,
+    ):
+        self.file_type = file_type
+        self.dag_filter_ruleset = (
+            dag_filter_ruleset
+            if isinstance(dag_filter_ruleset, DAGFilterRuleset)
+            else DAGFilterRuleset(**dag_filter_ruleset)
+        )
+        self.dag_ruleset = dag_ruleset if isinstance(dag_ruleset, DAGRuleset) else DAGRuleset(**dag_ruleset)
+        self.task_filter_ruleset = (
+            task_filter_ruleset
+            if isinstance(task_filter_ruleset, TaskFilterRuleset)
+            else TaskFilterRuleset(**task_filter_ruleset)
+        )
+        self.task_ruleset = task_ruleset if isinstance(task_ruleset, TaskRuleset) else TaskRuleset(**task_ruleset)
+        self.task_dependency_ruleset = (
+            task_dependency_ruleset
+            if isinstance(task_dependency_ruleset, TaskDependencyRuleset)
+            else TaskDependencyRuleset(**task_dependency_ruleset)
+        )
+        self.post_processing_ruleset = (
+            post_processing_ruleset
+            if isinstance(post_processing_ruleset, PostProcessingRuleset)
+            else PostProcessingRuleset(**post_processing_ruleset)
+        )
+        self.translate_fn = translate_fn
+        self.config = config
+
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}("
+            f"file_type={self.file_type}, "
+            f"dag_filter_ruleset={self.dag_filter_ruleset}, "
+            f"dag_ruleset={self.dag_ruleset}, "
+            f"task_filter_ruleset={self.task_filter_ruleset}, "
+            f"task_ruleset={self.task_ruleset}, "
+            f"task_dependency_ruleset={self.task_dependency_ruleset}, "
+            f"post_processing_ruleset={self.post_processing_ruleset}, "
+            f"translate_fn={self.translate_fn}, "
+            f"config={self.config}"
+            f")"
+        )
 
     def get_ext(self) -> str:
         """
