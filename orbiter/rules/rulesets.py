@@ -504,7 +504,6 @@ class TranslationRuleset(ABC):
     :type translate_fn: Callable[[TranslationRuleset, Path], OrbiterProject] | str | TranslateFn
     """  # noqa: E501
 
-    @validate_call
     def __init__(
         self,
         file_type: Set[Type[FileType]],
