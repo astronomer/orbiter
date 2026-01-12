@@ -45,7 +45,7 @@ dependencies = [
     # For validation of objects
     # NOTE: 04/2025 - something broke in 2.11?
     # Errors like: "Define OrbiterProject before PostProcessingRuleset and call .model_rebuild()"
-    "pydantic >= 2.6, < 2.11",
+    "pydantic >= 2.6",
     "pydantic-settings",
     "pydantic-extra-types[pendulum]>=2.10.6", # for pendulum DateTime
 
