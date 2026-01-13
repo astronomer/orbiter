@@ -192,7 +192,7 @@ def import_ruleset(ruleset: str) -> TranslationRuleset:
     return translation_ruleset
 
 
-def run(cmd: str | list[str], **kwargs):
+def run(cmd: str, **kwargs):
     """Helper method to run a command and log the output"""
     from loguru import logger
 
