@@ -192,7 +192,7 @@ def import_ruleset(ruleset: str) -> TranslationRuleset:
     return translation_ruleset
 
 
-def run(cmd: str, **kwargs):
+def run(cmd: str | list[str], **kwargs):
     """Helper method to run a command and log the output"""
     from loguru import logger
 
@@ -205,6 +205,18 @@ def run(cmd: str, **kwargs):
 
 
 def run_ruff_formatter(output_dir: Path):
+    try:
+        from ruff.__main__ import find_ruff_bin
+    except ImportError:
+        import shutil
+
+        def find_ruff_bin():
+            return shutil.which("ruff")
+
+        if find_ruff_bin() is None:
+            logger.error("Ruff is not installed, please install it with `pip install ruff`")
+            raise click.Abort()
+
     logger.info("Reformatting output...")
     changed_files = output_dir
     # noinspection PyBroadException
@@ -225,7 +237,7 @@ def run_ruff_formatter(output_dir: Path):
         logger.debug("Unable to acquire list of changed files in output directory, reformatting output directory...")
 
     output = run(
-        f"ruff check --select E,F,UP,B,SIM,I --ignore E501,SIM117,SIM101 --fix {changed_files}",
+        f"{find_ruff_bin()} check --select E,F,UP,B,SIM,I --ignore E501,SIM117,SIM101 --fix {changed_files}",
         shell=True,
         text=True,
         capture_output=True,
@@ -235,7 +247,7 @@ def run_ruff_formatter(output_dir: Path):
         raise click.Abort()
 
     run(
-        f"ruff format {changed_files}",
+        f"{find_ruff_bin()} format {changed_files}",
         shell=True,
         text=True,
         check=True,
