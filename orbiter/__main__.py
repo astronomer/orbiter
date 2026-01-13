@@ -213,11 +213,14 @@ def run_ruff_formatter(output_dir: Path):
         def find_ruff_bin():
             return shutil.which("ruff")
 
-        if find_ruff_bin() is None:
-            logger.error("Ruff is not installed, please install it with `pip install ruff`")
-            raise click.Abort()
-
     logger.info("Reformatting output...")
+
+    if find_ruff_bin() is None:
+        logger.error(
+            "Ruff is required to reformat output, but is not installed. Please install it with `pip install ruff`"
+        )
+        raise click.Abort()
+
     changed_files = output_dir
     # noinspection PyBroadException
     try:
