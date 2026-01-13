@@ -205,42 +205,61 @@ def run(cmd: str, **kwargs):
 
 
 def run_ruff_formatter(output_dir: Path):
-    logger.info("Reformatting output...")
-    changed_files = output_dir
-    # noinspection PyBroadException
     try:
-        # noinspection PyUnresolvedReferences
-        import git
-
-        changed_files = " ".join(
-            (
-                file
-                for file in git.Repo(output_dir).git.diff(output_dir, name_only=True).split("\n")
-                if file.endswith(".py")
-            )
-        )
+        from ruff.__main__ import find_ruff_bin
     except ImportError:
-        logger.debug("Unable to acquire list of changed files in output directory, reformatting output directory...")
-    except Exception:
-        logger.debug("Unable to acquire list of changed files in output directory, reformatting output directory...")
+        import shutil
 
-    output = run(
-        f"ruff check --select E,F,UP,B,SIM,I --ignore E501,SIM117,SIM101 --fix {changed_files}",
-        shell=True,
-        text=True,
-        capture_output=True,
-    )
-    if output.returncode != 0:
-        click.echo("Ruff encountered an error!")
-        raise click.Abort()
+        def find_ruff_bin():
+            return shutil.which("ruff")
 
-    run(
-        f"ruff format {changed_files}",
-        shell=True,
-        text=True,
-        check=True,
-        capture_output=True,
-    )
+    logger.info("Reformatting output...")
+
+    if (ruff := find_ruff_bin()) is None:
+        logger.warning(
+            "Ruff is required to reformat output, but is not installed. Please install it with `pip install ruff`"
+        )
+        logger.error("Formatting step failed, skipping formatting")
+    else:
+        changed_files = output_dir
+        # noinspection PyBroadException
+        try:
+            # noinspection PyUnresolvedReferences
+            import git
+
+            changed_files = " ".join(
+                (
+                    file
+                    for file in git.Repo(output_dir).git.diff(output_dir, name_only=True).split("\n")
+                    if file.endswith(".py")
+                )
+            )
+        except ImportError:
+            logger.debug(
+                "Unable to acquire list of changed files in output directory, reformatting output directory..."
+            )
+        except Exception:
+            logger.debug(
+                "Unable to acquire list of changed files in output directory, reformatting output directory..."
+            )
+
+        output = run(
+            f"{ruff} check --select E,F,UP,B,SIM,I --ignore E501,SIM117,SIM101 --fix {changed_files}",
+            shell=True,
+            text=True,
+            capture_output=True,
+        )
+        if output.returncode != 0:
+            click.echo("Ruff encountered an error!")
+            raise click.Abort()
+
+        run(
+            f"{ruff} format {changed_files}",
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True,
+        )
 
 
 @click.group(
@@ -313,6 +332,10 @@ def translate(
         raise click.Abort()
     if _format:
         run_ruff_formatter(output_dir)
+    logger.info(f"Translation completed. Output={output_dir}")
+    logger.info(
+        "Next steps - run `astro dev init` to create a complete Airflow Project, and `astro dev start` to run it!"
+    )
 
 
 @orbiter.command()
