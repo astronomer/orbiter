@@ -166,7 +166,7 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
         """
         _self = (
             deepcopy(self).add_tasks(OrbiterEmptyOperator(task_id="empty", doc_md="No tasks found..."))
-            if self.tasks is None or not len(self.tasks)
+            if not self.tasks
             else self
         )
 
