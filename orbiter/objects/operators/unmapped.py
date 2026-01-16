@@ -1,13 +1,13 @@
 from typing import Literal, Set
 
 from orbiter.objects import ImportList, RenderAttributes, OrbiterInclude
-from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
 
 
 orbiter_unmapped_operator_include, orbiter_unmapped_operator_requirement = OrbiterInclude.get_include_and_requirement(
     include_module_qualname="orbiter.assets.operators.unmapped_src",
     import_names=["UnmappedOperator"],
+    import_package="apache-airflow",
     include_filepath="include/unmapped.py",
 )
 
@@ -39,13 +39,7 @@ class OrbiterUnmappedOperator(OrbiterOperator):
     """
     orbiter_type: Literal["OrbiterUnmappedOperator"] = "OrbiterUnmappedOperator"
 
-    imports: ImportList = [
-        OrbiterRequirement(
-            package="apache-airflow",
-            module="include.unmapped",
-            names=["UnmappedOperator"],
-        )
-    ]
+    imports: ImportList = [orbiter_unmapped_operator_requirement]
     orbiter_includes: Set["OrbiterInclude"] = {orbiter_unmapped_operator_include}
 
     operator: str = "UnmappedOperator"
