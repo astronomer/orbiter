@@ -113,6 +113,8 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     :type imports: List[OrbiterRequirement]
     :param task_id: The `task_id` for the operator, must be unique and snake_case
     :type task_id: str
+    :param doc_md: Documentation for the task
+    :type doc_md: str, optional
     :param trigger_rule: Conditions under which to start the task
         [(docs)](https://airflow.apache.org/docs/apache-airflow/stable/concepts.html#trigger-rules)
     :type trigger_rule: str, optional
@@ -137,6 +139,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     operator: str
     task_id: TaskId
 
+    doc_md: str | None = None
     trigger_rule: str | None = None
 
     pool: str | None = None
@@ -164,6 +167,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     imports: List[OrbiterRequirement]
     operator: str
     task_id: str
+    doc_md: str | None
     pool: str | None
     pool_slots: int | None
     trigger_rule: str | None
