@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 from abc import ABC
+from copy import deepcopy
 from typing import List, Any, Set, Literal, TYPE_CHECKING, Annotated, Optional
 
 try:
@@ -163,16 +164,17 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
 
         ```
         """
-        if not len(self.tasks):
-            # noinspection PyArgumentList
-            self.add_tasks(OrbiterEmptyOperator(task_id="empty", doc_md="No tasks found..."))
+        _self = (
+            deepcopy(self).add_tasks(OrbiterEmptyOperator(task_id="empty", doc_md="No tasks found..."))
+            if self.tasks is None or not len(self.tasks)
+            else self
+        )
 
-        # noinspection PyProtectedMember
         return py_with(
-            py_object("TaskGroup", group_id=self.task_group_id).value,
-            [operator._to_ast() for operator in self.tasks.values()]
-            + [downstream for operator in self.tasks.values() if (downstream := operator._downstream_to_ast())],
-            self.task_group_id,
+            py_object("TaskGroup", group_id=_self.task_group_id).value,
+            [operator._to_ast() for operator in _self.tasks.values()]
+            + [downstream for operator in _self.tasks.values() if (downstream := operator._downstream_to_ast())],
+            _self.task_group_id,
         )
 
 
