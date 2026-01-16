@@ -157,12 +157,15 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
             a_task = BashOperator(task_id='a', bash_command='a')
             b_task = BashOperator(task_id='b', bash_command='b')
             a_task >> b_task
+        >>> OrbiterTaskGroup(task_group_id="foo")
+        with TaskGroup(group_id='foo') as foo:
+            empty_task = EmptyOperator(task_id='empty', doc_md='No tasks found...')
 
         ```
         """
         if not len(self.tasks):
             # noinspection PyArgumentList
-            self.add_tasks(OrbiterEmptyOperator(task_id="EMPTY_TASK_GROUP", doc_md="No tasks found..."))
+            self.add_tasks(OrbiterEmptyOperator(task_id="empty", doc_md="No tasks found..."))
 
         # noinspection PyProtectedMember
         return py_with(
