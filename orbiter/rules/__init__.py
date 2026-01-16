@@ -397,7 +397,9 @@ class PostProcessingRule(Rule):
 post_processing_rule: Callable[[...], PostProcessingRule] = rule
 
 
-def create_cannot_map_rule_with_task_id_fn(task_id_fn: Callable[[dict], str]) -> TaskRule | Callable:
+def create_cannot_map_rule_with_task_id_fn(
+    task_id_fn: Callable[[dict], str], task_type_fn: Callable[[dict], str] = lambda _: "UNKNOWN"
+) -> TaskRule | Callable:
     """Inject a `task_id` generator function into the "Cannot Map" Rule."""
 
     @task_rule(priority=1)
@@ -410,7 +412,7 @@ def create_cannot_map_rule_with_task_id_fn(task_id_fn: Callable[[dict], str]) ->
 
         return OrbiterUnmappedOperator(
             task_id=task_id_fn(val),
-            doc_md="""[task_type=UNKNOWN] Input did not translate""",
+            doc_md=f"""[task_type={task_type_fn(val)}] Input did not translate""",
             source=str(trim_dict(val)),
         )
 
