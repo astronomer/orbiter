@@ -353,6 +353,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         ```
         """
         from orbiter.objects.timetables.timetable import OrbiterTimetable
+        from orbiter.objects.operators.empty import OrbiterEmptyOperator
 
         def dedupe_callable(ast_collection):
             items = []
@@ -369,6 +370,10 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
                         continue
                     seen.add(item.name)
                 yield item
+
+        if not len(self.tasks):
+            # noinspection PyArgumentList
+            self.add_tasks(OrbiterEmptyOperator(task_id="EMPTY_DAG", doc_md="No tasks found..."))
 
         # Turn "downstream" references into the actual OrbiterOperator objects via _dereferenced_downstream
         # Recursively descends into task groups
