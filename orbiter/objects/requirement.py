@@ -77,10 +77,9 @@ class OrbiterRequirement(OrbiterASTBase, BaseModel, extra="forbid"):
 
         ```
         """
-        if self.module:
-            if self.names:
-                return py_import(module=self.module, names=sorted(self.names))
-            else:
-                return py_import(names=[self.module])
+        if self.module and self.names:
+            return py_import(module=self.module, names=sorted(self.names))
+        elif self.module:
+            return py_import(names=[self.module])
         else:
             return py_import(names=sorted(self.names))
