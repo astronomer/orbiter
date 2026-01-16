@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import json
 from copy import deepcopy
 from datetime import datetime, timedelta
 from functools import reduce
@@ -373,7 +374,12 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
                 yield item
 
         _self = (
-            deepcopy(self).add_tasks(OrbiterEmptyOperator(task_id="empty", doc_md="No tasks found..."))
+            deepcopy(self).add_tasks(
+                OrbiterEmptyOperator(
+                    task_id="empty",
+                    doc_md=f"No tasks found... src={json.dumps(getattr(self, 'orbiter_kwargs', {}), default=str)}",
+                )
+            )
             if not self.tasks
             else self
         )
