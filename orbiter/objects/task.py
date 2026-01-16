@@ -279,7 +279,11 @@ class OrbiterTask(OrbiterOperator, extra="allow"):
         self_as_ast = py_assigned_object(
             to_task_id(self.task_id, ORBITER_TASK_SUFFIX),
             operator,
-            **{k: prop(k) for k in ["task_id"] + sorted(self.__pydantic_extra__.keys()) if k and getattr(self, k)},
+            **{
+                k: prop(k)
+                for k in self.render_attributes + sorted(self.__pydantic_extra__.keys())
+                if k and getattr(self, k)
+            },
         )
         callable_props = [k for k in self.__pydantic_extra__.keys() if isinstance(getattr(self, k), Callable)]
         return (
