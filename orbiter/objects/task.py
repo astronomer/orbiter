@@ -159,6 +159,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
         "pool",
         "pool_slots",
         "trigger_rule",
+        "doc_md",
     ] + CALLBACK_KEYS
 
     _dereferenced_downstream: Set["TaskType"] = set()
