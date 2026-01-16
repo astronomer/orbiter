@@ -160,6 +160,10 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
 
         ```
         """
+        if not len(self.tasks):
+            # noinspection PyArgumentList
+            self.add_tasks(OrbiterEmptyOperator(task_id="EMPTY_TASK_GROUP", doc_md="No tasks found..."))
+
         # noinspection PyProtectedMember
         return py_with(
             py_object("TaskGroup", group_id=self.task_group_id).value,
