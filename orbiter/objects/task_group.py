@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import ast
+import json
 from abc import ABC
+from copy import deepcopy
 from typing import List, Any, Set, Literal, TYPE_CHECKING, Annotated, Optional
 
 try:
@@ -157,15 +159,28 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
             a_task = BashOperator(task_id='a', bash_command='a')
             b_task = BashOperator(task_id='b', bash_command='b')
             a_task >> b_task
+        >>> OrbiterTaskGroup(task_group_id="foo") # doctest: +ELLIPSIS
+        with TaskGroup(group_id='foo') as foo:
+            empty_task = EmptyOperator(task_id='empty', doc_md='No tasks found...')
 
         ```
         """
-        # noinspection PyProtectedMember
+        _self = (
+            deepcopy(self).add_tasks(
+                OrbiterEmptyOperator(
+                    task_id="empty",
+                    doc_md=f"No tasks found... src={json.dumps(getattr(self, 'orbiter_kwargs', {}), default=str)}",
+                )
+            )
+            if not self.tasks
+            else self
+        )
+
         return py_with(
-            py_object("TaskGroup", group_id=self.task_group_id).value,
-            [operator._to_ast() for operator in self.tasks.values()]
-            + [downstream for operator in self.tasks.values() if (downstream := operator._downstream_to_ast())],
-            self.task_group_id,
+            py_object("TaskGroup", group_id=_self.task_group_id).value,
+            [operator._to_ast() for operator in _self.tasks.values()]
+            + [downstream for operator in _self.tasks.values() if (downstream := operator._downstream_to_ast())],
+            _self.task_group_id,
         )
 
 

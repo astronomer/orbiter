@@ -24,11 +24,10 @@ class OrbiterCallback(OrbiterASTBase, OrbiterBase, extra="forbid"):
     ...     imports=[OrbiterRequirement(module="my_callback", names=["my_callback"])],
     ...     orbiter_includes={OrbiterInclude(filepath="my_callback.py", contents="...")}
     ... )
-    >>> OrbiterDAG(dag_id='', file_path='', on_failure_callback=my_callback)
-    ... # doctest: +ELLIPSIS
-    from airflow import DAG
-    from my_callback import my_callback
+    >>> OrbiterDAG(dag_id='', file_path='', on_failure_callback=my_callback) # doctest: +ELLIPSIS
+    from ...my_callback import my_callback
     with DAG(dag_id='', on_failure_callback=my_callback):
+        ...
 
     ```
 

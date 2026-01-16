@@ -113,6 +113,8 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     :type imports: List[OrbiterRequirement]
     :param task_id: The `task_id` for the operator, must be unique and snake_case
     :type task_id: str
+    :param doc_md: Documentation for the task
+    :type doc_md: str, optional
     :param trigger_rule: Conditions under which to start the task
         [(docs)](https://airflow.apache.org/docs/apache-airflow/stable/concepts.html#trigger-rules)
     :type trigger_rule: str, optional
@@ -137,6 +139,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     operator: str
     task_id: TaskId
 
+    doc_md: str | None = None
     trigger_rule: str | None = None
 
     pool: str | None = None
@@ -156,6 +159,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
         "pool",
         "pool_slots",
         "trigger_rule",
+        "doc_md",
     ] + CALLBACK_KEYS
 
     _dereferenced_downstream: Set["TaskType"] = set()
@@ -164,6 +168,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     imports: List[OrbiterRequirement]
     operator: str
     task_id: str
+    doc_md: str | None
     pool: str | None
     pool_slots: int | None
     trigger_rule: str | None
@@ -274,7 +279,11 @@ class OrbiterTask(OrbiterOperator, extra="allow"):
         self_as_ast = py_assigned_object(
             to_task_id(self.task_id, ORBITER_TASK_SUFFIX),
             operator,
-            **{k: prop(k) for k in ["task_id"] + sorted(self.__pydantic_extra__.keys()) if k and getattr(self, k)},
+            **{
+                k: prop(k)
+                for k in self.render_attributes + sorted(self.__pydantic_extra__.keys())
+                if k and getattr(self, k)
+            },
         )
         callable_props = [k for k in self.__pydantic_extra__.keys() if isinstance(getattr(self, k), Callable)]
         return (

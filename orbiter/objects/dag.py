@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import ast
+import json
+from copy import deepcopy
 from datetime import datetime, timedelta
 from functools import reduce
 from pathlib import Path
@@ -353,6 +355,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         ```
         """
         from orbiter.objects.timetables.timetable import OrbiterTimetable
+        from orbiter.objects.operators.empty import OrbiterEmptyOperator
 
         def dedupe_callable(ast_collection):
             items = []
@@ -370,22 +373,33 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
                     seen.add(item.name)
                 yield item
 
+        _self = (
+            deepcopy(self).add_tasks(
+                OrbiterEmptyOperator(
+                    task_id="empty",
+                    doc_md=f"No tasks found... src={json.dumps(getattr(self, 'orbiter_kwargs', {}), default=str)}",
+                )
+            )
+            if not self.tasks
+            else self
+        )
+
         # Turn "downstream" references into the actual OrbiterOperator objects via _dereferenced_downstream
         # Recursively descends into task groups
-        dereference_downstream(self)
+        dereference_downstream(_self)
 
         # DAG Imports, e.g. `from airflow import DAG`
         # Task/TaskGroup Imports, e.g. `from airflow.operators.bash import BashOperator`
         pre_imports = list(
             # Ignore the pendulum import if start_date is None
-            set(i for i in self.imports if not (i.package == "pendulum" and self.start_date is None))
+            set(i for i in _self.imports if not (i.package == "pendulum" and _self.start_date is None))
             # Get imports from tasks, and descend into task groups
-            | set(_get_imports_recursively(self.tasks.values()))
+            | set(_get_imports_recursively(_self.tasks.values()))
             # Get imports from Schedule, if it's a timetable
-            | (set(self.schedule.imports) if isinstance(self.schedule, OrbiterTimetable) else set())
+            | (set(_self.schedule.imports) if isinstance(_self.schedule, OrbiterTimetable) else set())
             | reduce(
                 # Look for e.g. on_failure_callback, get imports, merge them all
-                lambda old, item: old | set(getattr(getattr(self, item, {}), "imports", set())),
+                lambda old, item: old | set(getattr(getattr(_self, item, {}), "imports", set())),
                 CALLBACK_KEYS,
                 set(),
             )
@@ -394,15 +408,15 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         imports = [i._to_ast() for i in sorted(pre_imports)]
 
         # foo = BashOperator(...)
-        task_definitions = list(dedupe_callable([task._to_ast() for task in self.tasks.values()]))
+        task_definitions = list(dedupe_callable([task._to_ast() for task in _self.tasks.values()]))
 
         # foo >> bar
         task_dependencies = [
-            task._downstream_to_ast() for task in sorted(self.tasks.values()) if task._downstream_to_ast()
+            task._downstream_to_ast() for task in sorted(_self.tasks.values()) if task._downstream_to_ast()
         ]
 
         # with DAG(...) as dag:
-        with_dag = py_with(self._dag_to_ast().value, body=task_definitions + task_dependencies)
+        with_dag = py_with(_self._dag_to_ast().value, body=task_definitions + task_dependencies)
         return [
             *imports,
             with_dag,

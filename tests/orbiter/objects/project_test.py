@@ -120,7 +120,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.timetables.trigger import MultipleCronTriggerTimetable
 from include.unmapped import UnmappedOperator
 with DAG(dag_id='foo', schedule=MultipleCronTriggerTimetable('0 1 * * *', '*/5 0 * * *', timezone='UTC'), doc_md='foo'):
-    foo_task = EmptyOperator(task_id='foo', doc='some other thing')
+    foo_task = EmptyOperator(task_id='foo', pool='foo', pool_slots=1, trigger_rule='one_success', doc='some other thing')
     bar_task = UnmappedOperator(task_id='bar', source='foo')
     foo_task >> bar_task"""
     assert actual_dag == expected_dag

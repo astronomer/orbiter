@@ -74,7 +74,19 @@ class OrbiterRequirement(OrbiterASTBase, BaseModel, extra="forbid"):
         ...     package="apache-airflow", module="airflow.operators.bash", names=["BashOperator"]
         ... )._to_ast())
         'from airflow.operators.bash import BashOperator'
+        >>> render_ast(OrbiterRequirement(module="json")._to_ast())
+        'import json'
+        >>> render_ast(OrbiterRequirement(names=["json", "datetime"])._to_ast())
+        'import datetime, json'
 
         ```
         """
-        return py_import(module=self.module, names=sorted(self.names))
+        # if both were given, `from module import name, name, name`
+        if self.module and self.names:
+            return py_import(module=self.module, names=sorted(self.names))
+        # if only module, `import module`
+        elif self.module:
+            return py_import(names=[self.module])
+        # else, only names - import foo, bar, baz
+        else:
+            return py_import(names=sorted(self.names))
