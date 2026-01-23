@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import List, Set, ClassVar, Annotated, Iterable
+from typing import List, Set, ClassVar, Annotated, Iterable, Self
 
 from pydantic import BaseModel, AfterValidator, validate_call
 
@@ -61,7 +61,8 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
     orbiter_includes: Set[OrbiterInclude] | None = None
     orbiter_vars: Set[OrbiterVariable] | None = None
 
-    def add_requirements(self, requirements: OrbiterRequirement | Iterable[OrbiterRequirement]) -> "OrbiterBase":
+    @validate_call()
+    def add_requirements(self, requirements: OrbiterRequirement | Iterable[OrbiterRequirement]) -> Self:
         """Add [OrbiterRequirements][orbiter.objects.requirement.OrbiterRequirement] to imports
 
         ```pycon
@@ -86,13 +87,14 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
         :param requirements: Single or list of [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement]
         :type requirements: OrbiterRequirement | Iterable[OrbiterRequirement]
         :return: self
-        :rtype: OrbiterBase
+        :rtype: Self
         """
-        for requirement in [requirements] if isinstance(requirements, OrbiterRequirement) else requirements:
-            self.imports.append(requirement)
+        for _requirement in [requirements] if isinstance(requirements, OrbiterRequirement) else requirements:
+            self.imports.append(_requirement)
         return self
 
-    def add_connections(self, connections: OrbiterConnection | Iterable[OrbiterConnection]) -> "OrbiterBase":
+    @validate_call()
+    def add_connections(self, connections: OrbiterConnection | Iterable[OrbiterConnection]) -> Self:
         """Add [OrbiterConnections][orbiter.objects.connection.OrbiterConnection] to orbiter_conns
 
         ```pycon
@@ -117,15 +119,16 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
         :param connections: Single or iterable of [OrbiterConnection][orbiter.objects.connection.OrbiterConnection]
         :type connections: OrbiterConnection | Iterable[OrbiterConnection]
         :return: self
-        :rtype: OrbiterBase
+        :rtype: Self
         """
         if self.orbiter_conns is None:
             self.orbiter_conns = set()
-        for connection in [connections] if isinstance(connections, OrbiterConnection) else connections:
-            self.orbiter_conns.add(connection)
+        for _connection in [connections] if isinstance(connections, OrbiterConnection) else connections:
+            self.orbiter_conns.add(_connection)
         return self
 
-    def add_env_vars(self, env_vars: OrbiterEnvVar | Iterable[OrbiterEnvVar]) -> "OrbiterBase":
+    @validate_call()
+    def add_env_vars(self, env_vars: OrbiterEnvVar | Iterable[OrbiterEnvVar]) -> Self:
         """Add [OrbiterEnvVars][orbiter.objects.env_var.OrbiterEnvVar] to orbiter_env_vars
 
         ```pycon
@@ -150,15 +153,16 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
         :param env_vars: Single or iterable of [OrbiterEnvVar][orbiter.objects.env_var.OrbiterEnvVar]
         :type env_vars: OrbiterEnvVar | Iterable[OrbiterEnvVar]
         :return: self
-        :rtype: OrbiterBase
+        :rtype: Self
         """
         if self.orbiter_env_vars is None:
             self.orbiter_env_vars = set()
-        for env_var in [env_vars] if isinstance(env_vars, OrbiterEnvVar) else env_vars:
-            self.orbiter_env_vars.add(env_var)
+        for _env_var in [env_vars] if isinstance(env_vars, OrbiterEnvVar) else env_vars:
+            self.orbiter_env_vars.add(_env_var)
         return self
 
-    def add_includes(self, includes: OrbiterInclude | Iterable[OrbiterInclude]) -> "OrbiterBase":
+    @validate_call()
+    def add_includes(self, includes: OrbiterInclude | Iterable[OrbiterInclude]) -> Self:
         """Add [OrbiterIncludes][orbiter.objects.include.OrbiterInclude] to orbiter_includes
 
         ```pycon
@@ -183,15 +187,16 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
         :param includes: Single or iterable of [OrbiterInclude][orbiter.objects.include.OrbiterInclude]
         :type includes: OrbiterInclude | Iterable[OrbiterInclude]
         :return: self
-        :rtype: OrbiterBase
+        :rtype: Self
         """
         if self.orbiter_includes is None:
             self.orbiter_includes = set()
-        for include in [includes] if isinstance(includes, OrbiterInclude) else includes:
-            self.orbiter_includes.add(include)
+        for _include in [includes] if isinstance(includes, OrbiterInclude) else includes:
+            self.orbiter_includes.add(_include)
         return self
 
-    def add_variables(self, variables: OrbiterVariable | Iterable[OrbiterVariable]) -> "OrbiterBase":
+    @validate_call()
+    def add_variables(self, variables: OrbiterVariable | Iterable[OrbiterVariable]) -> Self:
         """Add [OrbiterVariables][orbiter.objects.variable.OrbiterVariable] to orbiter_vars
 
         ```pycon
@@ -216,12 +221,12 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
         :param variables: Single or iterable of [OrbiterVariable][orbiter.objects.variable.OrbiterVariable]
         :type variables: OrbiterVariable | Iterable[OrbiterVariable]
         :return: self
-        :rtype: OrbiterBase
+        :rtype: Self
         """
         if self.orbiter_vars is None:
             self.orbiter_vars = set()
-        for variable in [variables] if isinstance(variables, OrbiterVariable) else variables:
-            self.orbiter_vars.add(variable)
+        for _variable in [variables] if isinstance(variables, OrbiterVariable) else variables:
+            self.orbiter_vars.add(_variable)
         return self
 
 
@@ -281,11 +286,3 @@ def pools(name: str, slots: int | None = None, pool_kwargs: dict[str, str | int]
         **({"pool_slots": slots} if slots else {}),
         "orbiter_pool": OrbiterPool(name=name, **pool_kwargs),
     }
-
-
-# https://github.com/pydantic/pydantic/issues/8790
-OrbiterBase.add_requirements = validate_call()(OrbiterBase.add_requirements)
-OrbiterBase.add_connections = validate_call()(OrbiterBase.add_connections)
-OrbiterBase.add_env_vars = validate_call()(OrbiterBase.add_env_vars)
-OrbiterBase.add_includes = validate_call()(OrbiterBase.add_includes)
-OrbiterBase.add_variables = validate_call()(OrbiterBase.add_variables)
