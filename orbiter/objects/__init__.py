@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC
 from typing import List, Set, ClassVar, Annotated, Iterable
 
-from pydantic import BaseModel, AfterValidator
+from pydantic import BaseModel, AfterValidator, validate_call
 
 from orbiter.meta import OrbiterMeta
 from orbiter.objects.requirement import OrbiterRequirement
@@ -248,3 +248,10 @@ def pools(name: str, slots: int | None = None, pool_kwargs: dict[str, str | int]
         **({"pool_slots": slots} if slots else {}),
         "orbiter_pool": OrbiterPool(name=name, **pool_kwargs),
     }
+
+
+# https://github.com/pydantic/pydantic/issues/8790
+OrbiterBase.add_requirements = validate_call()(OrbiterBase.add_requirements)
+OrbiterBase.add_connections = validate_call()(OrbiterBase.add_connections)
+OrbiterBase.add_env_vars = validate_call()(OrbiterBase.add_env_vars)
+OrbiterBase.add_includes = validate_call()(OrbiterBase.add_includes)
