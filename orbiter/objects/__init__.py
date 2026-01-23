@@ -158,6 +158,39 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
             self.orbiter_env_vars.add(env_var)
         return self
 
+    def add_includes(self, includes: OrbiterInclude | Iterable[OrbiterInclude]) -> "OrbiterBase":
+        """Add [OrbiterIncludes][orbiter.objects.include.OrbiterInclude] to orbiter_includes
+
+        ```pycon
+        >>> from orbiter.objects.operators.bash import OrbiterBashOperator
+        >>> OrbiterBashOperator(
+        ...     task_id='foo', bash_command='echo hello'
+        ... ).add_includes(
+        ...     OrbiterInclude(filepath='utils.py', contents='# Utils')
+        ... ).orbiter_includes
+        {OrbiterInclude(filepath='utils.py', contents='# Utils')}
+
+        >>> OrbiterBashOperator(
+        ...     task_id='foo', bash_command='echo hello'
+        ... ).add_includes([
+        ...     OrbiterInclude(filepath='utils.py', contents='# Utils'),
+        ...     OrbiterInclude(filepath='helpers.py', contents='# Helpers')
+        ... ]).orbiter_includes  # doctest: +SKIP
+        {OrbiterInclude(filepath='utils.py', contents='# Utils'), OrbiterInclude(filepath='helpers.py', contents='# Helpers')}
+
+        ```
+
+        :param includes: Single or iterable of [OrbiterInclude][orbiter.objects.include.OrbiterInclude]
+        :type includes: OrbiterInclude | Iterable[OrbiterInclude]
+        :return: self
+        :rtype: OrbiterBase
+        """
+        if self.orbiter_includes is None:
+            self.orbiter_includes = set()
+        for include in [includes] if isinstance(includes, OrbiterInclude) else includes:
+            self.orbiter_includes.add(include)
+        return self
+
 
 def conn_id(conn_id: str, prefix: str = "", conn_type: str = "generic") -> dict:
     """Helper function to add an [OrbiterConnection][orbiter.objects.connection.OrbiterConnection]
