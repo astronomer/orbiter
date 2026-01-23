@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import List, Set, ClassVar, Annotated
+from typing import List, Set, ClassVar, Annotated, Iterable
 
 from pydantic import BaseModel, AfterValidator
 
@@ -60,6 +60,37 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
     orbiter_env_vars: Set[OrbiterEnvVar] | None = None
     orbiter_includes: Set[OrbiterInclude] | None = None
     orbiter_vars: Set[OrbiterVariable] | None = None
+
+    def add_requirements(self, requirements: OrbiterRequirement | Iterable[OrbiterRequirement]) -> "OrbiterBase":
+        """Add [OrbiterRequirements][orbiter.objects.requirement.OrbiterRequirement] to imports
+
+        ```pycon
+        >>> from orbiter.objects.operators.bash import OrbiterBashOperator
+        >>> OrbiterBashOperator(
+        ...     task_id='foo', bash_command='echo hello'
+        ... ).add_requirements(
+        ...     OrbiterRequirement(package='apache-airflow', names=['DAG'], module='airflow')
+        ... ).imports
+        [OrbiterRequirement(names=[BashOperator], package=apache-airflow, module=airflow.operators.bash, sys_package=None), OrbiterRequirement(names=[DAG], package=apache-airflow, module=airflow, sys_package=None)]
+
+        >>> OrbiterBashOperator(
+        ...     task_id='foo', bash_command='echo hello'
+        ... ).add_requirements([
+        ...     OrbiterRequirement(package='pandas', names=['DataFrame'], module='pandas'),
+        ...     OrbiterRequirement(package='numpy', names=['array'], module='numpy')
+        ... ]).imports  # doctest: +ELLIPSIS
+        [OrbiterRequirement(names=[BashOperator], package=apache-airflow, module=airflow.operators.bash, sys_package=None), OrbiterRequirement(names=[DataFrame], package=pandas, module=pandas, sys_package=None), OrbiterRequirement(names=[array], package=numpy, module=numpy, sys_package=None)]
+
+        ```
+
+        :param requirements: Single or list of [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement]
+        :type requirements: OrbiterRequirement | Iterable[OrbiterRequirement]
+        :return: self
+        :rtype: OrbiterBase
+        """
+        for requirement in [requirements] if isinstance(requirements, OrbiterRequirement) else requirements:
+            self.imports.append(requirement)
+        return self
 
 
 def conn_id(conn_id: str, prefix: str = "", conn_type: str = "generic") -> dict:
