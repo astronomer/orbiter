@@ -108,11 +108,11 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
         ...     connections=OrbiterConnection(conn_id='postgres')
         ... ).orbiter_conns
         {OrbiterConnection(conn_id=postgres, conn_type=generic)}
-        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_connections(connections=[
+        >>> sorted(OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_connections(connections=[
         ...     OrbiterConnection(conn_id='postgres'),
         ...     OrbiterConnection(conn_id='mysql')
-        ... ]).orbiter_conns  # doctest: +SKIP
-        {OrbiterConnection(conn_id=postgres, conn_type=generic), OrbiterConnection(conn_id=mysql, conn_type=generic)}
+        ... ]).orbiter_conns, key=str)
+        [OrbiterConnection(conn_id=mysql, conn_type=generic), OrbiterConnection(conn_id=postgres, conn_type=generic)]
         >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_connections(
         ...     connections=None
         ... ).orbiter_conns is None
@@ -142,11 +142,11 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
         ...     env_vars=OrbiterEnvVar(key='ENV', value='prod')
         ... ).orbiter_env_vars
         {OrbiterEnvVar(key='ENV', value='prod')}
-        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_env_vars(env_vars=[
+        >>> sorted(OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_env_vars(env_vars=[
         ...     OrbiterEnvVar(key='ENV', value='prod'),
         ...     OrbiterEnvVar(key='REGION', value='us-west-2')
-        ... ]).orbiter_env_vars  # doctest: +SKIP
-        {OrbiterEnvVar(key='ENV', value='prod'), OrbiterEnvVar(key='REGION', value='us-west-2')}
+        ... ]).orbiter_env_vars, key=str)
+        [OrbiterEnvVar(key='ENV', value='prod'), OrbiterEnvVar(key='REGION', value='us-west-2')]
         >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_env_vars(
         ...     env_vars=None
         ... ).orbiter_env_vars is None
@@ -176,11 +176,11 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
         ...     includes=OrbiterInclude(filepath='utils.py', contents='# Utils')
         ... ).orbiter_includes
         {OrbiterInclude(filepath='utils.py', contents='# Utils')}
-        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_includes(includes=[
+        >>> sorted(OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_includes(includes=[
         ...     OrbiterInclude(filepath='utils.py', contents='# Utils'),
         ...     OrbiterInclude(filepath='helpers.py', contents='# Helpers')
-        ... ]).orbiter_includes  # doctest: +SKIP
-        {OrbiterInclude(filepath='utils.py', contents='# Utils'), OrbiterInclude(filepath='helpers.py', contents='# Helpers')}
+        ... ]).orbiter_includes, key=str)
+        [OrbiterInclude(filepath='helpers.py', contents='# Helpers'), OrbiterInclude(filepath='utils.py', contents='# Utils')]
         >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_includes(
         ...     includes=None
         ... ).orbiter_includes is None
@@ -210,11 +210,11 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
         ...     variables=OrbiterVariable(key='db_host', value='localhost')
         ... ).orbiter_vars
         {OrbiterVariable(key='db_host', value='localhost')}
-        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_variables(variables=[
+        >>> sorted(OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_variables(variables=[
         ...     OrbiterVariable(key='db_host', value='localhost'),
         ...     OrbiterVariable(key='db_port', value='5432')
-        ... ]).orbiter_vars  # doctest: +SKIP
-        {OrbiterVariable(key='db_host', value='localhost'), OrbiterVariable(key='db_port', value='5432')}
+        ... ]).orbiter_vars, key=str)
+        [OrbiterVariable(key='db_host', value='localhost'), OrbiterVariable(key='db_port', value='5432')]
         >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_variables(
         ...     variables=None
         ... ).orbiter_vars is None
