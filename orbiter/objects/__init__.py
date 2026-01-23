@@ -191,6 +191,39 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
             self.orbiter_includes.add(include)
         return self
 
+    def add_variables(self, variables: OrbiterVariable | Iterable[OrbiterVariable]) -> "OrbiterBase":
+        """Add [OrbiterVariables][orbiter.objects.variable.OrbiterVariable] to orbiter_vars
+
+        ```pycon
+        >>> from orbiter.objects.operators.bash import OrbiterBashOperator
+        >>> OrbiterBashOperator(
+        ...     task_id='foo', bash_command='echo hello'
+        ... ).add_variables(
+        ...     OrbiterVariable(key='db_host', value='localhost')
+        ... ).orbiter_vars
+        {OrbiterVariable(key='db_host', value='localhost')}
+
+        >>> OrbiterBashOperator(
+        ...     task_id='foo', bash_command='echo hello'
+        ... ).add_variables([
+        ...     OrbiterVariable(key='db_host', value='localhost'),
+        ...     OrbiterVariable(key='db_port', value='5432')
+        ... ]).orbiter_vars  # doctest: +SKIP
+        {OrbiterVariable(key='db_host', value='localhost'), OrbiterVariable(key='db_port', value='5432')}
+
+        ```
+
+        :param variables: Single or iterable of [OrbiterVariable][orbiter.objects.variable.OrbiterVariable]
+        :type variables: OrbiterVariable | Iterable[OrbiterVariable]
+        :return: self
+        :rtype: OrbiterBase
+        """
+        if self.orbiter_vars is None:
+            self.orbiter_vars = set()
+        for variable in [variables] if isinstance(variables, OrbiterVariable) else variables:
+            self.orbiter_vars.add(variable)
+        return self
+
 
 def conn_id(conn_id: str, prefix: str = "", conn_type: str = "generic") -> dict:
     """Helper function to add an [OrbiterConnection][orbiter.objects.connection.OrbiterConnection]
@@ -255,3 +288,4 @@ OrbiterBase.add_requirements = validate_call()(OrbiterBase.add_requirements)
 OrbiterBase.add_connections = validate_call()(OrbiterBase.add_connections)
 OrbiterBase.add_env_vars = validate_call()(OrbiterBase.add_env_vars)
 OrbiterBase.add_includes = validate_call()(OrbiterBase.add_includes)
+OrbiterBase.add_variables = validate_call()(OrbiterBase.add_variables)
