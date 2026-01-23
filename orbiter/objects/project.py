@@ -11,9 +11,9 @@ import yaml
 from loguru import logger
 from pydantic import validate_call, BaseModel, Field
 
-if sys.version_info >= (3, 11):
+try:
     from typing import Self
-else:
+except ImportError:
     from typing_extensions import Self
 
 from orbiter.objects.callbacks import OrbiterCallback
