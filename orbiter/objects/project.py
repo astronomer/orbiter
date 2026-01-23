@@ -5,11 +5,16 @@ import re
 from functools import reduce
 from itertools import chain
 from pathlib import Path
-from typing import Dict, Iterable, Set, Literal, Collection, Self
+from typing import Dict, Iterable, Set, Literal, Collection
 
 import yaml
 from loguru import logger
 from pydantic import validate_call, BaseModel, Field
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from orbiter.objects.callbacks import OrbiterCallback
 from orbiter.objects.connection import OrbiterConnection

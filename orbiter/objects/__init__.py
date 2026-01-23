@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+import sys
 from abc import ABC
-from typing import List, Set, ClassVar, Annotated, Iterable, Self
+from typing import List, Set, ClassVar, Annotated, Iterable
 
 from pydantic import BaseModel, AfterValidator, validate_call
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from orbiter.meta import OrbiterMeta
 from orbiter.objects.requirement import OrbiterRequirement

@@ -46,6 +46,7 @@ dependencies = [
     "pydantic >= 2.6",
     "pydantic-settings",
     "pydantic-extra-types[pendulum]>=2.10.6", # for pendulum DateTime
+    "typing-extensions>=4.0.0; python_version < '3.11'",
 
     # for object serde
     "dill",
