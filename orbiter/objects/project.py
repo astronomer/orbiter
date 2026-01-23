@@ -11,6 +11,11 @@ import yaml
 from loguru import logger
 from pydantic import validate_call, BaseModel, Field
 
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
+
 from orbiter.objects.callbacks import OrbiterCallback
 from orbiter.objects.connection import OrbiterConnection
 from orbiter.objects.dag import OrbiterDAG
@@ -131,7 +136,8 @@ class OrbiterProject(BaseModel):
             f"includes={sorted(self.includes)})"
         )
 
-    def add_connections(self, connections: OrbiterConnection | Iterable[OrbiterConnection]) -> "OrbiterProject":
+    @validate_call()
+    def add_connections(self, connections: OrbiterConnection | Iterable[OrbiterConnection]) -> Self:
         """Add [`OrbiterConnections`][orbiter.objects.connection.OrbiterConnection] to the Project
         or override an existing connection with new properties
 
@@ -173,7 +179,8 @@ class OrbiterProject(BaseModel):
         return self
 
     # noinspection t,D
-    def add_dags(self, dags: OrbiterDAG | Iterable[OrbiterDAG]) -> "OrbiterProject":
+    @validate_call()
+    def add_dags(self, dags: OrbiterDAG | Iterable[OrbiterDAG]) -> Self:
         """Add [OrbiterDAGs][orbiter.objects.dag.OrbiterDAG]
         (and any [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement],
         [OrbiterConns][orbiter.objects.connection.OrbiterConnection],
@@ -305,7 +312,8 @@ class OrbiterProject(BaseModel):
             _add_recursively([dag])
         return self
 
-    def add_env_vars(self, env_vars: OrbiterEnvVar | Iterable[OrbiterEnvVar]) -> "OrbiterProject":
+    @validate_call()
+    def add_env_vars(self, env_vars: OrbiterEnvVar | Iterable[OrbiterEnvVar]) -> Self:
         """
         Add [OrbiterEnvVars][orbiter.objects.env_var.OrbiterEnvVar] to the Project
         or override an existing env var with new properties
@@ -346,7 +354,8 @@ class OrbiterProject(BaseModel):
             self.env_vars[env_var.key] = env_var
         return self
 
-    def add_includes(self, includes: OrbiterInclude | Iterable[OrbiterInclude]) -> "OrbiterProject":
+    @validate_call()
+    def add_includes(self, includes: OrbiterInclude | Iterable[OrbiterInclude]) -> Self:
         """Add [OrbiterIncludes][orbiter.objects.include.OrbiterInclude] to the Project
         or override an existing [OrbiterInclude][orbiter.objects.include.OrbiterInclude] with new properties
 
@@ -385,7 +394,8 @@ class OrbiterProject(BaseModel):
             self.includes[include.filepath] = include
         return self
 
-    def add_pools(self, pools: OrbiterPool | Iterable[OrbiterPool]) -> "OrbiterProject":
+    @validate_call()
+    def add_pools(self, pools: OrbiterPool | Iterable[OrbiterPool]) -> Self:
         """Add [OrbiterPool][orbiter.objects.pool.OrbiterPool] to the Project
         or override existing pools with new properties
 
@@ -430,7 +440,8 @@ class OrbiterProject(BaseModel):
                 self.pools[pool.name] = pool
         return self
 
-    def add_requirements(self, requirements: OrbiterRequirement | Iterable[OrbiterRequirement]) -> "OrbiterProject":
+    @validate_call()
+    def add_requirements(self, requirements: OrbiterRequirement | Iterable[OrbiterRequirement]) -> Self:
         """Add [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement] to the Project
         or override an existing requirement with new properties
 
@@ -472,7 +483,8 @@ class OrbiterProject(BaseModel):
             self.requirements.add(requirement)
         return self
 
-    def add_variables(self, variables: OrbiterVariable | Iterable[OrbiterVariable]) -> "OrbiterProject":
+    @validate_call()
+    def add_variables(self, variables: OrbiterVariable | Iterable[OrbiterVariable]) -> Self:
         """Add [OrbiterVariables][orbiter.objects.variable.OrbiterVariable] to the Project
         or override an existing variable with new properties
 
@@ -701,13 +713,3 @@ class OrbiterProject(BaseModel):
                     style="magenta",
                 )
             )
-
-
-# https://github.com/pydantic/pydantic/issues/8790
-OrbiterProject.add_connections = validate_call()(OrbiterProject.add_connections)
-OrbiterProject.add_dags = validate_call()(OrbiterProject.add_dags)
-OrbiterProject.add_env_vars = validate_call()(OrbiterProject.add_env_vars)
-OrbiterProject.add_includes = validate_call()(OrbiterProject.add_includes)
-OrbiterProject.add_pools = validate_call()(OrbiterProject.add_pools)
-OrbiterProject.add_requirements = validate_call()(OrbiterProject.add_requirements)
-OrbiterProject.add_variables = validate_call()(OrbiterProject.add_variables)

@@ -22,3 +22,8 @@ workflow
 orbiter-*
 .python-version
 translation_ruleset.html
+
+# Agents
+.plans
+.worktrees
+docs/plans/
