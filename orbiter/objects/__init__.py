@@ -125,6 +125,39 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
             self.orbiter_conns.add(connection)
         return self
 
+    def add_env_vars(self, env_vars: OrbiterEnvVar | Iterable[OrbiterEnvVar]) -> "OrbiterBase":
+        """Add [OrbiterEnvVars][orbiter.objects.env_var.OrbiterEnvVar] to orbiter_env_vars
+
+        ```pycon
+        >>> from orbiter.objects.operators.bash import OrbiterBashOperator
+        >>> OrbiterBashOperator(
+        ...     task_id='foo', bash_command='echo hello'
+        ... ).add_env_vars(
+        ...     OrbiterEnvVar(key='ENV', value='prod')
+        ... ).orbiter_env_vars
+        {OrbiterEnvVar(key='ENV', value='prod')}
+
+        >>> OrbiterBashOperator(
+        ...     task_id='foo', bash_command='echo hello'
+        ... ).add_env_vars([
+        ...     OrbiterEnvVar(key='ENV', value='prod'),
+        ...     OrbiterEnvVar(key='REGION', value='us-west-2')
+        ... ]).orbiter_env_vars  # doctest: +SKIP
+        {OrbiterEnvVar(key='ENV', value='prod'), OrbiterEnvVar(key='REGION', value='us-west-2')}
+
+        ```
+
+        :param env_vars: Single or iterable of [OrbiterEnvVar][orbiter.objects.env_var.OrbiterEnvVar]
+        :type env_vars: OrbiterEnvVar | Iterable[OrbiterEnvVar]
+        :return: self
+        :rtype: OrbiterBase
+        """
+        if self.orbiter_env_vars is None:
+            self.orbiter_env_vars = set()
+        for env_var in [env_vars] if isinstance(env_vars, OrbiterEnvVar) else env_vars:
+            self.orbiter_env_vars.add(env_var)
+        return self
+
 
 def conn_id(conn_id: str, prefix: str = "", conn_type: str = "generic") -> dict:
     """Helper function to add an [OrbiterConnection][orbiter.objects.connection.OrbiterConnection]
