@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import sys
 from abc import ABC
 from typing import List, Set, ClassVar, Annotated, Iterable
 
 from pydantic import BaseModel, AfterValidator, validate_call
 
-if sys.version_info >= (3, 11):
+try:
     from typing import Self
-else:
+except ImportError:
     from typing_extensions import Self
 
 from orbiter.meta import OrbiterMeta
@@ -73,33 +72,21 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
 
         ```pycon
         >>> from orbiter.objects.operators.bash import OrbiterBashOperator
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_requirements(
-        ...     OrbiterRequirement(package='apache-airflow', names=['DAG'], module='airflow')
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_requirements(
+        ...     requirements=OrbiterRequirement(package='apache-airflow', names=['DAG'], module='airflow')
         ... ).imports
         [OrbiterRequirement(names=[BashOperator], package=apache-airflow, module=airflow.operators.bash, sys_package=None), OrbiterRequirement(names=[DAG], package=apache-airflow, module=airflow, sys_package=None)]
-
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_requirements([
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_requirements(requirements=[
         ...     OrbiterRequirement(package='pandas', names=['DataFrame'], module='pandas'),
         ...     OrbiterRequirement(package='numpy', names=['array'], module='numpy')
         ... ]).imports  # doctest: +ELLIPSIS
         [OrbiterRequirement(names=[BashOperator], package=apache-airflow, module=airflow.operators.bash, sys_package=None), OrbiterRequirement(names=[DataFrame], package=pandas, module=pandas, sys_package=None), OrbiterRequirement(names=[array], package=numpy, module=numpy, sys_package=None)]
-
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_requirements(None).imports
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_requirements(requirements=None).imports
         [OrbiterRequirement(names=[BashOperator], package=apache-airflow, module=airflow.operators.bash, sys_package=None)]
-
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_requirements([]).imports
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_requirements(requirements=[]).imports
         [OrbiterRequirement(names=[BashOperator], package=apache-airflow, module=airflow.operators.bash, sys_package=None)]
 
         ```
-
         :param requirements: Single, list of [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement], or None
         :type requirements: OrbiterRequirement | Iterable[OrbiterRequirement] | None
         :return: self
@@ -117,28 +104,21 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
 
         ```pycon
         >>> from orbiter.objects.operators.bash import OrbiterBashOperator
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_connections(
-        ...     OrbiterConnection(conn_id='postgres')
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_connections(
+        ...     connections=OrbiterConnection(conn_id='postgres')
         ... ).orbiter_conns
         {OrbiterConnection(conn_id=postgres, conn_type=generic)}
-
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_connections([
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_connections(connections=[
         ...     OrbiterConnection(conn_id='postgres'),
         ...     OrbiterConnection(conn_id='mysql')
         ... ]).orbiter_conns  # doctest: +SKIP
         {OrbiterConnection(conn_id=postgres, conn_type=generic), OrbiterConnection(conn_id=mysql, conn_type=generic)}
-
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_connections(None).orbiter_conns is None
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_connections(
+        ...     connections=None
+        ... ).orbiter_conns is None
         True
 
         ```
-
         :param connections: Single, iterable of [OrbiterConnection][orbiter.objects.connection.OrbiterConnection], or None
         :type connections: OrbiterConnection | Iterable[OrbiterConnection] | None
         :return: self
@@ -158,28 +138,21 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
 
         ```pycon
         >>> from orbiter.objects.operators.bash import OrbiterBashOperator
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_env_vars(
-        ...     OrbiterEnvVar(key='ENV', value='prod')
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_env_vars(
+        ...     env_vars=OrbiterEnvVar(key='ENV', value='prod')
         ... ).orbiter_env_vars
         {OrbiterEnvVar(key='ENV', value='prod')}
-
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_env_vars([
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_env_vars(env_vars=[
         ...     OrbiterEnvVar(key='ENV', value='prod'),
         ...     OrbiterEnvVar(key='REGION', value='us-west-2')
         ... ]).orbiter_env_vars  # doctest: +SKIP
         {OrbiterEnvVar(key='ENV', value='prod'), OrbiterEnvVar(key='REGION', value='us-west-2')}
-
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_env_vars(None).orbiter_env_vars is None
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_env_vars(
+        ...     env_vars=None
+        ... ).orbiter_env_vars is None
         True
 
         ```
-
         :param env_vars: Single, iterable of [OrbiterEnvVar][orbiter.objects.env_var.OrbiterEnvVar], or None
         :type env_vars: OrbiterEnvVar | Iterable[OrbiterEnvVar] | None
         :return: self
@@ -199,28 +172,21 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
 
         ```pycon
         >>> from orbiter.objects.operators.bash import OrbiterBashOperator
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_includes(
-        ...     OrbiterInclude(filepath='utils.py', contents='# Utils')
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_includes(
+        ...     includes=OrbiterInclude(filepath='utils.py', contents='# Utils')
         ... ).orbiter_includes
         {OrbiterInclude(filepath='utils.py', contents='# Utils')}
-
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_includes([
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_includes(includes=[
         ...     OrbiterInclude(filepath='utils.py', contents='# Utils'),
         ...     OrbiterInclude(filepath='helpers.py', contents='# Helpers')
         ... ]).orbiter_includes  # doctest: +SKIP
         {OrbiterInclude(filepath='utils.py', contents='# Utils'), OrbiterInclude(filepath='helpers.py', contents='# Helpers')}
-
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_includes(None).orbiter_includes is None
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_includes(
+        ...     includes=None
+        ... ).orbiter_includes is None
         True
 
         ```
-
         :param includes: Single, iterable of [OrbiterInclude][orbiter.objects.include.OrbiterInclude], or None
         :type includes: OrbiterInclude | Iterable[OrbiterInclude] | None
         :return: self
@@ -240,28 +206,21 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
 
         ```pycon
         >>> from orbiter.objects.operators.bash import OrbiterBashOperator
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_variables(
-        ...     OrbiterVariable(key='db_host', value='localhost')
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_variables(
+        ...     variables=OrbiterVariable(key='db_host', value='localhost')
         ... ).orbiter_vars
         {OrbiterVariable(key='db_host', value='localhost')}
-
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_variables([
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_variables(variables=[
         ...     OrbiterVariable(key='db_host', value='localhost'),
         ...     OrbiterVariable(key='db_port', value='5432')
         ... ]).orbiter_vars  # doctest: +SKIP
         {OrbiterVariable(key='db_host', value='localhost'), OrbiterVariable(key='db_port', value='5432')}
-
-        >>> OrbiterBashOperator(
-        ...     task_id='foo', bash_command='echo hello'
-        ... ).add_variables(None).orbiter_vars is None
+        >>> OrbiterBashOperator(task_id='foo', bash_command='echo hello').add_variables(
+        ...     variables=None
+        ... ).orbiter_vars is None
         True
 
         ```
-
         :param variables: Single, iterable of [OrbiterVariable][orbiter.objects.variable.OrbiterVariable], or None
         :type variables: OrbiterVariable | Iterable[OrbiterVariable] | None
         :return: self
