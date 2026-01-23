@@ -23,49 +23,38 @@ class OrbiterDataset(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
     are passed through to the underlying ``Dataset`` constructor.
 
     ```pycon
-    >>> dataset = OrbiterDataset(uri="s3://bucket/key")
-    >>> str(dataset)
+    >>> OrbiterDataset(uri="s3://bucket/key")
     "Dataset('s3://bucket/key')"
 
     ```
 
     ```pycon
     >>> from orbiter.objects.dag import OrbiterDAG
-    >>> from orbiter.ast_helper import render_ast
-    >>> dag = OrbiterDAG(
+    >>> OrbiterDAG(
     ...     dag_id="foo",
     ...     file_path="foo.py",
-    ...     schedule=OrbiterDataset(uri="db://table"),
-    ... )
-    >>> # noinspection PyProtectedMember
-    ... result = render_ast(dag._to_ast())
-    >>> "Dataset('db://table')" in result
-    True
-    >>> "from airflow.datasets import Dataset" in result
-    True
+    ...     schedule=OrbiterDataset(uri="db://table")
+    ... ) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    from airflow.datasets import Dataset
+    ...
+    Dataset('db://table')
+    ...
 
     ```
 
     ```pycon
-    >>> from orbiter.objects.dag import OrbiterDAG
-    >>> from orbiter.ast_helper import render_ast
-    >>> dag = OrbiterDAG(
+    >>> OrbiterDAG(
     ...     dag_id="foo",
     ...     file_path="foo.py",
     ...     schedule=[
     ...         OrbiterDataset(uri="db://table1"),
     ...         OrbiterDataset(uri="db://table2"),
     ...     ],
-    ... )
-    >>> # noinspection PyProtectedMember
-    ... result = render_ast(dag._to_ast())
-    >>> "Dataset('db://table1')" in result
-    True
-    >>> "Dataset('db://table2')" in result
-    True
+    ... ) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    from ...
+    ...schedule=[Dataset('db://table1'), Dataset('db://table2')]...
 
     ```
-
     :param uri: The Dataset URI, e.g. ``\"db://table\"`` or ``\"s3://bucket/key\"``
     :type uri: str
     :param **kwargs: any other kwargs to provide to ``Dataset``
