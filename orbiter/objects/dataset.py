@@ -6,7 +6,8 @@ from typing import Literal
 from pydantic import BaseModel
 
 from orbiter.ast_helper import OrbiterASTBase, py_object
-from orbiter.objects import ImportList, OrbiterBase, OrbiterRequirement, RenderAttributes
+from orbiter.objects import ImportList, OrbiterBase, RenderAttributes
+from orbiter.objects.requirement import OrbiterRequirement
 
 __mermaid__ = """
 --8<-- [start:mermaid-dag-relationships]
