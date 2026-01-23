@@ -35,9 +35,10 @@ class OrbiterDataset(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
     ...     file_path="foo.py",
     ...     schedule=OrbiterDataset(uri="db://table")
     ... ) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    from airflow import DAG
     from airflow.datasets import Dataset
     ...
-    Dataset('db://table')
+    with DAG(dag_id='foo', schedule=Dataset('db://table')):
     ...
 
     ```
@@ -93,3 +94,7 @@ class OrbiterDataset(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
             # Any additional model fields (from model_extra) should be forwarded
             **{k: getattr(self, k) for k in self.model_extra.keys()},
         )
+
+
+# Rebuild the model to resolve forward references in OrbiterBase and other parent classes
+OrbiterDataset.model_rebuild()
