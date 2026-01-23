@@ -22,3 +22,5 @@ workflow
 orbiter-*
 .python-version
 translation_ruleset.html
+.plans
+.worktrees
