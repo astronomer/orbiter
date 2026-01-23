@@ -92,6 +92,39 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
             self.imports.append(requirement)
         return self
 
+    def add_connections(self, connections: OrbiterConnection | Iterable[OrbiterConnection]) -> "OrbiterBase":
+        """Add [OrbiterConnections][orbiter.objects.connection.OrbiterConnection] to orbiter_conns
+
+        ```pycon
+        >>> from orbiter.objects.operators.bash import OrbiterBashOperator
+        >>> OrbiterBashOperator(
+        ...     task_id='foo', bash_command='echo hello'
+        ... ).add_connections(
+        ...     OrbiterConnection(conn_id='postgres')
+        ... ).orbiter_conns
+        {OrbiterConnection(conn_id=postgres, conn_type=generic)}
+
+        >>> OrbiterBashOperator(
+        ...     task_id='foo', bash_command='echo hello'
+        ... ).add_connections([
+        ...     OrbiterConnection(conn_id='postgres'),
+        ...     OrbiterConnection(conn_id='mysql')
+        ... ]).orbiter_conns  # doctest: +SKIP
+        {OrbiterConnection(conn_id=postgres, conn_type=generic), OrbiterConnection(conn_id=mysql, conn_type=generic)}
+
+        ```
+
+        :param connections: Single or iterable of [OrbiterConnection][orbiter.objects.connection.OrbiterConnection]
+        :type connections: OrbiterConnection | Iterable[OrbiterConnection]
+        :return: self
+        :rtype: OrbiterBase
+        """
+        if self.orbiter_conns is None:
+            self.orbiter_conns = set()
+        for connection in [connections] if isinstance(connections, OrbiterConnection) else connections:
+            self.orbiter_conns.add(connection)
+        return self
+
 
 def conn_id(conn_id: str, prefix: str = "", conn_type: str = "generic") -> dict:
     """Helper function to add an [OrbiterConnection][orbiter.objects.connection.OrbiterConnection]
