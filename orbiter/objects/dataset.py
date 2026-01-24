@@ -16,7 +16,7 @@ OrbiterDAG "via schedule" --> OrbiterDataset
 """
 
 
-class OrbiterDataset(OrbiterASTBase, OrbiterBase, BaseModel, extra="allow"):
+class OrbiterDataset(OrbiterASTBase, OrbiterBase, extra="allow"):
     """An [Airflow Dataset](https://airflow.apache.org/docs/apache-airflow/stable/authoring-and-scheduling/asset-scheduling.html)
     reference, typically used for Dataset-based scheduling.
 
@@ -78,13 +78,8 @@ class OrbiterDataset(OrbiterASTBase, OrbiterBase, BaseModel, extra="allow"):
     uri: str
 
     def _to_ast(self) -> ast.stmt | ast.Module:
-        dataset_names = [name for _import in self.imports for name in _import.names if name == "Dataset"]
-        if len(dataset_names) != 1:
-            raise ValueError(f"Expected exactly one Dataset name, got {dataset_names}")
-        [dataset] = dataset_names
-
         return py_object(
-            dataset,
+            "Dataset",
             self.uri,
             # Any additional model fields (from model_extra) should be forwarded
             **{k: getattr(self, k) for k in (self.model_extra.keys() or [])},

@@ -16,7 +16,7 @@ except ImportError:
     from typing_extensions import Self
 
 from pydantic_extra_types.pendulum_dt import DateTime
-from pydantic import AfterValidator, ConfigDict, validate_call
+from pydantic import AfterValidator, validate_call
 
 from orbiter import clean_value
 from orbiter.ast_helper import OrbiterASTBase, py_object, py_with
@@ -193,8 +193,6 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     --8<-- [end:mermaid-props]
     """
 
-    model_config = ConfigDict(revalidate_instances="never")
-
     # noinspection PyTypeHints
     imports: ImportList = [
         OrbiterRequirement(package="apache-airflow", module="airflow", names=["DAG"]),
@@ -322,7 +320,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
         index_map = {v: i for i, v in enumerate(self.render_attributes)}
         rendered_params = {k: prop(k) for k in self.render_attributes if (getattr(self, k) is not None)}
-        extra_params = {k: prop(k) for k in self.model_extra.keys()}
+        extra_params = {k: prop(k) for k in self.model_extra.keys() or []}
         return py_object(
             name="DAG",
             **dict(
@@ -413,12 +411,12 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
         # Collect imports from schedule (timetables and/or datasets)
         schedule_imports = set()
-        if isinstance(self.schedule, OrbiterTimetable):
-            schedule_imports |= set(self.schedule.imports)
-        elif isinstance(self.schedule, OrbiterDataset):
-            schedule_imports |= set(self.schedule.imports)
-        elif isinstance(self.schedule, list):
-            for item in self.schedule:
+        if isinstance(_self.schedule, OrbiterTimetable):
+            schedule_imports |= set(_self.schedule.imports)
+        elif isinstance(_self.schedule, OrbiterDataset):
+            schedule_imports |= set(_self.schedule.imports)
+        elif isinstance(_self.schedule, list):
+            for item in _self.schedule:
                 if isinstance(item, OrbiterDataset):
                     schedule_imports |= set(item.imports)
 
