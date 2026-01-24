@@ -66,3 +66,7 @@ class OrbiterAsset(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
             self.uri,
             **{k: getattr(self, k) for k in self.model_extra.keys()},
         )
+
+
+# Rebuild the model to resolve forward references in OrbiterBase and other parent classes
+OrbiterAsset.model_rebuild()
