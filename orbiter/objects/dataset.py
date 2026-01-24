@@ -24,7 +24,7 @@ class OrbiterDataset(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
 
     ```pycon
     >>> OrbiterDataset(uri="s3://bucket/key")
-    "Dataset('s3://bucket/key')"
+    Dataset('s3://bucket/key')
 
     ```
 
