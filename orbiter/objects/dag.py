@@ -22,6 +22,7 @@ from orbiter import clean_value
 from orbiter.ast_helper import OrbiterASTBase, py_object, py_with
 from orbiter.objects import ImportList, OrbiterBase, CALLBACK_KEYS
 from orbiter.objects.callbacks.callback_type import CallbackType
+from orbiter.objects.dataset import OrbiterDataset
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
 from orbiter.objects.tasks_parent_shared_utils import _add_tasks, _get_task_dependency_parent
@@ -145,7 +146,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     :param dag_id: The `dag_id`. Must be unique and snake_case. Good practice is to set `dag_id` == `file_path`
     :type dag_id: str
     :param schedule: The schedule for the DAG. Defaults to None (only runs when manually triggered)
-    :type schedule: str | OrbiterTimetable, optional
+    :type schedule: str | timedelta | OrbiterTimetable | OrbiterDataset | list[OrbiterDataset], optional
     :param catchup: Whether to catchup runs from the `start_date` to now, on first run. Defaults to False
     :type catchup: bool, optional
     :param start_date: The start date for the DAG. Defaults to Unix Epoch
@@ -168,7 +169,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     imports: List[OrbiterRequirement]
     file_path: str
     dag_id: str
-    schedule: str | OrbiterTimetable | None
+    schedule: str | timedelta | OrbiterTimetable | OrbiterDataset | list[OrbiterDataset] | None
     catchup: bool
     start_date: DateTime
     tags: List[str]
@@ -199,7 +200,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     file_path: str | Path
 
     dag_id: DagId
-    schedule: str | timedelta | TimetableType | None = None
+    schedule: str | timedelta | TimetableType | OrbiterDataset | list[OrbiterDataset] | None = None
     catchup: bool | None = None
     start_date: datetime | DateTime | None = None
     tags: List[str] | None = None
@@ -356,6 +357,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         """
         from orbiter.objects.timetables.timetable import OrbiterTimetable
         from orbiter.objects.operators.empty import OrbiterEmptyOperator
+        from orbiter.objects.dataset import OrbiterDataset
 
         def dedupe_callable(ast_collection):
             items = []
@@ -388,6 +390,15 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         # Recursively descends into task groups
         dereference_downstream(_self)
 
+        # Collect imports from schedule (timetables and/or datasets)
+        schedule_imports = set()
+        if isinstance(_self.schedule, OrbiterTimetable) or isinstance(_self.schedule, OrbiterDataset):
+            schedule_imports |= set(_self.schedule.imports)
+        elif isinstance(_self.schedule, list):
+            for item in _self.schedule:
+                if isinstance(item, OrbiterDataset):
+                    schedule_imports |= set(item.imports)
+
         # DAG Imports, e.g. `from airflow import DAG`
         # Task/TaskGroup Imports, e.g. `from airflow.operators.bash import BashOperator`
         pre_imports = list(
@@ -396,7 +407,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
             # Get imports from tasks, and descend into task groups
             | set(_get_imports_recursively(_self.tasks.values()))
             # Get imports from Schedule, if it's a timetable
-            | (set(_self.schedule.imports) if isinstance(_self.schedule, OrbiterTimetable) else set())
+            | schedule_imports
             | reduce(
                 # Look for e.g. on_failure_callback, get imports, merge them all
                 lambda old, item: old | set(getattr(getattr(_self, item, {}), "imports", set())),

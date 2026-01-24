@@ -14,6 +14,12 @@ classDiagram
     }
     click OrbiterDAG href "#orbiter.objects.dag.OrbiterDAG" "OrbiterDAG Documentation"
 
+    --8<-- "orbiter/objects/dataset.py:mermaid-dag-relationships"
+    class OrbiterDataset["orbiter.objects.dataset.OrbiterDataset"] {
+        --8<-- "orbiter/objects/dataset.py:mermaid-props"
+    }
+    click OrbiterDataset href "#orbiter.objects.dataset.OrbiterDataset" "OrbiterDataset Documentation"
+
     --8<-- "orbiter/objects/task_group.py:mermaid-dag-relationships"
     class OrbiterTaskGroup["orbiter.objects.task_group.OrbiterTaskGroup"] {
         --8<-- "orbiter/objects/task_group.py:mermaid-op-props"
@@ -65,6 +71,11 @@ classDiagram
 ```
 
 ::: orbiter.objects.dag.OrbiterDAG
+    options:
+        heading_level: 3
+
+## Dataset
+::: orbiter.objects.dataset.OrbiterDataset
     options:
         heading_level: 3
 
