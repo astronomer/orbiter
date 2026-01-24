@@ -25,10 +25,6 @@ class OrbiterDataset(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
     ```pycon
     >>> OrbiterDataset(uri="s3://bucket/key")
     Dataset('s3://bucket/key')
-
-    ```
-
-    ```pycon
     >>> from orbiter.objects.dag import OrbiterDAG
     >>> OrbiterDAG(
     ...     dag_id="foo",
@@ -40,10 +36,6 @@ class OrbiterDataset(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
     ...
     with DAG(dag_id='foo', schedule=Dataset('db://table')):
     ...
-
-    ```
-
-    ```pycon
     >>> OrbiterDAG(
     ...     dag_id="foo",
     ...     file_path="foo.py",
@@ -52,8 +44,10 @@ class OrbiterDataset(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
     ...         OrbiterDataset(uri="db://table2"),
     ...     ],
     ... ) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-    from ...
-    ...schedule=[Dataset('db://table1'), Dataset('db://table2')]...
+    from airflow import DAG
+    from airflow.datasets import Dataset
+    ...
+    with DAG(dag_id='foo', schedule=[Dataset('db://table1'), Dataset('db://table2')]...
 
     ```
     :param uri: The Dataset URI, e.g. ``\"db://table\"`` or ``\"s3://bucket/key\"``
