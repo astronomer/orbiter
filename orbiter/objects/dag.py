@@ -16,11 +16,12 @@ except ImportError:
     from typing_extensions import Self
 
 from pydantic_extra_types.pendulum_dt import DateTime
-from pydantic import AfterValidator, validate_call
+from pydantic import AfterValidator, ConfigDict, validate_call
 
 from orbiter import clean_value
 from orbiter.ast_helper import OrbiterASTBase, py_object, py_with
 from orbiter.objects import ImportList, OrbiterBase, CALLBACK_KEYS
+from orbiter.objects.asset import OrbiterAsset
 from orbiter.objects.callbacks.callback_type import CallbackType
 from orbiter.objects.dataset import OrbiterDataset
 from orbiter.objects.requirement import OrbiterRequirement
@@ -169,7 +170,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     imports: List[OrbiterRequirement]
     file_path: str
     dag_id: str
-    schedule: str | timedelta | OrbiterTimetable | OrbiterDataset | list[OrbiterDataset] | None
+    schedule: str | timedelta | OrbiterTimetable | OrbiterDataset | OrbiterAsset | list[OrbiterDataset | OrbiterAsset] | None
     catchup: bool
     start_date: DateTime
     tags: List[str]
@@ -192,6 +193,8 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     --8<-- [end:mermaid-props]
     """
 
+    model_config = ConfigDict(revalidate_instances="never")
+
     # noinspection PyTypeHints
     imports: ImportList = [
         OrbiterRequirement(package="apache-airflow", module="airflow", names=["DAG"]),
@@ -200,7 +203,16 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     file_path: str | Path
 
     dag_id: DagId
-    schedule: str | timedelta | TimetableType | OrbiterDataset | list[OrbiterDataset] | None = None
+    schedule: (
+        str
+        | timedelta
+        | TimetableType
+        | OrbiterDataset
+        | list[OrbiterDataset]
+        | OrbiterAsset
+        | list[OrbiterAsset]
+        | None
+    ) = None
     catchup: bool | None = None
     start_date: datetime | DateTime | None = None
     tags: List[str] | None = None
