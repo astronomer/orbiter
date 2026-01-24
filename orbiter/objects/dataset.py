@@ -3,10 +3,9 @@ from __future__ import annotations
 import ast
 from typing import Literal
 
-from pydantic import BaseModel
-
 from orbiter.ast_helper import OrbiterASTBase, py_object
-from orbiter.objects import ImportList, OrbiterBase, OrbiterRequirement, RenderAttributes
+from orbiter.objects import ImportList, OrbiterBase, RenderAttributes
+from orbiter.objects.requirement import OrbiterRequirement
 
 __mermaid__ = """
 --8<-- [start:mermaid-dag-relationships]
@@ -15,7 +14,7 @@ OrbiterDAG "via schedule" --> OrbiterDataset
 """
 
 
-class OrbiterDataset(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
+class OrbiterDataset(OrbiterBase, OrbiterASTBase, extra="allow"):
     """An [Airflow Dataset](https://airflow.apache.org/docs/apache-airflow/stable/authoring-and-scheduling/asset-scheduling.html)
     reference, typically used for Dataset-based scheduling.
 
@@ -23,9 +22,10 @@ class OrbiterDataset(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
     are passed through to the underlying ``Dataset`` constructor.
 
     ```pycon
-    >>> OrbiterDataset(uri="s3://bucket/key")
-    Dataset('s3://bucket/key')
+    >>> from orbiter.ast_helper import render_ast
     >>> from orbiter.objects.dag import OrbiterDAG
+    >>> render_ast(OrbiterDataset(uri="s3://bucket/key")._to_ast())
+    "Dataset('s3://bucket/key')"
     >>> OrbiterDAG(
     ...     dag_id="foo",
     ...     file_path="foo.py",
@@ -34,8 +34,7 @@ class OrbiterDataset(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
     from airflow import DAG
     from airflow.datasets import Dataset
     ...
-    with DAG(dag_id='foo', schedule=Dataset('db://table')):
-    ...
+    with DAG(dag_id='foo', schedule=Dataset('db://table')): ...
     >>> OrbiterDAG(
     ...     dag_id="foo",
     ...     file_path="foo.py",
@@ -77,16 +76,11 @@ class OrbiterDataset(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
     uri: str
 
     def _to_ast(self) -> ast.stmt | ast.Module:
-        dataset_names = [name for _import in self.imports for name in _import.names if name == "Dataset"]
-        if len(dataset_names) != 1:
-            raise ValueError(f"Expected exactly one Dataset name, got {dataset_names}")
-        [dataset] = dataset_names
-
         return py_object(
-            dataset,
+            "Dataset",
             self.uri,
             # Any additional model fields (from model_extra) should be forwarded
-            **{k: getattr(self, k) for k in self.model_extra.keys()},
+            **{k: getattr(self, k) for k in (self.model_extra.keys() or [])},
         )
 
 
