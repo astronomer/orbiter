@@ -13,33 +13,46 @@ default:
 help:
     @just --list
 
-# Install project and python dependencies (incl. pre-commit) locally
-install EDITABLE='':
-    {{ PYTHON }} -m pip install {{EDITABLE}} '.[{{EXTRAS}}]'
+# Install project and python dependencies
+install:
+    uv sync --all-extras
 
-# Install pre-commit to local project
-install-precommit: install
-    pre-commit install
+# Initialize development environment (install deps + hooks)
+init: install
+    uv run prek install
 
-# Update the baseline for detect-secrets / pre-commit
+# Update the baseline for detect-secrets
 update-secrets:
-    detect-secrets scan  > .secrets.baseline  # pragma: allowlist secret
+    uv run detect-secrets scan > .secrets.baseline  # pragma: allowlist secret
 
 # Run pytests with config from pyproject.toml
 test:
-    {{ PYTHON }} -m pytest -c pyproject.toml
+    uv run pytest -c pyproject.toml
 
 # Test and emit a coverage report
 test-with-coverage:
-    {{ PYTHON }} -m pytest -c pyproject.toml --cov=./ --cov-report=xml
+    uv run pytest -c pyproject.toml --cov=./ --cov-report=xml
 
 # Run integration tests
 test-integration $MANUAL_TESTS="true":
     @just test
 
-# Run ruff and black (normally done with pre-commit)
+# Run ruff linter
 lint:
-    ruff check .
+    uv run ruff check .
+
+# Format code with ruff
+format:
+    uv run ruff format .
+
+# Check code formatting without modifying
+format-check:
+    uv run ruff format --check .
+
+# Run security scans
+security:
+    uv run bandit -r . -c pyproject.toml
+    uv run detect-secrets scan
 
 # Render and serve documentation locally
 serve-docs:
@@ -74,11 +87,11 @@ deploy: deploy-tag
 
 # Build the project
 build: install clean
-    {{ PYTHON }} -m build
+    uv run python -m build
 
 # Package the `orbiter` binary
 build-binary: clean
-  {{ PYTHON }} -m PyInstaller --onefile --noconfirm --clean --specpath dist --name astronomer-orbiter \
+  uv run python -m PyInstaller --onefile --noconfirm --clean --specpath dist --name astronomer-orbiter \
     --collect-all orbiter \
     --hidden-import tzdata \
     --recursive-copy-metadata astronomer-orbiter \

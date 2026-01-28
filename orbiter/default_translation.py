@@ -13,8 +13,8 @@ from orbiter.objects.project import OrbiterProject
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
 
 if TYPE_CHECKING:
-    from orbiter.rules.rulesets import TranslationRuleset
     from orbiter.objects.task_group import OrbiterTaskGroup
+    from orbiter.rules.rulesets import TranslationRuleset
 
 
 def validate_translate_function_inputs(translation_ruleset: TranslationRuleset, input_dir: Path) -> None:
@@ -237,6 +237,7 @@ def translate(translation_ruleset, input_dir: Path) -> OrbiterProject:
 
         if getattr(translation_ruleset.config, "parallel", False):
             import sys
+
             import pathos
 
             logger.info("Filtering DAG and Task Candidates from all files in parallel")

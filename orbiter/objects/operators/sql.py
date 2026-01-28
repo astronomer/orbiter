@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import Literal
 
-from orbiter.objects.requirement import OrbiterRequirement
-
 from orbiter.objects import ImportList, RenderAttributes
+from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
 
 

@@ -4,38 +4,38 @@ import ast
 import json
 from abc import ABC
 from copy import deepcopy
-from typing import List, Any, Set, Literal, TYPE_CHECKING, Annotated, Optional
+from typing import TYPE_CHECKING, Annotated, Any, Literal
 
 try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
 
-from pydantic import field_validator, Field
+from pydantic import Field, field_validator
 
 from orbiter.ast_helper import (
     OrbiterASTBase,
-    py_with,
     py_object,
+    py_with,
 )
-from orbiter.objects import OrbiterBase, ImportList
-from orbiter.objects.requirement import OrbiterRequirement
+from orbiter.objects import ImportList, OrbiterBase
 from orbiter.objects.operators.bash import OrbiterBashOperator
 from orbiter.objects.operators.empty import OrbiterEmptyOperator
 from orbiter.objects.operators.kubernetes_pod import OrbiterKubernetesPodOperator
 from orbiter.objects.operators.livy import OrbiterLivyOperator
-from orbiter.objects.operators.python import OrbiterPythonOperator, OrbiterDecoratedPythonOperator
+from orbiter.objects.operators.python import OrbiterDecoratedPythonOperator, OrbiterPythonOperator
 from orbiter.objects.operators.smtp import OrbiterEmailOperator
 from orbiter.objects.operators.sql import OrbiterSQLExecuteQueryOperator
 from orbiter.objects.operators.ssh import OrbiterSSHOperator
 from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
 from orbiter.objects.operators.win_rm import OrbiterWinRMOperator
+from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import (
     OrbiterOperator,
     OrbiterTask,
 )
-from orbiter.objects.task_shared_utils import TaskId, task_add_downstream, downstream_to_ast
-from orbiter.objects.tasks_parent_shared_utils import _get_task_dependency_parent, _add_tasks
+from orbiter.objects.task_shared_utils import TaskId, downstream_to_ast, task_add_downstream
+from orbiter.objects.tasks_parent_shared_utils import _add_tasks, _get_task_dependency_parent
 
 if TYPE_CHECKING:
     from orbiter.objects.task import OrbiterTaskDependency
@@ -104,11 +104,11 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
     task_group_id: TaskId
     tooltip: str | None = None
     default_args: dict | None = None
-    tasks: "TasksType"
+    tasks: TasksType
 
-    downstream: Set[str] = set()
+    downstream: set[str] = set()
 
-    _dereferenced_downstream: Set["TaskType"] = set()
+    _dereferenced_downstream: set[TaskType] = set()
 
     @property
     def task_id(self):
@@ -139,7 +139,7 @@ class OrbiterTaskGroup(OrbiterASTBase, OrbiterBase, ABC, extra="forbid"):
     def get_rendered_task_id(self) -> str:
         return self.task_id
 
-    def add_downstream(self, task_id: "str | List[str] | OrbiterTaskDependency") -> "OrbiterTaskGroup":
+    def add_downstream(self, task_id: str | list[str] | OrbiterTaskDependency) -> OrbiterTaskGroup:
         return task_add_downstream(self, task_id)
 
     def _downstream_to_ast(self):
@@ -205,4 +205,4 @@ TaskType = Annotated[
     Field(discriminator="orbiter_type"),
 ]
 
-TasksType = Annotated[Optional[dict[str, TaskType]], Field(default_factory=dict)]
+TasksType = Annotated[dict[str, TaskType] | None, Field(default_factory=dict)]

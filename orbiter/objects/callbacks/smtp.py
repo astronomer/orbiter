@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import Set, Sequence
+from collections.abc import Sequence
 
-from orbiter.objects.connection import OrbiterConnection
-
-from orbiter.objects import OrbiterRequirement, ImportList, RenderAttributes
+from orbiter.objects import ImportList, OrbiterRequirement, RenderAttributes
 from orbiter.objects.callbacks import OrbiterCallback
-
+from orbiter.objects.connection import OrbiterConnection
 
 __mermaid__ = """
 --8<-- [start:mermaid-relationships]
@@ -74,7 +72,7 @@ class OrbiterSmtpNotifierCallback(OrbiterCallback, extra="allow"):
     to: str | Sequence[str]
     from_email: str | None = None
     smtp_conn_id: str | None = "SMTP"
-    orbiter_conns: Set[OrbiterConnection] | None = {OrbiterConnection(conn_id="SMTP", conn_type="smtp")}
+    orbiter_conns: set[OrbiterConnection] | None = {OrbiterConnection(conn_id="SMTP", conn_type="smtp")}
     subject: str | None = None
     html_content: str | None = None
     cc: str | Sequence[str] | None = None

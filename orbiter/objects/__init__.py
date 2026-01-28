@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import List, Set, ClassVar, Annotated, Iterable
+from collections.abc import Iterable
+from typing import Annotated, ClassVar, List, Set
 
-from pydantic import BaseModel, AfterValidator, validate_call
+from pydantic import AfterValidator, BaseModel, validate_call
 
 try:
     from typing import Self
@@ -11,12 +12,11 @@ except ImportError:
     from typing_extensions import Self
 
 from orbiter.meta import OrbiterMeta
-from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.connection import OrbiterConnection
 from orbiter.objects.env_var import OrbiterEnvVar
-from orbiter.objects.variable import OrbiterVariable
 from orbiter.objects.include import OrbiterInclude
-
+from orbiter.objects.requirement import OrbiterRequirement
+from orbiter.objects.variable import OrbiterVariable
 
 CALLBACK_KEYS = [
     "on_success_callback",
@@ -37,7 +37,7 @@ def validate_imports(v):
     return v
 
 
-ImportList = Annotated[List[OrbiterRequirement], AfterValidator(validate_imports)]
+ImportList = Annotated[list[OrbiterRequirement], AfterValidator(validate_imports)]
 
 
 class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
@@ -61,10 +61,10 @@ class OrbiterBase(BaseModel, ABC, arbitrary_types_allowed=True):
     orbiter_kwargs: dict | None = None
     orbiter_meta: list[OrbiterMeta] | OrbiterMeta | None = None
 
-    orbiter_conns: Set[OrbiterConnection] | None = None
-    orbiter_env_vars: Set[OrbiterEnvVar] | None = None
-    orbiter_includes: Set[OrbiterInclude] | None = None
-    orbiter_vars: Set[OrbiterVariable] | None = None
+    orbiter_conns: set[OrbiterConnection] | None = None
+    orbiter_env_vars: set[OrbiterEnvVar] | None = None
+    orbiter_includes: set[OrbiterInclude] | None = None
+    orbiter_vars: set[OrbiterVariable] | None = None
 
     @validate_call()
     def add_requirements(self, requirements: OrbiterRequirement | Iterable[OrbiterRequirement] | None = None) -> Self:

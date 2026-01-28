@@ -2,24 +2,25 @@ from __future__ import annotations
 
 import ast
 from abc import ABC
-from typing import Set, List, Callable, Literal, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Literal
 
 try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
 from pydantic import BaseModel
+
 from orbiter.ast_helper import (
     OrbiterASTBase,
+    py_assigned_object,
     py_function,
 )
-from orbiter.ast_helper import py_assigned_object
 from orbiter.config import ORBITER_TASK_SUFFIX
-from orbiter.objects import ImportList, RenderAttributes, CALLBACK_KEYS
-from orbiter.objects import OrbiterBase
+from orbiter.objects import CALLBACK_KEYS, ImportList, OrbiterBase, RenderAttributes
 from orbiter.objects.callbacks.callback_type import CallbackType
 from orbiter.objects.pool import OrbiterPool
-from orbiter.objects.task_shared_utils import TaskId, task_add_downstream, to_task_id, downstream_to_ast
+from orbiter.objects.task_shared_utils import TaskId, downstream_to_ast, task_add_downstream, to_task_id
 
 if TYPE_CHECKING:
     from orbiter.objects.task_group import TaskType
@@ -53,7 +54,7 @@ class OrbiterTaskDependency(BaseModel, extra="forbid"):
 
     # --8<-- [start:mermaid-td-props]
     task_id: TaskId
-    downstream: TaskId | List[TaskId]
+    downstream: TaskId | list[TaskId]
     # --8<-- [end:mermaid-td-props]
 
     def __str__(self):
@@ -145,7 +146,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     pool: str | None = None
     pool_slots: int | None = None
     orbiter_pool: OrbiterPool | None = None
-    downstream: Set[str] = set()
+    downstream: set[str] = set()
 
     on_success_callback: CallbackType
     on_failure_callback: CallbackType
@@ -162,7 +163,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
         "doc_md",
     ] + CALLBACK_KEYS
 
-    _dereferenced_downstream: Set["TaskType"] = set()
+    _dereferenced_downstream: set[TaskType] = set()
     __mermaid__ = """
     --8<-- [start:mermaid-op-props]
     imports: List[OrbiterRequirement]
@@ -186,7 +187,7 @@ class OrbiterOperator(OrbiterASTBase, OrbiterBase, ABC, extra="allow"):
     def get_rendered_task_id(self) -> str:
         return to_task_id(self.task_id, ORBITER_TASK_SUFFIX)
 
-    def add_downstream(self, task_id: "str | List[str] | OrbiterTaskDependency") -> Self:
+    def add_downstream(self, task_id: str | list[str] | OrbiterTaskDependency) -> Self:
         return task_add_downstream(self, task_id)
 
     def _downstream_to_ast(self):

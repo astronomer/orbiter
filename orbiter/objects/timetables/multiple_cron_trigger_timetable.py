@@ -2,13 +2,11 @@ from __future__ import annotations
 
 import ast
 from datetime import timedelta
-from typing import List, Literal
+from typing import Literal
 
 from orbiter.ast_helper import py_object
-from orbiter.objects import OrbiterRequirement, ImportList
-from orbiter.objects import RenderAttributes
+from orbiter.objects import ImportList, OrbiterRequirement, RenderAttributes
 from orbiter.objects.timetables.timetable import OrbiterTimetable
-
 
 __mermaid__ = """
 --8<-- [start:mermaid-dag-relationships]
@@ -62,7 +60,7 @@ class OrbiterMultipleCronTriggerTimetable(OrbiterTimetable):
         "run_immediately",
     ]
 
-    crons: List[str]
+    crons: list[str]
     timezone: str = "UTC"
     interval: timedelta | None = None
     run_immediately: bool | None = None

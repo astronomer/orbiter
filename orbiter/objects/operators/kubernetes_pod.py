@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from typing import Set, TYPE_CHECKING, Union, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
-from orbiter.objects.requirement import OrbiterRequirement
-
-from orbiter.objects.connection import OrbiterConnection
 from pydantic import model_validator
 
 from orbiter.objects import ImportList, RenderAttributes
+from orbiter.objects.connection import OrbiterConnection
+from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
 
 if TYPE_CHECKING:
@@ -17,13 +16,13 @@ if TYPE_CHECKING:
         from typing_extensions import Self
 
     # noinspection PyUnresolvedReferences
-    from kubernetes.client.models import V1EnvVar  # noqa: F401
-
     # noinspection PyUnresolvedReferences
-    from kubernetes.client.models import V1ResourceRequirements  # noqa: F401
-
     # noinspection PyUnresolvedReferences
-    from kubernetes.client.models import V1LocalObjectReference  # noqa: F401
+    from kubernetes.client.models import (
+        V1EnvVar,  # noqa: F401
+        V1LocalObjectReference,  # noqa: F401
+        V1ResourceRequirements,  # noqa: F401
+    )
 
 
 class OrbiterKubernetesPodOperator(OrbiterOperator):
@@ -112,10 +111,10 @@ class OrbiterKubernetesPodOperator(OrbiterOperator):
     cmds: list[str] | None = None
     arguments: list[str] | None = None
     env_vars: dict[str, str] | list[Any] | None = None  # V1EnvVar
-    container_resources: Union[Any, None] = None  # V1ResourceRequirements
+    container_resources: Any | None = None  # V1ResourceRequirements
     image_pull_secrets: list[Any] | None = None  # V1LocalObjectReference
     pod_template_dict: dict | None = None
-    orbiter_conns: Set[OrbiterConnection] | None = {OrbiterConnection(conn_id="KUBERNETES", conn_type="kubernetes")}
+    orbiter_conns: set[OrbiterConnection] | None = {OrbiterConnection(conn_id="KUBERNETES", conn_type="kubernetes")}
 
     @model_validator(mode="after")
     def check_image_or_pod_template_dict(self) -> Self:

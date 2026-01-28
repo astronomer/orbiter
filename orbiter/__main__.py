@@ -1,30 +1,31 @@
 from __future__ import annotations
 
 import logging
+import pkgutil
 import re
 import subprocess
 import sys
+from collections.abc import Sequence
+from csv import DictReader
 from pathlib import Path
-from typing import Literal, Sequence
+from typing import Literal
+from urllib.request import urlretrieve
 
 import requests
 import rich_click as click
 from loguru import logger
-from questionary import Choice, select, path, checkbox, text
-from rich.prompt import Prompt
+from questionary import Choice, checkbox, path, select, text
 from rich.console import Console
-from tabulate import tabulate
-from csv import DictReader
 from rich.markdown import Markdown
-import pkgutil
-from urllib.request import urlretrieve
+from rich.prompt import Prompt
+from tabulate import tabulate
 
 from orbiter import import_from_qualname, insert_cwd_to_sys_path
 from orbiter.config import (
-    RUNNING_AS_BINARY,
     KG_ACCOUNT_ID,
-    TRANSLATION_VERSION,
     LOG_LEVEL,
+    RUNNING_AS_BINARY,
+    TRANSLATION_VERSION,
 )
 from orbiter.rules.rulesets import TranslationRuleset
 
@@ -91,9 +92,10 @@ def _prompt_for_path() -> Path:
 
 # noinspection D
 def _prompt_for_ruleset(multi: bool = False) -> str:
+    import string
+
     from prompt_toolkit.formatted_text import FormattedText
     from prompt_toolkit.styles import Style
-    import string
 
     style = Style([("origin", "ansiblue bold"), ("repo", "darkgrey"), ("ruleset", "ansimagenta bold underline")])
     indexes = string.ascii_lowercase + string.digits + string.punctuation
@@ -228,11 +230,11 @@ def run_ruff_formatter(output_dir: Path):
             import git
 
             changed_files = " ".join(
-                (
+
                     file
                     for file in git.Repo(output_dir).git.diff(output_dir, name_only=True).split("\n")
                     if file.endswith(".py")
-                )
+
             )
         except ImportError:
             logger.debug(
@@ -572,11 +574,12 @@ def document(ruleset: list[str], output_file):
     if not ruleset:
         ruleset = _prompt_for_ruleset(multi=True)
 
+    import tempfile
+    from io import StringIO
+
+    import htmlark
     from mkdocs.commands import build
     from mkdocs.config.defaults import MkDocsConfig
-    import tempfile
-    import htmlark
-    from io import StringIO
 
     index_md = """# Documentation\n"""
     for rs in ruleset:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import ast
-from typing import Annotated, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
 from loguru import logger
 from pydantic import AfterValidator, validate_call
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 TaskId = Annotated[str, AfterValidator(lambda t: to_task_id(t))]
 
 
-def downstream_to_ast(self: OrbiterTaskGroup | OrbiterOperator) -> List[ast.stmt] | None:
+def downstream_to_ast(self: OrbiterTaskGroup | OrbiterOperator) -> list[ast.stmt] | None:
     downstream: set[TaskType] | set[str] = self._dereferenced_downstream or self.downstream
     if not downstream or not len(downstream):
         return None
@@ -42,7 +42,7 @@ def downstream_to_ast(self: OrbiterTaskGroup | OrbiterOperator) -> List[ast.stmt
         )
 
 
-def task_add_downstream(self, task_id: str | List[str] | OrbiterTaskDependency) -> "OrbiterOperator | OrbiterTaskGroup":
+def task_add_downstream(self, task_id: str | list[str] | OrbiterTaskDependency) -> OrbiterOperator | OrbiterTaskGroup:
     # noinspection PyProtectedMember
     """
     Add a downstream task dependency

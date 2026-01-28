@@ -1,19 +1,20 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterable
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 from loguru import logger
 
 if TYPE_CHECKING:
     from orbiter.objects.dag import OrbiterDAG
-    from orbiter.objects.task import OrbiterTaskDependency, OrbiterOperator
+    from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
     from orbiter.objects.task_group import OrbiterTaskGroup
 
 
 def _get_task_dependency_parent(
-    self: "OrbiterDAG | OrbiterTaskGroup",
-    task_dependency: "OrbiterTaskDependency",
-) -> "OrbiterDAG | OrbiterTaskGroup | None":
+    self: OrbiterDAG | OrbiterTaskGroup,
+    task_dependency: OrbiterTaskDependency,
+) -> OrbiterDAG | OrbiterTaskGroup | None:
     """Look through any children in the `.tasks` property for a matching task_id, recursing into anything that contains
     `.tasks`. Return the parent object that contains the task_id, or None if it's not found.
 
@@ -53,8 +54,8 @@ def _get_task_dependency_parent(
 
     ```
     """
-    from orbiter.objects.task_group import OrbiterTaskGroup
     from orbiter.objects.task import OrbiterTaskDependency
+    from orbiter.objects.task_group import OrbiterTaskGroup
 
     task_id = task_dependency.task_id if isinstance(task_dependency, OrbiterTaskDependency) else task_dependency
 
@@ -73,7 +74,7 @@ def _get_task_dependency_parent(
 def _add_tasks(
     self,
     tasks: (OrbiterOperator | OrbiterTaskGroup | Iterable[OrbiterOperator | OrbiterTaskGroup]),
-) -> "OrbiterDAG | OrbiterTaskGroup":
+) -> OrbiterDAG | OrbiterTaskGroup:
     """Add one or more [`OrbiterOperators`][orbiter.objects.task.OrbiterOperator] to the DAG or Task Group
 
     If the task_id doesn't already exist, in the DAG, it is added to the `tasks` dictionary.

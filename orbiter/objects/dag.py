@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import ast
 import json
+from collections.abc import Callable, Iterable
 from copy import deepcopy
 from datetime import datetime, timedelta
 from functools import reduce
 from pathlib import Path
-from typing import Annotated, Any, Dict, Iterable, List, Callable, ClassVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar
 
 from loguru import logger
 
@@ -15,12 +16,12 @@ try:
 except ImportError:
     from typing_extensions import Self
 
-from pydantic_extra_types.pendulum_dt import DateTime
 from pydantic import AfterValidator, validate_call
+from pydantic_extra_types.pendulum_dt import DateTime
 
 from orbiter import clean_value
 from orbiter.ast_helper import OrbiterASTBase, py_object, py_with
-from orbiter.objects import ImportList, OrbiterBase, CALLBACK_KEYS
+from orbiter.objects import CALLBACK_KEYS, ImportList, OrbiterBase
 from orbiter.objects.callbacks.callback_type import CallbackType
 from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
@@ -29,8 +30,7 @@ from orbiter.objects.timetables import TimetableType
 
 if TYPE_CHECKING:
     from orbiter.objects.task import OrbiterOperator
-    from orbiter.objects.task_group import OrbiterTaskGroup
-    from orbiter.objects.task_group import TasksType, TaskType
+    from orbiter.objects.task_group import OrbiterTaskGroup, TasksType, TaskType
 
 
 __mermaid__ = """
@@ -55,7 +55,7 @@ DagId = Annotated[str, AfterValidator(lambda d: to_dag_id(d))]
 
 def _get_imports_recursively(
     tasks: Iterable[OrbiterOperator | OrbiterTaskGroup],
-) -> List[OrbiterRequirement]:
+) -> list[OrbiterRequirement]:
     """
 
     >>> from orbiter.objects.task import OrbiterTask
@@ -95,7 +95,7 @@ def _get_imports_recursively(
                 task_props = (getattr(task, "model_extra", {}) or {}) | (getattr(task, "__dict__", {}) or {})
                 callback = task_props.get(item)
                 # get imports from callback, merge them all
-                return old | set(getattr(callback, "imports"))
+                return old | set(callback.imports)
             except (AttributeError, KeyError):
                 return old
 
@@ -108,8 +108,8 @@ def _get_imports_recursively(
 
 
 def dereference_downstream(
-    self: "OrbiterDAG | OrbiterTaskGroup", root_orbiter_dag: "OrbiterDAG | None" = None
-) -> "OrbiterDAG | OrbiterTaskGroup":
+    self: OrbiterDAG | OrbiterTaskGroup, root_orbiter_dag: OrbiterDAG | None = None
+) -> OrbiterDAG | OrbiterTaskGroup:
     """Turn "downstream" references into the actual `OrbiterOperator` objects
     via `_dereferenced_downstream`. Recursively descends into task groups
     """
@@ -124,7 +124,7 @@ def dereference_downstream(
             logger.warning(f"Unable to find {task_dependency=} in {root_orbiter_dag.dag_id=}.")
             return task_dependency
 
-    for task_id, task in self.tasks.items():
+    for _task_id, task in self.tasks.items():
         task._dereferenced_downstream = {
             _find_dereferenced_task(task_dependency) for task_dependency in task.downstream
         }
@@ -202,9 +202,9 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
     schedule: str | timedelta | TimetableType | None = None
     catchup: bool | None = None
     start_date: datetime | DateTime | None = None
-    tags: List[str] | None = None
-    default_args: Dict[str, Any] | None = None
-    params: Dict[str, Any] | None = None
+    tags: list[str] | None = None
+    default_args: dict[str, Any] | None = None
+    params: dict[str, Any] | None = None
     doc_md: str | None = None
 
     on_success_callback: CallbackType
@@ -216,7 +216,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
     tasks: TasksType
 
-    render_attributes: ClassVar[List[str]] = [
+    render_attributes: ClassVar[list[str]] = [
         "dag_id",
         "schedule",
         "start_date",
@@ -322,7 +322,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
         )
 
     # noinspection PyProtectedMember,D
-    def _to_ast(self) -> List[ast.stmt]:
+    def _to_ast(self) -> list[ast.stmt]:
         """
         Renders the DAG to an AST, including imports, tasks, and task dependencies
 
@@ -354,8 +354,8 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
         ```
         """
-        from orbiter.objects.timetables.timetable import OrbiterTimetable
         from orbiter.objects.operators.empty import OrbiterEmptyOperator
+        from orbiter.objects.timetables.timetable import OrbiterTimetable
 
         def dedupe_callable(ast_collection):
             items = []

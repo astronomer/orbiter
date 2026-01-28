@@ -4,14 +4,14 @@ from pathlib import Path
 
 import pytest
 
+from orbiter.default_translation import translate
 from orbiter.file_types import FileTypeYAML
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.operators.empty import OrbiterEmptyOperator
 from orbiter.objects.project import OrbiterProject
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
-from orbiter.rules import dag_rule, dag_filter_rule, task_filter_rule, task_rule, task_dependency_rule
-from orbiter.rules.rulesets import TranslationRuleset, EMPTY_RULESET, TranslationConfig
-from orbiter.default_translation import translate
+from orbiter.rules import dag_filter_rule, dag_rule, task_dependency_rule, task_filter_rule, task_rule
+from orbiter.rules.rulesets import EMPTY_RULESET, TranslationConfig, TranslationRuleset
 
 
 def test_loads(project_root):

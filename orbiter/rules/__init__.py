@@ -51,12 +51,12 @@ from __future__ import annotations
 
 import functools
 import inspect
+from collections.abc import Callable, Collection
 from textwrap import dedent
-from typing import Callable, Any, Collection, TYPE_CHECKING, List
-
-from pydantic import BaseModel, Field
+from typing import TYPE_CHECKING, Any, List
 
 from loguru import logger
+from pydantic import BaseModel, Field
 
 from orbiter import trim_dict
 from orbiter.meta import OrbiterMeta, VisitTrackedDict
@@ -64,14 +64,14 @@ from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
 from orbiter.objects.task import OrbiterOperator, OrbiterTaskDependency
 
 if TYPE_CHECKING:
-    from orbiter.objects.task_group import OrbiterTaskGroup
-    from orbiter.objects.project import OrbiterProject
     from orbiter.objects.dag import OrbiterDAG
+    from orbiter.objects.project import OrbiterProject
+    from orbiter.objects.task_group import OrbiterTaskGroup
 
 
 def rule(
     func=None, *, priority=None, params_doc=None
-) -> "Rule | DAGFilterRule | DAGRule | TaskFilterRule | TaskRule | TaskDependencyRule | PostProcessingRule":
+) -> Rule | DAGFilterRule | DAGRule | TaskFilterRule | TaskRule | TaskDependencyRule | PostProcessingRule:
     if func is None:
         # noinspection PyTypeChecker
         return functools.partial(rule, priority=priority, params_doc=params_doc)
@@ -177,26 +177,11 @@ class Rule(BaseModel, Callable, extra="forbid"):
             if result:
                 # Save the original kwargs under orbiter_kwargs
                 if kwargs and hasattr(result, "orbiter_kwargs"):
-                    setattr(result, "orbiter_kwargs", kwargs)
+                    result.orbiter_kwargs = kwargs
 
                 # Save meta information about the match
                 if hasattr(result, "orbiter_meta"):
-                    setattr(
-                        result,
-                        "orbiter_meta",
-                        OrbiterMeta(
-                            matched_rule_name=self.rule.__name__,
-                            matched_rule_priority=self.priority,
-                            matched_rule_params_doc=self.params_doc,
-                            matched_rule_docstring=self.rule.__doc__,
-                            matched_rule_source=dedent(inspect.getsource(self.rule)),
-                            visited_keys=functools.reduce(
-                                lambda acc, v: acc + (v.get_visited() if isinstance(v, VisitTrackedDict) else []),
-                                tracked_args + list(tracked_kwargs.values()),
-                                [],
-                            ),
-                        ),
-                    )
+                    result.orbiter_meta = OrbiterMeta(matched_rule_name=self.rule.__name__, matched_rule_priority=self.priority, matched_rule_params_doc=self.params_doc, matched_rule_docstring=self.rule.__doc__, matched_rule_source=dedent(inspect.getsource(self.rule)), visited_keys=functools.reduce(lambda acc, v: acc + (v.get_visited() if isinstance(v, VisitTrackedDict) else []), tracked_args + list(tracked_kwargs.values()), []))
         except Exception as e:
             logger.warning(
                 f"[RULE]: {self.rule.__name__}\n[ERROR]:\n{type(e)} - {trim_dict(e)}\n[INPUT]:\n{trim_dict(kwargs)}"
@@ -205,7 +190,7 @@ class Rule(BaseModel, Callable, extra="forbid"):
         return result
 
 
-def pattern(func=None, *, params_doc: dict | None = None) -> "Pattern":
+def pattern(func=None, *, params_doc: dict | None = None) -> Pattern:
     if func is None:
         # noinspection PyTypeChecker
         return functools.partial(pattern, params_doc=params_doc)
@@ -366,7 +351,7 @@ class TaskDependencyRule(Rule):
     :rtype: List[OrbiterTaskDependency] | None
     """
 
-    rule: Callable[[OrbiterDAG], List[OrbiterTaskDependency] | None]
+    rule: Callable[[OrbiterDAG], list[OrbiterTaskDependency] | None]
 
 
 task_dependency_rule: Callable[[...], TaskDependencyRule] = rule

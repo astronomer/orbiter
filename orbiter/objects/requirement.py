@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import ast
-from typing import List
 
 from pydantic import BaseModel
 
-from orbiter.ast_helper import py_import, OrbiterASTBase
+from orbiter.ast_helper import OrbiterASTBase, py_import
 
 
 class OrbiterRequirement(OrbiterASTBase, BaseModel, extra="forbid"):
@@ -51,7 +50,7 @@ class OrbiterRequirement(OrbiterASTBase, BaseModel, extra="forbid"):
 
     package: str | None = None
     module: str | None = None
-    names: List[str] | None = []
+    names: list[str] | None = []
     sys_package: str | None = None
 
     def __repr__(self):
