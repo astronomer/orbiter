@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from orbiter.file_types import FileTypeJSON
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.operators.empty import OrbiterEmptyOperator
@@ -6,21 +7,21 @@ from orbiter.objects.project import OrbiterProject
 from orbiter.objects.task import OrbiterOperator
 from orbiter.objects.task_group import OrbiterTaskGroup
 from orbiter.rules import (
+    cannot_map_rule,
     dag_filter_rule,
     dag_rule,
+    post_processing_rule,
+    task_dependency_rule,
     task_filter_rule,
     task_rule,
-    task_dependency_rule,
-    post_processing_rule,
-    cannot_map_rule,
 )
 from orbiter.rules.rulesets import (
     DAGFilterRuleset,
     DAGRuleset,
+    PostProcessingRuleset,
+    TaskDependencyRuleset,
     TaskFilterRuleset,
     TaskRuleset,
-    TaskDependencyRuleset,
-    PostProcessingRuleset,
     TranslationRuleset,
 )
 
@@ -29,7 +30,7 @@ from orbiter.rules.rulesets import (
 def basic_dag_filter(val: dict) -> list | None:
     """Filter input down to a list of dictionaries that can be processed by the `@dag_rules`"""
     if ...:
-        for k, v in val.items():
+        for _k, _v in val.items():
             pass
         return []
     else:
@@ -49,7 +50,7 @@ def basic_dag_rule(val: dict) -> OrbiterDAG | None:
 def basic_task_filter(val: dict) -> list | None:
     """Filter input down to a list of dictionaries that can be processed by the `@task_rules`"""
     if ...:
-        for k, v in val.items():
+        for _k, _v in val.items():
             pass
         return []
     else:
@@ -71,7 +72,7 @@ def basic_task_dependency_rule(val: OrbiterDAG) -> list | None:
     if ...:
         for task in val.tasks.values():
             original_task_kwargs = task.orbiter_kwargs["val"]
-            for task_dependency in original_task_kwargs.get("task_dependencies", []):
+            for _task_dependency in original_task_kwargs.get("task_dependencies", []):
                 pass
         return []
     else:
@@ -82,8 +83,8 @@ def basic_task_dependency_rule(val: OrbiterDAG) -> list | None:
 def basic_post_processing_rule(val: OrbiterProject) -> None:
     """Modify the project in-place, after all other rules have applied"""
     if ...:
-        for dag_id, dag in val.dags.items():
-            for task_id, task in dag.tasks.items():
+        for _dag_id, dag in val.dags.items():
+            for _task_id, _task in dag.tasks.items():
                 pass
 
 

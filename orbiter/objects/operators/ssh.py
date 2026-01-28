@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, Literal
+from typing import Literal
 
 from orbiter.objects import ImportList, RenderAttributes
 from orbiter.objects.requirement import OrbiterRequirement
@@ -58,4 +58,4 @@ class OrbiterSSHOperator(OrbiterOperator):
 
     ssh_conn_id: str
     command: str
-    environment: Dict[str, str] | None = None
+    environment: dict[str, str] | None = None

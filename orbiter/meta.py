@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Set, Annotated
+from typing import Annotated
 
 from pydantic import BaseModel, Field
 
@@ -107,7 +107,7 @@ class VisitTrackedDict(dict):
         return sorted(visited)
 
     def __init__(self, d: dict):
-        self.__visited__: Set[str] = set()
+        self.__visited__: set[str] = set()
         self.__data__ = d
         super().__init__({k: VisitTrackedDict(v) if isinstance(v, dict) else v for k, v in d.items()})
 

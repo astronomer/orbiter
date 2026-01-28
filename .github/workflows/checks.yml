@@ -11,11 +11,12 @@ jobs:
         python-version: [ "3.10", "3.11", "3.12", "3.13" ]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v4
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: 'pip'
-      - uses: extractions/setup-just@v1
+          enable-cache: true
+      - uses: extractions/setup-just@v2
+      - name: Set Python version
+        run: echo "UV_PYTHON=${{ matrix.python-version }}" >> $GITHUB_ENV
       - run: just install
       - run: just test-with-coverage
       - uses: codecov/codecov-action@v4

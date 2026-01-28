@@ -4,6 +4,7 @@ import functools
 import inspect
 import uuid
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Collection, Generator, Mapping
 from itertools import chain
 from operator import add
 from pathlib import Path
@@ -11,23 +12,14 @@ from tempfile import TemporaryDirectory
 from typing import (
     Annotated,
     Any,
-    Callable,
-    Collection,
-    Generator,
-    List,
-    Set,
-    Type,
-    Mapping,
-    Union,
-    Tuple,
 )
 
 from loguru import logger
-from pydantic import AfterValidator, validate_call, Field
+from pydantic import AfterValidator, Field, validate_call
 from pydantic_settings import BaseSettings
 
-from orbiter import import_from_qualname, trim_dict, QualifiedImport, validate_qualified_imports, _backport_walk
-from orbiter.default_translation import translate, fake_translate
+from orbiter import QualifiedImport, _backport_walk, import_from_qualname, trim_dict, validate_qualified_imports
+from orbiter.default_translation import fake_translate, translate
 from orbiter.file_types import FileType, FileTypeJSON
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.project import OrbiterProject
@@ -46,8 +38,8 @@ from orbiter.rules import (
 
 
 def validate_translate_fn(
-    translate_fn: str | Callable[["TranslationRuleset", Path], OrbiterProject],
-) -> str | Callable[["TranslationRuleset", Path], OrbiterProject]:
+    translate_fn: str | Callable[[TranslationRuleset, Path], OrbiterProject],
+) -> str | Callable[[TranslationRuleset, Path], OrbiterProject]:
     """
     ```pycon
     >>> validate_translate_fn(fake_translate) # a valid function works
@@ -85,7 +77,7 @@ def validate_translate_fn(
 
 
 TranslateFn = Annotated[
-    Union[QualifiedImport, Callable[["TranslationRuleset", Path], OrbiterProject]],
+    QualifiedImport | Callable[["TranslationRuleset", Path], OrbiterProject],
     AfterValidator(validate_translate_fn),
 ]
 
@@ -122,7 +114,7 @@ class Ruleset(ABC):
     """
 
     @validate_call()
-    def __init__(self, ruleset: List[Rule | Callable[[dict | Any], Any | None]]):
+    def __init__(self, ruleset: list[Rule | Callable[[dict | Any], Any | None]]):
         self.ruleset = ruleset
 
     def __repr__(self):
@@ -132,7 +124,7 @@ class Ruleset(ABC):
         self,
         input_val: Collection[Any],
         take_first: bool = False,
-    ) -> List[List[Any]] | List[Any]:
+    ) -> list[list[Any]] | list[Any]:
         """
         Apply a ruleset to each item in collection (such as `dict().items()`)
         and return any results that are not `None`
@@ -190,7 +182,7 @@ class Ruleset(ABC):
             if (results := self.apply(take_first=False, val=item)) is not None and len(results)
         ]
 
-    def _sorted(self) -> List[Rule]:
+    def _sorted(self) -> list[Rule]:
         """Return a copy of the ruleset, sorted by priority
         ```pycon
         >>> sorted_rules = GenericRuleset(ruleset=[
@@ -207,7 +199,7 @@ class Ruleset(ABC):
         return sorted(self.ruleset, key=lambda r: r.priority, reverse=True)
 
     @validate_call
-    def apply(self, take_first: bool = False, **kwargs) -> List[Any] | Any:
+    def apply(self, take_first: bool = False, **kwargs) -> list[Any] | Any:
         """
         Apply all rules in ruleset **to a single item**, in priority order, removing any `None` results.
 
@@ -310,7 +302,7 @@ class Ruleset(ABC):
 class DAGFilterRuleset(Ruleset):
     """Ruleset of [`DAGFilterRule`][orbiter.rules.DAGFilterRule]"""
 
-    ruleset: List[DAGFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict]
+    ruleset: list[DAGFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict]
 
     def apply_ruleset(self, input_dict: dict, file: Path, input_dir: Path) -> list[dict]:
         """Apply all rules from [DAG Filter Ruleset][orbiter.rules.rulesets.DAGFilterRuleset] to filter down to keys
@@ -340,7 +332,7 @@ class DAGFilterRuleset(Ruleset):
 class DAGRuleset(Ruleset):
     """Ruleset of [`DAGRule`][orbiter.rules.DAGRule]"""
 
-    ruleset: List[DAGRule | Rule | Callable[[dict], OrbiterDAG | None] | dict]
+    ruleset: list[DAGRule | Rule | Callable[[dict], OrbiterDAG | None] | dict]
 
     def apply_ruleset(self, dag_dict: dict) -> OrbiterDAG | None:
         """Apply all rules from `DAGRuleset` to convert the object to an `OrbiterDAG`,
@@ -360,7 +352,7 @@ class DAGRuleset(Ruleset):
 class TaskFilterRuleset(Ruleset):
     """Ruleset of [`TaskFilterRule`][orbiter.rules.TaskFilterRule]"""
 
-    ruleset: List[TaskFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict]
+    ruleset: list[TaskFilterRule | Rule | Callable[[dict], Collection[dict] | None] | dict]
 
     def apply_ruleset(self, dag_dict: dict) -> list[dict]:
         """Apply all rules from `TaskFilterRuleset` to filter down to keys that look like they can be translated
@@ -377,7 +369,7 @@ class TaskFilterRuleset(Ruleset):
 class TaskRuleset(Ruleset):
     """Ruleset of [`TaskRule`][orbiter.rules.TaskRule]"""
 
-    ruleset: List[TaskRule | Rule | Callable[[dict], OrbiterOperator | OrbiterTaskGroup | None] | dict]
+    ruleset: list[TaskRule | Rule | Callable[[dict], OrbiterOperator | OrbiterTaskGroup | None] | dict]
 
     def apply_ruleset(self, task_dict: dict) -> OrbiterOperator | OrbiterTaskGroup:
         """Apply all rules from `TaskRuleset` to convert the object to a Task, in priority order,
@@ -395,7 +387,7 @@ class TaskRuleset(Ruleset):
 class TaskDependencyRuleset(Ruleset):
     """Ruleset of [`TaskDependencyRule`][orbiter.rules.TaskDependencyRule]"""
 
-    ruleset: List[TaskDependencyRule | Rule | Callable[[OrbiterDAG], List[OrbiterTaskDependency] | None] | dict]
+    ruleset: list[TaskDependencyRule | Rule | Callable[[OrbiterDAG], list[OrbiterTaskDependency] | None] | dict]
 
     def apply_ruleset(self, dag: OrbiterDAG) -> list[OrbiterTaskDependency]:
         """Apply all rules from `TaskDependencyRuleset` to create a list of
@@ -411,7 +403,7 @@ class TaskDependencyRuleset(Ruleset):
 class PostProcessingRuleset(Ruleset):
     """Ruleset of [`PostProcessingRule`][orbiter.rules.PostProcessingRule]"""
 
-    ruleset: List[PostProcessingRule | Rule | Callable[[OrbiterProject], None] | dict]
+    ruleset: list[PostProcessingRule | Rule | Callable[[OrbiterProject], None] | dict]
 
     def apply_ruleset(self, project: OrbiterProject) -> None:
         """Apply all rules from `PostProcessingRuleset` to modify project in-place
@@ -506,7 +498,7 @@ class TranslationRuleset:
 
     def __init__(
         self,
-        file_type: Set[Type[FileType]],
+        file_type: set[type[FileType]],
         dag_filter_ruleset: DAGFilterRuleset | dict,
         dag_ruleset: DAGRuleset | dict,
         task_filter_ruleset: TaskFilterRuleset | dict,
@@ -606,7 +598,7 @@ class TranslationRuleset:
                 return file_type.dump_fn(input_dict)
         raise TypeError(f"Invalid file_type={ext}")
 
-    def get_files_with_extension(self, input_dir: Path) -> Generator[Tuple[Path, dict]]:
+    def get_files_with_extension(self, input_dir: Path) -> Generator[tuple[Path, dict]]:
         """
         A generator that yields files with a specific extension(s) in a directory
 

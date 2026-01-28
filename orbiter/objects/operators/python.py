@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import ast
+from collections.abc import Callable
 from pickle import UnpicklingError  # nosec: B403
+from typing import Literal
 
 import dill  # nosec: B403
-from typing import Callable, Literal
-
 from pydantic import field_serializer, field_validator
 
 from orbiter.ast_helper import py_function

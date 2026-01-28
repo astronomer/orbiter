@@ -10,8 +10,9 @@ from __future__ import annotations
 
 import json
 from abc import ABC
+from collections.abc import Callable
 from functools import partial
-from typing import Callable, Set, ClassVar, Any
+from typing import Any, ClassVar
 
 import xmltodict
 import yaml
@@ -36,7 +37,7 @@ class FileType(BaseModel, ABC, arbitrary_types_allowed=True):
     :type dump_fn: Callable[[dict], str]
     """
 
-    extension: ClassVar[Set[str]]
+    extension: ClassVar[set[str]]
     load_fn: ClassVar[Callable[[str], dict]]
     dump_fn: ClassVar[Callable[[dict], str]]
 
@@ -46,7 +47,7 @@ class FileType(BaseModel, ABC, arbitrary_types_allowed=True):
     # noinspection PyNestedDecorators
     @validator("extension", pre=True)
     @classmethod
-    def ext_validate(cls, v: Set[str]):
+    def ext_validate(cls, v: set[str]):
         if not v:
             raise ValueError("Extension cannot be an empty set")
         for ext in v:
@@ -75,7 +76,7 @@ class FileTypeJSON(FileType):
     :type dump_fn: Callable[[dict], str]
     """
 
-    extension: ClassVar[Set[str]] = {"JSON"}
+    extension: ClassVar[set[str]] = {"JSON"}
     load_fn: ClassVar[Callable[[str], dict]] = json.loads
     dump_fn: ClassVar[Callable[[dict], str]] = partial(json.dumps, default=str)
 
@@ -189,7 +190,7 @@ class FileTypeXML(FileType):
     :type dump_fn: Callable[[dict], str]
     """
 
-    extension: ClassVar[Set[str]] = {"XML"}
+    extension: ClassVar[set[str]] = {"XML"}
     load_fn: ClassVar[Callable[[str], dict]] = xmltodict_parse
     dump_fn: ClassVar[Callable[[dict], str]] = xmltodict.unparse
 
@@ -213,6 +214,6 @@ class FileTypeYAML(FileType):
     :type dump_fn: Callable[[dict], str]
     """
 
-    extension: ClassVar[Set[str]] = {"YAML", "YML"}
+    extension: ClassVar[set[str]] = {"YAML", "YML"}
     load_fn: ClassVar[Callable[[str], dict]] = lambda s: _s if len(_s := list(yaml.full_load_all(s))) > 1 else _s[0]
     dump_fn: ClassVar[Callable[[dict], str]] = yaml.safe_dump

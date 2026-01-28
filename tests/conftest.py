@@ -1,8 +1,9 @@
 import os
 from pathlib import Path
 
-import orbiter
 import pytest
+
+import orbiter
 
 manual_tests = pytest.mark.skipif(not bool(os.getenv("MANUAL_TESTS")), reason="requires env setup")
 

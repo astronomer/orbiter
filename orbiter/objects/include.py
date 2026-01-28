@@ -89,9 +89,10 @@ class OrbiterInclude(BaseModel, extra="forbid"):
         :type import_sys_package: str, optional
         :return: A tuple of the [OrbiterInclude][orbiter.objects.include.OrbiterInclude] and [OrbiterRequirement][orbiter.objects.requirement.OrbiterRequirement]
         """
-        from orbiter.objects.requirement import OrbiterRequirement
         from importlib.util import find_spec
         from pathlib import Path
+
+        from orbiter.objects.requirement import OrbiterRequirement
 
         default_include_filepath = "include"
         default_include_file_extension = "py"

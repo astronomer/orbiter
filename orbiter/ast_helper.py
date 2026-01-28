@@ -1,11 +1,12 @@
 from __future__ import annotations
+
 import ast
 import inspect
 from abc import ABC, abstractmethod
-from typing import List, Callable
+from collections.abc import Callable
 
 
-def py_bitshift(left: str | List[str], right: str | List[str], is_downstream: bool = True):
+def py_bitshift(left: str | list[str], right: str | list[str], is_downstream: bool = True):
     """
     >>> render_ast(py_bitshift("foo", "bar", is_downstream=False))
     'foo << bar'
@@ -66,7 +67,7 @@ def py_root(*args) -> ast.Module:
     return ast.Module(body=args, type_ignores=[])
 
 
-def py_import(names: List[str], module: str | None = None) -> ast.ImportFrom | ast.Import | list:
+def py_import(names: list[str], module: str | None = None) -> ast.ImportFrom | ast.Import | list:
     """
     :param module: e.g. `airflow.operators.bash` for `from airflow.operators.bash import BashOperator`
     :param names: e.g. `BashOperator` for `from airflow.operators.bash import BashOperator`
@@ -85,7 +86,7 @@ def py_import(names: List[str], module: str | None = None) -> ast.ImportFrom | a
         return []
 
 
-def py_with(item: ast.expr, body: List[ast.stmt], assignment: str | None = None) -> ast.With:
+def py_with(item: ast.expr, body: list[ast.stmt], assignment: str | None = None) -> ast.With:
     # noinspection PyTypeChecker
     """
     >>> render_ast(py_with(py_object("Bar"), [ast.Pass()]))
@@ -122,7 +123,7 @@ def py_with(item: ast.expr, body: List[ast.stmt], assignment: str | None = None)
 
 
 def py_function(
-    c: Callable | str, decorator_names: List[str] | None = None, decorator_kwargs: List[dict] | None = None
+    c: Callable | str, decorator_names: list[str] | None = None, decorator_kwargs: list[dict] | None = None
 ):
     """
     ```pycon
@@ -146,7 +147,7 @@ def py_function(
                     ast.keyword(arg=arg, value=ast.Constant(value=value)) for arg, value in decorator_kwarg.items()
                 ],
             )
-            for decorator_name, decorator_kwarg in zip(decorator_names or [], decorator_kwargs or [])
+            for decorator_name, decorator_kwarg in zip(decorator_names or [], decorator_kwargs or [], strict=False)
         ]
     return fn
 

@@ -1,8 +1,7 @@
-from typing import Literal, Set
+from typing import Literal
 
-from orbiter.objects import ImportList, RenderAttributes, OrbiterInclude
+from orbiter.objects import ImportList, OrbiterInclude, RenderAttributes
 from orbiter.objects.task import OrbiterOperator
-
 
 orbiter_unmapped_operator_include, orbiter_unmapped_operator_requirement = OrbiterInclude.get_include_and_requirement(
     include_module_qualname="orbiter.assets.operators.unmapped_src",
@@ -40,7 +39,7 @@ class OrbiterUnmappedOperator(OrbiterOperator):
     orbiter_type: Literal["OrbiterUnmappedOperator"] = "OrbiterUnmappedOperator"
 
     imports: ImportList = [orbiter_unmapped_operator_requirement]
-    orbiter_includes: Set["OrbiterInclude"] = {orbiter_unmapped_operator_include}
+    orbiter_includes: set["OrbiterInclude"] = {orbiter_unmapped_operator_include}
 
     operator: str = "UnmappedOperator"
 

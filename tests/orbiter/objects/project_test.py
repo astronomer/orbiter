@@ -4,13 +4,13 @@ import pytest
 import yaml
 
 from orbiter.meta import OrbiterMeta
-from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
-from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.connection import OrbiterConnection
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.env_var import OrbiterEnvVar
+from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
 from orbiter.objects.pool import OrbiterPool
 from orbiter.objects.project import OrbiterProject
+from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterTask, OrbiterTaskDependency
 from orbiter.objects.timetables.multiple_cron_trigger_timetable import OrbiterMultipleCronTriggerTimetable
 from orbiter.objects.variable import OrbiterVariable

@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import Set, Literal
-
-from orbiter.objects.requirement import OrbiterRequirement
-
-from orbiter.objects.connection import OrbiterConnection
+from typing import Literal
 
 from orbiter.objects import ImportList, RenderAttributes
+from orbiter.objects.connection import OrbiterConnection
+from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterOperator
 
 
@@ -74,4 +72,4 @@ class OrbiterEmailOperator(OrbiterOperator):
     html_content: str
     files: list | None = []
     conn_id: str | None = "SMTP"
-    orbiter_conns: Set[OrbiterConnection] | None = {OrbiterConnection(conn_id="SMTP", conn_type="smtp")}
+    orbiter_conns: set[OrbiterConnection] | None = {OrbiterConnection(conn_id="SMTP", conn_type="smtp")}

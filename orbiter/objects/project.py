@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-import sys
 import re
+import sys
+from collections.abc import Collection, Iterable
 from functools import reduce
 from itertools import chain
 from pathlib import Path
-from typing import Dict, Iterable, Set, Literal, Collection
+from typing import Literal
 
 import yaml
 from loguru import logger
-from pydantic import validate_call, BaseModel, Field
+from pydantic import BaseModel, Field, validate_call
 
 try:
     from typing import Self
@@ -90,15 +91,15 @@ class OrbiterProject(BaseModel):
     # --8<-- [end:mermaid-props]
     """
 
-    connections: Dict[str, OrbiterConnection] = Field(default_factory=dict)
-    dags: Dict[str, OrbiterDAG] = Field(default_factory=dict)
-    env_vars: Dict[str, OrbiterEnvVar] = Field(default_factory=dict)
-    includes: Dict[str, OrbiterInclude] = Field(default_factory=dict)
-    pools: Dict[str, OrbiterPool] = Field(default_factory=dict)
-    requirements: Set[OrbiterRequirement] = Field(default_factory=set)
-    variables: Dict[str, OrbiterVariable] = Field(default_factory=dict)
+    connections: dict[str, OrbiterConnection] = Field(default_factory=dict)
+    dags: dict[str, OrbiterDAG] = Field(default_factory=dict)
+    env_vars: dict[str, OrbiterEnvVar] = Field(default_factory=dict)
+    includes: dict[str, OrbiterInclude] = Field(default_factory=dict)
+    pools: dict[str, OrbiterPool] = Field(default_factory=dict)
+    requirements: set[OrbiterRequirement] = Field(default_factory=set)
+    variables: dict[str, OrbiterVariable] = Field(default_factory=dict)
 
-    def __add__(self, other) -> "OrbiterProject":
+    def __add__(self, other) -> OrbiterProject:
         if not other:
             return self
         if not isinstance(other, OrbiterProject):
@@ -532,7 +533,7 @@ class OrbiterProject(BaseModel):
         dags.mkdir(parents=True, exist_ok=True)
 
         # /dags/*
-        for dag_id, dag in self.dags.items():
+        for _dag_id, dag in self.dags.items():
             dag_file = dags / dag.file_path
             logger.debug(f"Writing {dag.file_path}")
             dag_file.parent.mkdir(parents=True, exist_ok=True)

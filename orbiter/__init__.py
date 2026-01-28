@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 import re
 import sys
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Tuple, Mapping, List, Annotated
+from typing import Annotated, Any, List, Tuple
 
 from loguru import logger
 from pydantic import AfterValidator
@@ -68,7 +69,7 @@ def insert_cwd_to_sys_path():
         sys.path.insert(0, str(cwd))
 
 
-def import_from_qualname(qualname) -> Tuple[str, Any]:
+def import_from_qualname(qualname) -> tuple[str, Any]:
     """Import a function or module from a qualified name
     :param qualname: The qualified name of the function or module to import (e.g. a.b.d.MyOperator or json)
     :return Tuple[str, Any]: The name of the function or module, and the function or module itself
@@ -106,7 +107,7 @@ def trim_dict(v):
     return v
 
 
-def validate_qualified_imports(qualified_imports: List[str]) -> List[str]:
+def validate_qualified_imports(qualified_imports: list[str]) -> list[str]:
     """
     ```pycon
     >>> validate_qualified_imports(["json", "package.module.Class"])
