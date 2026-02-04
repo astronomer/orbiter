@@ -15,7 +15,7 @@ OrbiterDAG "via schedule" --> OrbiterDataset
 """
 
 
-class OrbiterDataset(OrbiterBase, OrbiterASTBase, BaseModel, extra="allow"):
+class OrbiterDataset(OrbiterASTBase, OrbiterBase, BaseModel, extra="allow"):
     """An [Airflow Dataset](https://airflow.apache.org/docs/apache-airflow/stable/authoring-and-scheduling/asset-scheduling.html)
     reference, typically used for Dataset-based scheduling.
 
