@@ -4,13 +4,13 @@ import pytest
 import yaml
 
 from orbiter.meta import OrbiterMeta
-from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
-from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.connection import OrbiterConnection
 from orbiter.objects.dag import OrbiterDAG
 from orbiter.objects.env_var import OrbiterEnvVar
+from orbiter.objects.operators.unmapped import OrbiterUnmappedOperator
 from orbiter.objects.pool import OrbiterPool
 from orbiter.objects.project import OrbiterProject
+from orbiter.objects.requirement import OrbiterRequirement
 from orbiter.objects.task import OrbiterTask, OrbiterTaskDependency
 from orbiter.objects.timetables.multiple_cron_trigger_timetable import OrbiterMultipleCronTriggerTimetable
 from orbiter.objects.variable import OrbiterVariable
@@ -129,3 +129,45 @@ with DAG(dag_id='foo', schedule=MultipleCronTriggerTimetable('0 1 * * *', '*/5 0
     assert actual_include.exists(), actual_include
     actual_include = actual_include.read_text()
     assert "class UnmappedOperator(EmptyOperator):" in actual_include
+
+
+def test_analyze(capsys):
+    from orbiter.objects.operators.empty import OrbiterEmptyOperator
+    from orbiter.objects.task_group import OrbiterTaskGroup
+
+    project = OrbiterProject().add_dags(
+        [
+            OrbiterDAG(
+                file_path="",
+                dag_id="foo",
+                orbiter_kwargs={"file_path": "foo.py"},
+                tasks={"bar": OrbiterEmptyOperator(task_id="bar")},
+            ),
+            OrbiterDAG(
+                file_path="",
+                dag_id="baz",
+                orbiter_kwargs={"file_path": "baz.py"},
+                tasks={
+                    "bing": OrbiterTaskGroup(
+                        task_group_id="bing",
+                        tasks={
+                            "bop": OrbiterEmptyOperator(task_id="bop"),
+                            "bang": OrbiterTaskGroup(
+                                task_group_id="bang", tasks={"bam": OrbiterEmptyOperator(task_id="bam")}
+                            ),
+                        },
+                    )
+                },
+            ),
+        ]
+    )
+
+    project.analyze()
+    captured = capsys.readouterr()
+
+    assert "Analysis" in captured.out
+    assert "foo.py" in captured.out
+    assert "baz.py" in captured.out
+    assert "Totals" in captured.out
+    assert "2" in captured.out
+    assert "3" in captured.out
