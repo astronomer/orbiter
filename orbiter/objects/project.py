@@ -619,11 +619,11 @@ class OrbiterProject(BaseModel):
         ┗━...
         <BLANKLINE>
         <BLANKLINE>
-                   DAGs   OrbiterEmptyOperator
-         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          foo.py      1                      1
-          baz.py      1                      2
-          Totals      2                      3
+        ...DAGs   OrbiterEmptyOperator
+        ...━━━━...
+        ...foo.py      1                      1
+        ...baz.py      1                      2
+        ...Totals      2                      3
         <BLANKLINE>
 
         ```
