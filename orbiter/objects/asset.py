@@ -14,7 +14,7 @@ OrbiterDAG "via schedule" --> OrbiterAsset
 """
 
 
-class OrbiterAsset(OrbiterBase, OrbiterASTBase, extra="allow"):
+class OrbiterAsset(OrbiterASTBase, OrbiterBase, extra="allow"):
     """An [Airflow Asset](https://airflow.apache.org/docs/task-sdk/stable/api.html#assets)
     reference, typically used for Asset-based scheduling.
 
@@ -23,9 +23,8 @@ class OrbiterAsset(OrbiterBase, OrbiterASTBase, extra="allow"):
     `group`, `extra`, `watchers`).
 
     ```pycon
-    >>> from orbiter.ast_helper import render_ast
     >>> from orbiter.objects.dag import OrbiterDAG
-    >>> render_ast(OrbiterAsset(uri="s3://bucket/key")._to_ast())
+    >>> OrbiterAsset(uri="s3://bucket/key")
     "Asset('s3://bucket/key')"
     >>> OrbiterDAG(
     ...     dag_id="foo",
