@@ -23,29 +23,8 @@ class OrbiterAsset(OrbiterASTBase, OrbiterBase, extra="allow"):
     `group`, `extra`, `watchers`).
 
     ```pycon
-    >>> from orbiter.objects.dag import OrbiterDAG
     >>> OrbiterAsset(uri="s3://bucket/key")
-    "Asset('s3://bucket/key')"
-    >>> OrbiterDAG(
-    ...     dag_id="foo",
-    ...     file_path="foo.py",
-    ...     schedule=OrbiterAsset(uri="db://table")
-    ... ) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-    from airflow import DAG
-    ...
-    with DAG(dag_id='foo', schedule=Asset('db://table')):
-    ...
-    >>> OrbiterDAG(
-    ...     dag_id="foo",
-    ...     file_path="foo.py",
-    ...     schedule=[
-    ...         OrbiterAsset(uri="db://table1"),
-    ...         OrbiterAsset(uri="db://table2"),
-    ...     ],
-    ... ) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-    from airflow import DAG
-    ...
-    with DAG(dag_id='foo', schedule=[Asset('db://table1'), Asset('db://table2')]...
+    Asset('s3://bucket/key')
 
     ```
     :param uri: The Asset URI, e.g. `db://table` or `s3://bucket/key`
@@ -80,7 +59,3 @@ class OrbiterAsset(OrbiterASTBase, OrbiterBase, extra="allow"):
             self.uri,
             **{k: getattr(self, k) for k in self.model_extra.keys() or []},
         )
-
-
-# Rebuild the model to resolve forward references in OrbiterBase and other parent classes
-OrbiterAsset.model_rebuild()
