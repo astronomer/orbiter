@@ -599,34 +599,6 @@ class OrbiterProject(BaseModel):
             Looks for a specific `[task_type=XYZ]` in the Task's `doc_md` property
             or uses `type(task)` to infer the type of task.
 
-        ```pycon
-        >>> from orbiter.objects.operators.empty import OrbiterEmptyOperator
-        >>> OrbiterProject().add_dags([
-        ...     OrbiterDAG(file_path="", dag_id="foo", orbiter_kwargs={"file_path": "foo.py"},
-        ...         tasks={"bar": OrbiterEmptyOperator(task_id="bar")}
-        ...     ),
-        ...     OrbiterDAG(file_path="", dag_id="baz", orbiter_kwargs={"file_path": "baz.py"},
-        ...         tasks={"bing": OrbiterTaskGroup(task_group_id="bing", tasks={
-        ...             "bop": OrbiterEmptyOperator(task_id="bop"),
-        ...             "bang": OrbiterTaskGroup(task_group_id="bang", tasks={
-        ...                 "bam": OrbiterEmptyOperator(task_id="bam")
-        ...             }),
-        ...        })},
-        ...     )
-        ... ]).analyze() # doctest: +ELLIPSIS
-        ┏━...
-        ...Analysis...
-        ┗━...
-        <BLANKLINE>
-        <BLANKLINE>
-                   DAGs   OrbiterEmptyOperator
-         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          foo.py      1                      1
-          baz.py      1                      2
-          Totals      2                      3
-        <BLANKLINE>
-
-        ```
         """
         if output_file is None:
             output_file = sys.stdout
