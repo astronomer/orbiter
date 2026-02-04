@@ -202,14 +202,7 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
     dag_id: DagId
     schedule: (
-        str
-        | timedelta
-        | TimetableType
-        | OrbiterDataset
-        | list[OrbiterDataset]
-        | OrbiterAsset
-        | list[OrbiterAsset]
-        | None
+        str | timedelta | OrbiterDataset | OrbiterAsset | list[OrbiterAsset | OrbiterDataset] | TimetableType | None
     ) = None
     catchup: bool | None = None
     start_date: datetime | DateTime | None = None
@@ -411,13 +404,11 @@ class OrbiterDAG(OrbiterASTBase, OrbiterBase, extra="allow"):
 
         # Collect imports from schedule (timetables and/or datasets)
         schedule_imports = set()
-        if isinstance(_self.schedule, OrbiterTimetable):
-            schedule_imports |= set(_self.schedule.imports)
-        elif isinstance(_self.schedule, OrbiterDataset):
+        if hasattr(_self.schedule, "imports"):
             schedule_imports |= set(_self.schedule.imports)
         elif isinstance(_self.schedule, list):
             for item in _self.schedule:
-                if isinstance(item, OrbiterDataset):
+                if hasattr(item, "imports"):
                     schedule_imports |= set(item.imports)
 
         # DAG Imports, e.g. `from airflow import DAG`
